@@ -1,4 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
+import {
+  Profile,
+  Activity,
+  ActivityCategory,
+  DailyChallenge,
+  UserChallenge,
+  LeaderboardUser,
+  LeaderboardProvince,
+  ActivityFeed,
+  UploadCooldown,
+  Notification,
+  RealtimePayload,
+  ActivityCategoryGroup,
+  ActivityGroup,
+  ProvinceStats,
+  ChatbotConversation,
+  UserFollow,
+  ActivityLike
+} from '@/lib/types/supabase'
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -32,95 +52,6 @@ export const testSupabaseConnection = async () => {
   }
 }
 
-// Types (keep existing types)
-export type Profile = {
-  id: string
-  email: string
-  full_name?: string
-  username?: string
-  avatar_url?: string
-  points: number
-  level: number
-  province?: string
-  city?: string
-  bio?: string
-  onboarding_completed: boolean
-  last_activity_upload?: string
-  total_activities: number
-  created_at: string
-  updated_at: string
-}
-
-export type Activity = {
-  id: string
-  user_id: string
-  category_id: string
-  title: string
-  description?: string
-  points: number
-  image_url?: string
-  location_name?: string
-  latitude?: number
-  longitude?: number
-  province?: string
-  city?: string
-  status: 'pending' | 'approved' | 'rejected'
-  verified_by?: string
-  verified_at?: string
-  is_shared: boolean
-  share_count: number
-  like_count: number
-  metadata?: Record<string, any>
-  created_at: string
-  updated_at: string
-}
-
-export type LeaderboardUser = {
-  id: string
-  full_name: string
-  avatar_url?: string
-  points: number
-  rank: number
-}
-
-export type LeaderboardProvince = {
-  province: string
-  total_points: number
-  user_count: number
-  rank: number
-}
-
-export type ActivityCategory = {
-  id: string
-  name: string
-  description?: string
-  icon?: string
-  base_points: number
-  color: string
-  image_url?: string
-  is_active: boolean
-  sort_order: number
-  created_at: string
-}
-
-export type DailyChallenge = {
-  id: string
-  title: string
-  description: string
-  points: number
-  date: string
-}
-
-export interface UserChallenge {
-  id: string
-  user_id: string
-  challenge_id: string
-  progress: number
-  completed: boolean
-  completed_at?: string
-  created_at: string
-  updated_at: string
-}
 
 // Client-side functions (tanpa server auth)
 export const getProfileByUserId = async (userId: string): Promise<Profile | null> => {

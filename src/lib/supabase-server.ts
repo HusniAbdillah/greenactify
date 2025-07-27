@@ -1,6 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from './supabase-client'
+import {
+  Profile,
+  Activity,
+  ActivityCategory,
+  DailyChallenge,
+  UserChallenge,
+  LeaderboardUser,
+  LeaderboardProvince,
+  ActivityFeed,
+  UploadCooldown,
+  Notification,
+  RealtimePayload,
+  ActivityCategoryGroup,
+  ActivityGroup,
+  ProvinceStats,
+  ChatbotConversation,
+  UserFollow,
+  ActivityLike
+} from '@/lib/types/supabase'
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -73,162 +93,6 @@ export type Database = {
 // TYPE DEFINITIONS
 // ========================================
 
-export type Profile = {
-  id: string
-  email: string
-  full_name?: string
-  username?: string
-  avatar_url?: string
-  points: number
-  level: number
-  province?: string
-  city?: string
-  bio?: string
-  onboarding_completed: boolean
-  last_activity_upload?: string
-  total_activities: number
-  created_at: string
-  updated_at: string
-}
-
-export type Activity = {
-  id: string
-  user_id: string
-  category_id: string
-  title: string
-  description?: string
-  points: number
-  image_url?: string
-  location_name?: string
-  latitude?: number
-  longitude?: number
-  province?: string
-  city?: string
-  status: 'pending' | 'approved' | 'rejected'
-  verified_by?: string
-  verified_at?: string
-  is_shared: boolean
-  share_count: number
-  like_count: number
-  metadata?: Record<string, unknown>
-  created_at: string
-  updated_at: string
-}
-
-export type ActivityCategory = {
-  id: string
-  name: string
-  description?: string
-  icon?: string
-  base_points: number
-  color: string
-  image_url?: string
-  is_active: boolean
-  sort_order: number
-  created_at: string
-}
-
-export type DailyChallenge = {
-  id: string
-  title: string
-  description: string
-  instructions?: string
-  points: number
-  date: string
-  category_id?: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  target_count: number
-  icon?: string
-  image_url?: string
-  is_active: boolean
-  created_at: string
-}
-
-export type UserChallenge = {
-  id: string
-  user_id: string
-  challenge_id: string
-  completed: boolean
-  progress: number
-  completed_at?: string
-  activity_id?: string
-  created_at: string
-}
-
-export type LeaderboardUser = {
-  id: string
-  full_name?: string
-  username?: string
-  avatar_url?: string
-  points: number
-  province?: string
-  level: number
-  total_activities: number
-  active_days: number
-  completed_challenges: number
-  avg_activity_points: number
-  last_activity?: string
-  rank: number
-  province_rank: number
-}
-
-export type LeaderboardProvince = {
-  province: string
-  total_users: number
-  total_activities: number
-  total_points: number
-  avg_user_points: number
-  active_days: number
-  last_activity?: string
-  rank: number
-}
-
-export type ActivityFeed = {
-  id: string
-  title: string
-  description?: string
-  points: number
-  image_url?: string
-  location_name?: string
-  province?: string
-  like_count: number
-  share_count: number
-  created_at: string
-  user_name?: string
-  username?: string
-  user_avatar?: string
-  category_name: string
-  category_icon?: string
-  category_color: string
-}
-
-export type UploadCooldown = {
-  id: string
-  user_id: string
-  last_upload: string
-  cooldown_expires: string
-}
-
-export type ChatbotConversation = {
-  id: string
-  user_id: string
-  message: string
-  response?: string
-  message_type: 'user' | 'bot'
-  created_at: string
-}
-
-export type Notification = {
-  id: string
-  user_id: string
-  title: string
-  message: string
-  type: 'info' | 'success' | 'warning' | 'achievement'
-  is_read: boolean
-  action_url?: string
-  metadata?: Record<string, unknown> // ✅ Ganti any dengan unknown
-  created_at: string
-}
 
 // ========================================
 // HELPER FUNCTIONS
@@ -452,15 +316,4 @@ export const subscribeToLeaderboard = (callback: (payload: RealtimePayload) => v
       table: 'profiles' 
     }, callback)
     .subscribe()
-}
-
-// Tambahkan type untuk Realtime payload
-export type RealtimePayload = {
-  commit_timestamp: string
-  errors: string[]
-  eventType: string
-  new: Record<string, unknown>
-  old: Record<string, unknown>
-  schema: string
-  table: string
 }
