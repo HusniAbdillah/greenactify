@@ -1,12 +1,14 @@
 import React from 'react'
 import DesktopSidebar from '@/components/DesktopSidebar'
 import MobileBottomNav from '@/components/MobileBottomNav'
-
-export default function AuthenticatedLayout({
+import { checkUser } from '@/lib/check-user'
+export default async  function AuthenticatedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await checkUser();
+  console.log("user : ", user );
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
