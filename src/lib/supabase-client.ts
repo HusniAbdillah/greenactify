@@ -200,3 +200,44 @@ export const getUserChallengeProgress = async (userId: string, challengeId: stri
   }
   return data
 }
+
+export const getDetailedActivitiesByUserId = async (userId: string): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('activities')
+    .select(`
+      id,
+      user_id,
+      category_id,
+      title,
+      description,
+      image_url,
+      location_name,
+      latitude,
+      longitude,
+      province,
+      city,
+      status,
+      verified_by,
+      verified_at,
+      is_shared,
+      share_count,
+      like_count,
+      metadata,
+      created_at,
+      updated_at,
+      activity_categories (
+        name,
+        base_points,
+        group_category
+      )
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching detailed activities:', error)
+    return []
+  }
+  return data
+}
+

@@ -44,6 +44,16 @@ export type Activity = {
   updated_at: string
 }
 
+export type GroupCategoryType =
+  | 'Daur Ulang'
+  | 'Bersih-bersih'
+  | 'Hemat Energi'
+  | 'Edukasi Lingkungan'
+  | 'Hemat Air'
+  | 'Makanan Organik'
+  | 'Transportasi Hijau'
+  | 'Penghijauan'
+
 export type ActivityCategory = {
   id: string
   name: string
@@ -55,7 +65,9 @@ export type ActivityCategory = {
   is_active: boolean
   sort_order: number
   created_at: string
+  group_category?: GroupCategoryType
 }
+
 
 export type ActivityCategoryGroup = {
   id: string
