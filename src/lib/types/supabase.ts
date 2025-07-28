@@ -1,4 +1,3 @@
-// lib/types/supabase.ts
 
 export type Profile = {
   id: string
@@ -17,7 +16,7 @@ export type Profile = {
   created_at: string
   updated_at: string
   clerk_id?: string
-  pinned_post?: any[] // Jika nanti kamu tahu isinya, ubah jadi lebih spesifik
+  pinned_post?: any[]
 }
 
 export type Activity = {

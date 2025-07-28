@@ -10,6 +10,8 @@ import {
   ActivityCategory,
   DailyChallenge,
   UserChallenge,
+} from '@/lib/types/supabase'
+import {
   getProfileByUserId,
   getActivitiesByUserId,
   getLeaderboardUsers,
