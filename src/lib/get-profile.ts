@@ -18,32 +18,7 @@ export const getProfileIdByClerkId = async (clerkId: string): Promise<string | n
   return data.id
 }
 
-export const getActivitiesByProfileId = async (profileId: string) => {
-  const client = supabase()
-  const { data, error } = await client
-    .from('activities')
-    .select(`
-      id,
-      points,
-      created_at,
-      category:activity_categories (
-        name,
-        icon,
-        color,
-        image_url
-      )
-    `)
-    .eq('user_id', profileId)
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('❌ Error fetching activities:', error)
-    return []
-  }
-
-  return data
-}
 
 export const getActivityGroupCounts = async (profileId: string) => {
   const client = supabase()
