@@ -1,5 +1,5 @@
 // app/dashboard/page.tsx
-import UserActivityList from '@/components/activitiesPost'
+import UserActivityList from '@/components/profil/activitiesPost'
 
 export default function DashboardPage() {
   return (

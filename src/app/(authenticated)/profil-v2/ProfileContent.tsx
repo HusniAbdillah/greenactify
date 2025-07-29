@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { User } from "@clerk/nextjs/server";
-import ActivitiesGrid from '@/components/ui/activityGrid';
-import GroupActivityGrid from '@/components/ui/groupActivitiesGrid';
+import ActivitiesGrid from '@/components/profil/activityGrid';
+import GroupActivityGrid from '@/components/profil/groupActivitiesGrid';
 type Props = {
   user: {
     id: string
