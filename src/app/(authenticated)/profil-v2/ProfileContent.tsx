@@ -1,5 +1,5 @@
 'use client';
-
+import Link from 'next/link'; 
 import React, { useState } from 'react';
 import { User } from "@clerk/nextjs/server";
 import ActivitiesGrid from '@/components/ui/activityGrid';
@@ -49,9 +49,11 @@ export default function ProfileContent({ user }: Props) {
             {`${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim()}
           </p>
 
-          <button className="bg-oliveSoft px-4 py-1 rounded-3xl font-bold text-black">
-            Ubah Profil
-          </button>
+          <Link href="/profil-v2/pengaturan" passHref>
+            <button className="bg-oliveSoft px-4 py-1 rounded-3xl font-bold text-black">
+              Ubah Profil
+            </button>
+          </Link>
 
           <p className="md:block font-bold text-2xl text-center lg:hidden">
             4570 point
@@ -70,16 +72,14 @@ export default function ProfileContent({ user }: Props) {
             </p>
           </div>
 
-
-          <div className=" font-extrabold text-center text-[22px] md:text-[26px] pl-12 max-w-65 md:max-w-full">
-            <p className='font-extrabold text-[#FFBA00] text-[23px] md:text-[28px]  '>
-                Selamat!
+          <div className="font-bold text-center text-[22px] md:text-[26px] pl-12 max-w-65 md:max-w-full">
+            <p className="font-extrabold text-yellowGold text-[23px] md:text-[28px]">
+              Selamat!
             </p>
-
-            Kamu Termasuk {" "}
-            <span className='font-extrabold text-yellowAmber text-[26px] md:text-[30px]'> 
-                 Top 100 
-            </span> 
+            Kamu Termasuk{" "}
+            <span className="font-extrabold text-yellowGold text-[26px] md:text-[30px]">
+              Top 100
+            </span>
             <br />
             orang paling <br />
             berkelanjutan
