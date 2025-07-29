@@ -80,8 +80,7 @@ export default function AuthPageWithImage({
       </div>
 
       <div
-        className="flex h-full items-center justify-center p-4 lg:p-8"
-        style={{ backgroundColor: "#0C3B2E" }}
+        className="flex h-full items-center justify-center p-4 lg:p-8 bg-greenDark"
       >
         <div className="flex w-full max-w-md flex-col items-center justify-center space-y-6">
           <div className="text-center"></div>
