@@ -9,8 +9,8 @@ import {
   Home, 
   Map, 
   Trophy, 
-  Heart,
-  MessageCircle,
+  HandHeart,
+  Bot,
   History, 
   User,
   Leaf
@@ -23,8 +23,8 @@ const DesktopSidebar = () => {
     { href: '/beranda', icon: Home, label: 'Beranda' },
     { href: '/persebaran', icon: Map, label: 'Persebaran' },
     { href: '/peringkat', icon: Trophy, label: 'Peringkat' },
-    { href: '/aksi', icon: Heart, label: 'Aksi' },
-    { href: '/chatbot', icon: MessageCircle, label: 'Chatbot' },
+    { href: '/aksi', icon: HandHeart, label: 'Aksi' },
+    { href: '/chatbot', icon: Bot, label: 'Chatbot' },
     { href: '/riwayat', icon: History, label: 'Riwayat' },
     { href: '/profil', icon: User, label: 'Profil' },
   ]
