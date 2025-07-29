@@ -23,7 +23,7 @@ const MobileBottomNav = () => {
   return (
     <>
       {/* Mobile Bottom Navigation - Only visible on mobile */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 bg-mintPastel border-t border-oliveDark shadow-lg z-50">
+      <div className="lg:hidden fixed inset-x-0 bottom-0 bg-mintPastel border-t-2 border-oliveDark shadow-lg z-50 rounded-t-[20px] py-2">
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -33,19 +33,20 @@ const MobileBottomNav = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative flex flex-col items-center justify-center py-3 px-2 text-xs transition-colors ${
+                className={`relative flex flex-col items-center justify-center py-1 px-1 mx-1 text-xs transition-all ${
                   active
-                    ? 'bg-tealLight text-black'
-                    : 'text-black hover:bg-yellowAmber'
+                    ? 'bg-tealLight text-black rounded-[20px]'
+                    : 'text-black rounded-[20px] hover:bg-yellowAmber'
                 }`}
+                style={{ minWidth: 0 }}
               >
                 {active && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-tealLight rounded-b-lg"></div>
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-tealLight rounded-b-lg"></div>
                 )}
                 <Icon
-                  className={`h-6 w-6 mb-1 ${active ? 'text-black' : 'text-black'}`}
+                  className="h-8 w-8 mb-1 text-black"
                 />
-                <span className={`font-medium ${active ? 'text-black' : 'text-black'}`}>
+                <span className="font-medium text-black truncate">
                   {item.label}
                 </span>
               </Link>
