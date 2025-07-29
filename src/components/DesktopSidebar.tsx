@@ -36,22 +36,7 @@ const DesktopSidebar = () => {
     <>
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-25 lg:flex-col">
-        <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-green-100 to-green-200 shadow-lg rounded-r-3xl">
-          {/* Logo
-          <div className="flex h-20 flex-shrink-0 items-center justify-center px-4 pt-6">
-            <Link href="/beranda" className="flex flex-col items-center">
-              <div className="w-16 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
-                <Image
-                  src="/images/logo-fiks.png"
-                  alt="GreenActify Logo"
-                  width={56}
-                  height={40}
-                  className="object-contain scale-90"
-                />
-              </div>
-            </Link>
-          </div> */}
-
+        <div className="flex min-h-0 flex-1 flex-col bg-mintPastel shadow-lg rounded-r-3xl">
           {/* Navigation */}
           <nav className="flex-1 flex flex-col items-center space-y-3 px-4 py-15">
             {navItems.map((item) => {
@@ -64,17 +49,17 @@ const DesktopSidebar = () => {
                   href={item.href}
                   className={`group flex flex-col items-center justify-center w-20 h-16 rounded-2xl transition-all duration-200 ${
                     active
-                      ? 'bg-green-600 text-white shadow-lg transform scale-105'
-                      : 'text-green-700 hover:bg-green-300 hover:scale-105 hover:shadow-md'
+                      ? 'bg-tealLight text-black shadow-lg scale-105'
+                      : 'text-black hover:bg-yellowAmber hover:scale-105 hover:shadow-md'
                   }`}
                 >
                   <Icon
                     className={`h-6 w-6 mb-1 ${
-                      active ? 'text-white' : 'text-green-700 group-hover:text-green-800'
+                      active ? 'text-black' : 'text-black'
                     }`}
                   />
-                  <span className={`text-xs font-medium leading-tight text-center ${
-                    active ? 'text-white' : 'text-green-700 group-hover:text-green-800'
+                  <span className={`text-xs font-semibold leading-tight text-center ${
+                    active ? 'text-black' : 'text-black'
                   }`}>
                     {item.label}
                   </span>
@@ -89,15 +74,15 @@ const DesktopSidebar = () => {
               <UserButton 
                 appearance={{
                   elements: {
-                    avatarBox: "w-12 h-12 rounded-2xl shadow-lg border-2 border-white"
+                    avatarBox: "w-12 h-12 rounded-2xl shadow-lg border-2 border-tealLight"
                   }
                 }}
               />
               <div className="mt-2 text-center">
-                <p className="text-xs font-medium text-green-800 truncate">
+                <p className="text-xs font-bold text-black truncate">
                   Ahmad
                 </p>
-                <p className="text-xs text-green-600 truncate">
+                <p className="text-xs text-tealLight truncate">
                   2.4k
                 </p>
               </div>
