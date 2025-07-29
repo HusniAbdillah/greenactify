@@ -225,6 +225,7 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
       metadata,
       created_at,
       updated_at,
+      points,
       activity_categories (
         name,
         base_points,
