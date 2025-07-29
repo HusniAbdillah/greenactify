@@ -3,13 +3,6 @@
 import { useUser } from '@clerk/nextjs'
 import { useEffect, useState, useCallback } from 'react'
 import {
-  Profile,
-  Activity,
-  LeaderboardUser,
-  LeaderboardProvince,
-  ActivityCategory,
-  DailyChallenge,
-  UserChallenge,
   getProfileByUserId,
   getActivitiesByUserId,
   getLeaderboardUsers,
@@ -19,6 +12,16 @@ import {
   getUserChallengeProgress,
   testSupabaseConnection
 } from '@/lib/supabase-client'
+
+import {
+  Profile,
+  Activity,
+  LeaderboardUser,
+  LeaderboardProvince,
+  ActivityCategory,
+  DailyChallenge,
+  UserChallenge,
+} from '@/lib/types/supabase'
 
 export const useProfile = () => {
   const { user, isLoaded } = useUser()
@@ -127,6 +130,7 @@ export const useActivityCategories = () => {
   return { categories, loading, error }
 }
 
+
 export const useUserActivities = () => {
   const { user, isLoaded } = useUser()
   const [activities, setActivities] = useState<Activity[]>([])
@@ -175,4 +179,45 @@ export const useDailyChallenge = () => {
   }, [user?.id, isLoaded])
 
   return { challenge, progress, loading }
+}
+
+
+
+export type ActivityItem = {
+  id: string
+  title: string
+  location_name?: string
+  created_at: string
+  image_url?: string 
+  points: number
+  activity_categories: {
+    name: string
+    base_points: number
+    group_category: string
+  }
+}
+
+export  function useActivities() {
+  const [activities, setActivities] = useState<ActivityItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch('/api/activities')
+        if (!res.ok) throw new Error('Gagal mengambil data')
+        const data = await res.json()
+        setActivities(data)
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Terjadi kesalahan'))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchActivities()
+  }, [])
+
+  return { activities, loading, error }
 }
