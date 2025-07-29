@@ -28,12 +28,12 @@ export default function ProfileContent({ user }: Props) {
   const [activeTab, setActiveTab] = useState<'activities' | 'overview'>('overview');
 
   return (
-    <div className="min-h-screen bg-[#BBE8C3] min-w-10xl ">
-      <h1 className="py-5 not-last:mx-auto text-center font-bold text-2xl ">
+    <div className="min-h-screen bg-mintPastel min-w-10xl pb-2 px-4 md:px-8">
+      <h1 className="py-5 mx-auto text-center font-bold text-2xl">
         Profil
       </h1>
 
-      <section className="flex flex-col md:flex-row justify-center gap-5 items-center mx-auto ">
+      <section className="flex flex-col md:flex-row justify-center gap-5 items-center mx-auto">
         <img
           src={user?.imageUrl ?? ''}
           alt={`${user?.firstName}'s profile`}
@@ -41,15 +41,15 @@ export default function ProfileContent({ user }: Props) {
         />
 
         <div className="flex flex-col justify-start items-center gap-2 lg:mr-13">
-          <p className="font-bold text text-3xl text-[#161716]">
+          <p className="font-bold text-3xl text-black">
             @{user?.username}
           </p>
 
-          <p className="font-bold text-lg text-[#161716]">
+          <p className="font-bold text-lg text-black">
             {`${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim()}
           </p>
 
-          <button className="bg-[#6D9773] px-4 py-1 rounded-3xl font-bold text-[#161716]">
+          <button className="bg-oliveSoft px-4 py-1 rounded-3xl font-bold text-black">
             Ubah Profil
           </button>
 
@@ -70,29 +70,27 @@ export default function ProfileContent({ user }: Props) {
             </p>
           </div>
 
-          <div className=" font-bold text-center text-[22px] md:text-[26px] pl-12 max-w-65 md:max-w-full">
-            <p className='font-extrabold text-[#FFBA00] text-[23px] md:text-[28px]  '>
-                Selamat!
+          <div className="font-bold text-center text-[22px] md:text-[26px] pl-12 max-w-65 md:max-w-full">
+            <p className="font-extrabold text-yellowGold text-[23px] md:text-[28px]">
+              Selamat!
             </p>
-
-            Kamu Termasuk {" "}
-            <span className='font-extrabold text-[#FFBA00] text-[26px] md:text-[30px]'> 
-                 Top 100 
-            </span> 
+            Kamu Termasuk{" "}
+            <span className="font-extrabold text-yellowGold text-[26px] md:text-[30px]">
+              Top 100
+            </span>
             <br />
             orang paling <br />
             berkelanjutan
           </div>
-
         </div>
       </section>
 
-      <section className=" mx-auto flex bg-[#6D9773] rounded-4xl p-1 mt-5 max-w-7xl">
+      <section className="mx-auto flex bg-oliveSoft rounded-4xl p-1 mt-5 max-w-7xl">
         <button
           className={`flex-1 py-3 px-4 rounded-4xl font-semibold transition-colors ${
             activeTab === 'overview'
-              ? 'bg-[#0C3B2E] text-[#F1FFF3] shadow-sm'
-              : 'text-[#0C3B2E] hover:bg-[#84ab89] hover:shadow-lg'
+              ? 'bg-greenDark text-whiteMint shadow-sm'
+              : 'text-greenDark hover:bg-mintPastel hover:shadow-lg'
           }`}
           onClick={() => setActiveTab('overview')}
         >
@@ -102,33 +100,33 @@ export default function ProfileContent({ user }: Props) {
         <button
           className={`flex-1 py-3 px-4 rounded-4xl font-semibold transition-colors ${
             activeTab === 'activities'
-            ? 'bg-[#0C3B2E] text-[#F1FFF3] shadow-sm'
-              : 'text-[#0C3B2E] hover:bg-[#84ab89] hover:shadow-lg'
+              ? 'bg-greenDark text-whiteMint shadow-sm'
+              : 'text-greenDark hover:bg-mintPastel hover:shadow-lg'
           }`}
           onClick={() => setActiveTab('activities')}
         >
           Riwayat
         </button>
-        </section>
+      </section>
 
-      <section className="w-full bg-[#0C3B2E] rounded-4xl mb-10 mt-5 px-10 py-6">
-            {activeTab === 'activities' && (
-                <>
-                    <h2 className="font-bold text-xl text-[#F1FFF3] text-center pb-4">
-                        Riwayat Aksi
-                    </h2>
-                    <ActivitiesGrid/>
-                </>
-            )}
+      <section className="w-full bg-greenDark rounded-4xl mb-4 mt-5 px-10 py-6">
+        {activeTab === 'activities' && (
+          <>
+            <h2 className="font-bold text-xl text-whiteMint text-center pb-4">
+              Riwayat Aksi
+            </h2>
+            <ActivitiesGrid />
+          </>
+        )}
 
-            {activeTab === 'overview' && (
-                <>
-                    <h2 className="font-bold text-xl text-[#F1FFF3] text-center pb-4">
-                        Jumlah Aktivitas
-                    </h2>
-                    <GroupActivityGrid/>
-                </>
-            )}
+        {activeTab === 'overview' && (
+          <>
+            <h2 className="font-bold text-xl text-whiteMint text-center pb-4">
+              Jumlah Aktivitas
+            </h2>
+            <GroupActivityGrid />
+          </>
+        )}
       </section>
     </div>
 
