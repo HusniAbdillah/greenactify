@@ -10,12 +10,12 @@ export default async  function AuthenticatedLayout({
   const user = await checkUser();
   console.log("user : ", user );
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-mintPastel">
       {/* Desktop Sidebar */}
       <DesktopSidebar />
       
       {/* Main Content */}
-      <div className="lg:ml-25"> {/* Sesuaikan dengan width sidebar */}
+      <div className="lg:ml-35"> {/* Sesuaikan dengan width sidebar */}
         <main className="min-h-screen">
           {children}
         </main>
