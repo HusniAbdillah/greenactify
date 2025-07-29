@@ -5,60 +5,47 @@ import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
 
 const PeringkatPage = () => {
   const [usersData, setUsersData] = useState<any[]>([])
+  const [provincesData, setProvincesData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
 
   React.useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await fetch('/api/users')
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch users: ${response.status}`)
+        // Fetch both users and provinces data
+        const [usersResponse, provincesResponse] = await Promise.all([
+          fetch('/api/leaderboard?type=users'),
+          fetch('/api/leaderboard?type=provinces')
+        ])
+
+
+
+        if (!usersResponse.ok || !provincesResponse.ok) {
+          throw new Error('Failed to fetch leaderboard data')
         }
 
-        const data = await response.json()
-        setUsersData(data.users || [])
+        const [usersData, provincesData] = await Promise.all([
+          usersResponse.json(),
+          provincesResponse.json()
+        ])
+
+        setUsersData(usersData.data || [])
+        setProvincesData(provincesData.data || [])
       } catch (error) {
-        console.error('Failed to fetch users:', error)
-        setError(error instanceof Error ? error.message : 'Failed to fetch users')
+        console.error('Failed to fetch leaderboard data:', error)
+        setError(error instanceof Error ? error.message : 'Failed to fetch data')
       } finally {
         setLoading(false)
       }
     }
-    fetchUsers()
+    fetchData()
   }, [])
 
-  const topProvinces = [
-    {
-      id: 1,
-      name: 'DKI Jakarta',
-      points: 45420,
-      rank: 1,
-      participants: 1250,
-      activities: 3420
-    },
-    {
-      id: 2,
-      name: 'Jawa Barat',
-      points: 42350,
-      rank: 2,
-      participants: 2100,
-      activities: 4200
-    },
-    {
-      id: 3,
-      name: 'Jawa Timur',
-      points: 38200,
-      rank: 3,
-      participants: 1800,
-      activities: 3800
-    },
-    // Add more provinces...
-  ]
+  // Removed static provinces data - now using API data
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -161,7 +148,7 @@ const PeringkatPage = () => {
 
                   <div className="text-right">
                     <div className="text-2xl font-bold text-green-600">
-                      {user.points ? user.points.toLocaleString() : '0'}
+                      {user.points ? user.points : '0'}
                     </div>
                     <div className="text-sm text-gray-600">poin</div>
                   </div>
@@ -175,33 +162,48 @@ const PeringkatPage = () => {
       {/* Provinces Leaderboard */}
       {activeTab === 'provinces' && (
         <div className="space-y-4">
-          {topProvinces.map((province) => (
-            <div
-              key={province.id}
-              className="bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
-            >
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center justify-center w-12 h-12">
-                  {getRankIcon(province.rank)}
-                </div>
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
+              <p className="text-gray-500">Loading provinces...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">
+              Failed to load provinces. Please try again.
+            </div>
+          ) : provincesData.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No provinces found.
+            </div>
+          ) : (
+            provincesData.map((province: any, index: number) => (
+              <div
+                key={province.id || province.province || index}
+                className="bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-center w-12 h-12">
+                    {getRankIcon(province.rank)}
+                  </div>
 
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-blue-600" />
-                </div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <MapPin className="w-6 h-6 text-blue-600" />
+                  </div>
 
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg">{province.name}</h3>
-                  <p className="text-gray-600">{province.participants.toLocaleString()} peserta</p>
-                  <p className="text-sm text-gray-500">{province.activities.toLocaleString()} aktivitas</p>
-                </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg">{province.province}</h3>
+                    <p className="text-gray-600">{province.total_users} peserta</p>
+                    <p className="text-sm text-gray-500">{province.total_activities} aktivitas</p>
+                  </div>
 
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-600">{province.points.toLocaleString()}</div>
-                  <div className="text-sm text-gray-600">Total Poin</div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-green-600">{province.total_points}</div>
+                    <div className="text-sm text-gray-600">Total Poin</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
     </div>
