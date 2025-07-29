@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User } from "@clerk/nextjs/server";
+import { User  } from "@clerk/nextjs/server";
+import { useUser, SignOutButton } from "@clerk/nextjs";
 import ActivitiesGrid from '@/components/ui/activityGrid';
 import GroupActivityGrid from '@/components/ui/groupActivitiesGrid';
+
 type Props = {
   user: {
     id: string
@@ -13,6 +15,7 @@ type Props = {
     lastName: string | null
   } | null
 }
+
 /*
 #6D9773
 
@@ -53,6 +56,12 @@ export default function ProfileContent({ user }: Props) {
             Ubah Profil
           </button>
 
+            <SignOutButton>
+            <button className="mt-2 bg-[#B46617] hover:bg-[#A05A14] px-4 py-1 rounded-3xl font-bold text-white text-sm transition-colors">
+              Keluar
+            </button>
+          </SignOutButton>
+          
           <p className="md:block font-bold text-2xl text-center lg:hidden">
             4570 point
           </p>

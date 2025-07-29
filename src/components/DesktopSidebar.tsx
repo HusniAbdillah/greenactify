@@ -15,9 +15,11 @@ import {
   User,
   Leaf
 } from 'lucide-react'
+import { useUser } from "@clerk/nextjs";
 
 const DesktopSidebar = () => {
   const pathname = usePathname()
+  const { user } = useUser();
 
   const navItems = [
     { href: '/beranda', icon: Home, label: 'Beranda' },
@@ -96,10 +98,7 @@ const DesktopSidebar = () => {
               />
               <div className="mt-2 text-center">
                 <p className="text-xs font-medium text-green-800 truncate">
-                  Ahmad
-                </p>
-                <p className="text-xs text-green-600 truncate">
-                  2.4k
+                  {user?.firstName}
                 </p>
               </div>
             </div>

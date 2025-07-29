@@ -1,42 +1,10 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-
-type ActivityItem = {
-  id: string
-  title: string
-  location_name?: string
-  created_at: string
-  image_url?: string 
-  points: number
-  activity_categories: {
-    name: string
-    group_category: string
-  }
-}
-
+import {useActivities} from '@/hooks/useSupabase'
 
 export default function UserActivityList() {
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        const res = await fetch('/api/activities')
-        const data = await res.json()
-        setActivities(data)
-      } catch (err) {
-        console.error('❌ Gagal fetch data aktivitas:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchActivities()
-  }, [])
+  const { activities, loading, error } = useActivities()
 
   if (loading) return <p>Memuat aktivitas...</p>
+  if (error) return <p>❌ Error: {error.message}</p>
   if (activities.length === 0) return <p>Tidak ada aktivitas ditemukan.</p>
 
   return (
