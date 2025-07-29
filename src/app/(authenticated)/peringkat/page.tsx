@@ -9,6 +9,7 @@ const PeringkatPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
+  const [searchQuery, setSearchQuery] = useState('')
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -16,13 +17,10 @@ const PeringkatPage = () => {
         setLoading(true)
         setError(null)
 
-        // Fetch both users and provinces data
         const [usersResponse, provincesResponse] = await Promise.all([
           fetch('/api/leaderboard?type=users'),
           fetch('/api/leaderboard?type=provinces')
         ])
-
-
 
         if (!usersResponse.ok || !provincesResponse.ok) {
           throw new Error('Failed to fetch leaderboard data')
@@ -45,8 +43,6 @@ const PeringkatPage = () => {
     fetchData()
   }, [])
 
-  // Removed static provinces data - now using API data
-
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -58,6 +54,28 @@ const PeringkatPage = () => {
       default:
         return <span className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center text-sm font-bold">{rank}</span>
     }
+  }
+
+  // Filter and limit data based on search query
+  const getFilteredUsers = () => {
+    if (!searchQuery.trim()) {
+      return usersData.slice(0, 10) // Limit to 10 when no search
+    }
+    // When searching, return all matching results (no limit)
+    return usersData.filter(user =>
+      (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }
+
+  const getFilteredProvinces = () => {
+    if (!searchQuery.trim()) {
+      return provincesData.slice(0, 10) // Limit to 10 when no search
+    }
+    // When searching, return all matching results (no limit)
+    return provincesData.filter(province =>
+      (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+    )
   }
 
   return (
@@ -101,6 +119,20 @@ const PeringkatPage = () => {
         </button>
       </div>
 
+      {/* Search Bar */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          placeholder={activeTab === 'users' ? 'Cari pengguna atau provinsi...' : 'Cari provinsi...'}
+          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       {/* Users Leaderboard */}
       {activeTab === 'users' && (
         <div className="space-y-4">
@@ -117,8 +149,12 @@ const PeringkatPage = () => {
             <div className="text-center py-8 text-gray-500">
               No users found.
             </div>
+          ) : getFilteredUsers().length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No users found matching "{searchQuery}".
+            </div>
           ) : (
-            usersData.map((user, index) => (
+            getFilteredUsers().map((user, index) => (
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
                 className="bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
@@ -175,8 +211,12 @@ const PeringkatPage = () => {
             <div className="text-center py-8 text-gray-500">
               No provinces found.
             </div>
+          ) : getFilteredProvinces().length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No provinces found matching "{searchQuery}".
+            </div>
           ) : (
-            provincesData.map((province: any, index: number) => (
+            getFilteredProvinces().map((province: any, index: number) => (
               <div
                 key={province.id || province.province || index}
                 className="bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
@@ -198,7 +238,7 @@ const PeringkatPage = () => {
 
                   <div className="text-right">
                     <div className="text-2xl font-bold text-green-600">{province.total_points}</div>
-                    <div className="text-sm text-gray-600">Total Poin</div>
+                    <div className="text-sm text-gray-600">Poin</div>
                   </div>
                 </div>
               </div>
