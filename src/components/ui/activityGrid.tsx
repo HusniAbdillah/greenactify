@@ -7,7 +7,7 @@ import { useActivities } from '@/hooks/useSupabase';
 import { ChevronDown, ChevronUp } from 'lucide-react'; // Import ikon
 
 export default function ActivitiesGrid() {
-  const { activities, loading, error } = useActivities();
+  const { activities, loading, error, refetch } = useActivities();
   const [showAllActivities, setShowAllActivities] = useState(false); 
 
   const activitiesToShow = showAllActivities ? activities : activities.slice(0, 9);
@@ -37,7 +37,7 @@ export default function ActivitiesGrid() {
     <div className="flex flex-col items-center w-full"> 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full"> 
         {activitiesToShow.map((activity) => (
-          <ActivityCard key={activity.id} activity={activity} />
+          <ActivityCard key={activity.id} activity={activity} onUpdated={refetch} />
         ))}
       </div>
 

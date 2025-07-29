@@ -28,7 +28,7 @@ export default function ProfileContent({ user }: Props) {
   const [activeTab, setActiveTab] = useState<'activities' | 'overview'>('overview');
 
   return (
-    <div className="min-h-screen bg-[#BBE8C3] min-w-10xl min-h-full">
+    <div className="min-h-screen bg-[#BBE8C3] min-w-10xl ">
       <h1 className="py-5 not-last:mx-auto text-center font-bold text-2xl ">
         Profil
       </h1>
