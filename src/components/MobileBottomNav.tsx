@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Trophy, Camera, MessageCircle, User } from 'lucide-react'
+import { Home, Trophy, HandHeart, Bot, UserRound } from 'lucide-react'
 
 const MobileBottomNav = () => {
   const pathname = usePathname()
@@ -11,9 +11,9 @@ const MobileBottomNav = () => {
   const navItems = [
     { href: '/beranda', icon: Home, label: 'Beranda' },
     { href: '/peringkat', icon: Trophy, label: 'Peringkat' },
-    { href: '/aksi', icon: Camera, label: 'Aksi' },
-    { href: '/chatbot', icon: MessageCircle, label: 'Chatbot' },
-    { href: '/profil', icon: User, label: 'Profil' },
+    { href: '/aksi', icon: HandHeart, label: 'Aksi' },
+    { href: '/chatbot', icon: Bot, label: 'Chatbot' },
+    { href: '/profil', icon: UserRound, label: 'Profil' },
   ]
 
   const isActive = (href: string) => {

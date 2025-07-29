@@ -7,13 +7,12 @@ import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import { 
   Home, 
-  Map, 
+  AreaChart, 
   Trophy, 
-  Heart,
-  MessageCircle,
+  HandHeart,
+  Bot,
   History, 
-  User,
-  Leaf
+  UserRound,
 } from 'lucide-react'
 
 const DesktopSidebar = () => {
@@ -21,12 +20,12 @@ const DesktopSidebar = () => {
 
   const navItems = [
     { href: '/beranda', icon: Home, label: 'Beranda' },
-    { href: '/persebaran', icon: Map, label: 'Persebaran' },
+    { href: '/persebaran', icon: AreaChart, label: 'Persebaran' },
     { href: '/peringkat', icon: Trophy, label: 'Peringkat' },
-    { href: '/aksi', icon: Heart, label: 'Aksi' },
-    { href: '/chatbot', icon: MessageCircle, label: 'Chatbot' },
+    { href: '/aksi', icon: HandHeart, label: 'Aksi' },
+    { href: '/chatbot', icon: Bot, label: 'Chatbot' },
     { href: '/riwayat', icon: History, label: 'Riwayat' },
-    { href: '/profil', icon: User, label: 'Profil' },
+    { href: '/profil', icon: UserRound, label: 'Profil' },
   ]
 
   const isActive = (href: string) => {
