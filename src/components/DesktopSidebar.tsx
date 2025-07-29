@@ -78,14 +78,10 @@ const DesktopSidebar = () => {
                 <p className="text-xs font-medium text-green-800 truncate">
                   {user?.firstName}
                 </p>
-                <p className="text-xs text-green-600 truncate">
-                  2.4k
-                </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
     </>
   )
 }

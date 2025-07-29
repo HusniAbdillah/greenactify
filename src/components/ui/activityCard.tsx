@@ -51,7 +51,7 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
             <p className="text-xs text-zinc-300 mt-0.5">{activity.location_name}</p>
           )}
           <div className="flex justify-between items-end mt-2">
-            <p className="text-xs font-black text-amber-400 px-2 py-1 rounded bg-amber-400/10">
+            <p className="text-xs font-black text-yellowGold px-2 py-1 rounded bg-amber-400/10">
               {activity.points} PTS
             </p>
             <p className="text-[10px] text-zinc-400">
@@ -75,7 +75,7 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
           </button>
           <button
             onClick={() => setEditing(true)}
-            className="bg-blue-500/80 text-white px-2 py-1 text-xs rounded hover:bg-blue-600"
+            className="bg-tealLight/80 text-white px-2 py-1 text-xs rounded hover:bg-greenDark"
           >
             Edit
           </button>

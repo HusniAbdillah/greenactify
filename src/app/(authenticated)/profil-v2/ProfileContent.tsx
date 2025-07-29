@@ -16,22 +16,12 @@ type Props = {
   } | null
 }
 
-/*
-#6D9773
 
-#0C3B2E
-
-#B46617
-
-#FFBAOO
-
-putih F1FFF3
- */
 export default function ProfileContent({ user }: Props) {
   const [activeTab, setActiveTab] = useState<'activities' | 'overview'>('overview');
 
   return (
-    <div className="min-h-screen bg-[#BBE8C3] min-w-10xl ">
+    <div className="min-h-screen bg-mintPastel min-w-10xl ">
       <h1 className="py-5 not-last:mx-auto text-center font-bold text-2xl ">
         Profil
       </h1>
@@ -57,7 +47,7 @@ export default function ProfileContent({ user }: Props) {
           </button>
 
             <SignOutButton>
-            <button className="mt-2 bg-[#B46617] hover:bg-[#A05A14] px-4 py-1 rounded-3xl font-bold text-white text-sm transition-colors">
+            <button className="mt-2 bg-greenDark/90 hover:bg-greenDark px-4 py-1 rounded-3xl font-bold text-white text-sm transition-colors">
               Keluar
             </button>
           </SignOutButton>
@@ -79,13 +69,13 @@ export default function ProfileContent({ user }: Props) {
             </p>
           </div>
 
-          <div className=" font-bold text-center text-[22px] md:text-[26px] pl-12 max-w-65 md:max-w-full">
+          <div className=" font-extrabold text-center text-[22px] md:text-[26px] pl-12 max-w-65 md:max-w-full">
             <p className='font-extrabold text-[#FFBA00] text-[23px] md:text-[28px]  '>
                 Selamat!
             </p>
 
             Kamu Termasuk {" "}
-            <span className='font-extrabold text-[#FFBA00] text-[26px] md:text-[30px]'> 
+            <span className='font-extrabold text-yellowAmber text-[26px] md:text-[30px]'> 
                  Top 100 
             </span> 
             <br />
