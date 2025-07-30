@@ -27,12 +27,12 @@ const { loading : provinceRankLoading, error : provinceRankError, updated } = us
         setError(null)
 
         const [usersResponse, provincesResponse] = await Promise.all([
-          fetch('/api/leaderboard?type=users'),
-          fetch('/api/leaderboard?type=provinces')
+          fetch('/api/users'),
+          fetch('/api/provinces')
         ])
 
         if (!usersResponse.ok || !provincesResponse.ok) {
-          throw new Error('Failed to fetch leaderboard data')
+          throw new Error('Failed to fetch data')
         }
 
         const [usersData, provincesData] = await Promise.all([
@@ -43,7 +43,6 @@ const { loading : provinceRankLoading, error : provinceRankError, updated } = us
         setUsersData(usersData.data || [])
         setProvincesData(provincesData.data || [])
       } catch (error) {
-        console.error('Failed to fetch leaderboard data:', error)
         setError(error instanceof Error ? error.message : 'Failed to fetch data')
       } finally {
         setLoading(false)
@@ -55,33 +54,49 @@ const { loading : provinceRankLoading, error : provinceRankError, updated } = us
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="w-6 h-6 text-yellow-500" />
+        return <Trophy className="w-6 h-6 text-whiteMint" />
       case 2:
         return <Medal className="w-6 h-6 text-gray-400" />
       case 3:
         return <Award className="w-6 h-6 text-orange-500" />
       default:
-        return <span className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center text-sm font-bold">{rank}</span>
+        return <span className="w-6 h-6 bg-whiteMint rounded-full flex items-center justify-center text-sm font-bold">{rank}</span>
+    }
+  }
+
+  const formatPoints = (points: number) => {
+    if (points >= 1000000) {
+      return (points / 1000000).toFixed(points % 1000000 === 0 ? 0 : 1) + 'M'
+    } else if (points >= 1000) {
+      return (points / 1000).toFixed(points % 1000 === 0 ? 0 : 1) + 'k'
+    } else {
+      return points.toString()
     }
   }
 
   const getFilteredUsers = () => {
-    if (!searchQuery.trim()) {
-      return usersData.slice(0, 10)
+    const sortedUsers = usersData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+
+    if (searchQuery.trim()) {
+      return sortedUsers.filter(user =>
+        (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    } else {
+      return sortedUsers.slice(0, 10)
     }
-    return usersData.filter(user =>
-      (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
-    )
   }
 
   const getFilteredProvinces = () => {
-    if (!searchQuery.trim()) {
-      return provincesData.slice(0, 10)
+    const sortedProvinces = provincesData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+
+    if (searchQuery.trim()) {
+      return sortedProvinces.filter(province =>
+        (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    } else {
+      return sortedProvinces.slice(0, 10)
     }
-    return provincesData.filter(province =>
-      (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
-    )
   }
 
   return (
@@ -163,7 +178,7 @@ const { loading : provinceRankLoading, error : provinceRankError, updated } = us
             getFilteredUsers().map((user, index) => (
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
-                className="bg-greenDark rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer"
+                className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
                 onClick={() => {/* Navigate to user profile */}}
               >
                 <div className="flex items-center space-x-4">
@@ -185,12 +200,12 @@ const { loading : provinceRankLoading, error : provinceRankError, updated } = us
 
                   <div className="flex-1">
                     <h3 className="font-bold text-lg text-whiteMint">{user.full_name || 'Unknown User'}</h3>
-                    <p className="text-sm text-mintPastel italic">{user.province || 'Unknown Province'}</p>
+                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{user.province || 'Unknown Province'}</p>
                   </div>
 
                   <div className="text-right">
                     <div className="text-center text-2xl font-bold text-yellowGold">
-                      {user.points ? user.points : '0'}
+                      {formatPoints(user.points || 0)}
                     </div>
                     <div className="text-center text-sm text-whiteMint">poin</div>
                   </div>
@@ -225,26 +240,24 @@ const { loading : provinceRankLoading, error : provinceRankError, updated } = us
             getFilteredProvinces().map((province: any, index: number) => (
               <div
                 key={province.id || province.province || index}
-                className="bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
+                className={`${province.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
+                onClick={() => {/* Navigate to province details */}}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">
                     {getRankIcon(province.rank)}
                   </div>
 
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-blue-600" />
-                  </div>
-
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg">{province.province}</h3>
-                    <p className="text-gray-600">{province.total_users} peserta</p>
-                    <p className="text-sm text-gray-500">{province.total_activities} aktivitas</p>
+                    <h3 className="font-bold text-lg text-whiteMint">{province.province}</h3>
+                    <p className={`${province.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{formatPoints(province.total_users || 0)} peserta • {formatPoints(province.total_activities || 0)} aktivitas</p>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">{province.total_points}</div>
-                    <div className="text-sm text-gray-600">Poin</div>
+                    <div className="text-center text-2xl font-bold text-yellowGold">
+                      {formatPoints(province.total_points || 0)}
+                    </div>
+                    <div className="text-center text-sm text-whiteMint">poin</div>
                   </div>
                 </div>
               </div>
