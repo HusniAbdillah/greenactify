@@ -56,12 +56,10 @@ const PeringkatPage = () => {
     }
   }
 
-  // Filter and limit data based on search query
   const getFilteredUsers = () => {
     if (!searchQuery.trim()) {
-      return usersData.slice(0, 10) // Limit to 10 when no search
+      return usersData.slice(0, 10)
     }
-    // When searching, return all matching results (no limit)
     return usersData.filter(user =>
       (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -70,9 +68,8 @@ const PeringkatPage = () => {
 
   const getFilteredProvinces = () => {
     if (!searchQuery.trim()) {
-      return provincesData.slice(0, 10) // Limit to 10 when no search
+      return provincesData.slice(0, 10)
     }
-    // When searching, return all matching results (no limit)
     return provincesData.filter(province =>
       (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -81,7 +78,7 @@ const PeringkatPage = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg p-6">
+      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-2">Papan Peringkat</h1>
         <p>Lihat pencapaian komunitas GreenActify</p>
       </div>
@@ -94,12 +91,12 @@ const PeringkatPage = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex bg-gray-100 rounded-lg p-1">
+      <div className="flex bg-mintPastel border-greenDark border-2 rounded-full p-1 ">
         <button
-          className={`flex-1 py-3 px-4 rounded-md font-semibold transition-colors ${
+          className={`flex-1 py-3 px-4 rounded-full font-semibold transition-colors ${
             activeTab === 'users'
-              ? 'bg-white text-green-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-800'
+              ? 'bg-greenDark text-whiteMint shadow-sm'
+              : 'text-greenDark hover:text-tealLight active:text-tealLight'
           }`}
           onClick={() => setActiveTab('users')}
         >
@@ -107,10 +104,10 @@ const PeringkatPage = () => {
           Pengguna
         </button>
         <button
-          className={`flex-1 py-3 px-4 rounded-md font-semibold transition-colors ${
+          className={`flex-1 py-3 px-4 rounded-full font-semibold transition-colors ${
             activeTab === 'provinces'
-              ? 'bg-white text-green-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-800'
+              ? 'bg-greenDark text-whiteMint shadow-sm'
+              : 'text-greenDark hover:text-tealLight active:text-tealLight'
           }`}
           onClick={() => setActiveTab('provinces')}
         >
@@ -126,8 +123,8 @@ const PeringkatPage = () => {
         </div>
         <input
           type="text"
-          placeholder={activeTab === 'users' ? 'Cari pengguna atau provinsi...' : 'Cari provinsi...'}
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
+          placeholder={activeTab === 'users' ? 'Cari penggguna...' : 'Cari provinsi...'}
+          className="block w-full pl-10 pr-3 py-4 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-tealLight sm:text-sm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -157,7 +154,7 @@ const PeringkatPage = () => {
             getFilteredUsers().map((user, index) => (
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
-                className="bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
+                className="bg-greenDark rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer"
                 onClick={() => {/* Navigate to user profile */}}
               >
                 <div className="flex items-center space-x-4">
@@ -165,7 +162,7 @@ const PeringkatPage = () => {
                     {getRankIcon(user.rank)}
                   </div>
 
-                  <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
+                  <div className="hidden sm:block w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
                     {user.avatar_url ? (
                       <img
                         src={user.avatar_url}
@@ -178,15 +175,15 @@ const PeringkatPage = () => {
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg">{user.full_name || 'Unknown User'}</h3>
-                    <p className="text-sm text-gray-500">{user.province || 'Unknown Province'}</p>
+                    <h3 className="font-bold text-lg text-whiteMint">{user.full_name || 'Unknown User'}</h3>
+                    <p className="text-sm text-mintPastel italic">{user.province || 'Unknown Province'}</p>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-center text-2xl font-bold text-yellowGold">
                       {user.points ? user.points : '0'}
                     </div>
-                    <div className="text-sm text-gray-600">poin</div>
+                    <div className="text-center text-sm text-whiteMint">poin</div>
                   </div>
                 </div>
               </div>
