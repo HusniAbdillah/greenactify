@@ -360,3 +360,34 @@ export const useRecalculateProvinceRanks = () => {
   return { loading, error, updated };
 };
 
+
+
+
+export function useReassignRank(autoRun = false) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{
+    success?: boolean;
+    updated?: number;
+    failed?: number;
+    error?: string;
+  } | null>(null);
+
+  const run = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/recalculate/user-rank');
+      const json = await res.json();
+      setResult(json);
+    } catch (err) {
+      setResult({ success: false, error: 'Gagal fetch API' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (autoRun) run();
+  }, [autoRun]);
+
+  return { run, loading, result };
+}

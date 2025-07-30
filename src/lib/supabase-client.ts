@@ -399,3 +399,33 @@ export const recalculateProvinceRanks = async () => {
 
   return { success: true, updated: success, failed };
 };
+
+
+export const reassignProfileRanks = async () => {
+  const { data: profiles, error } = await supabase
+    .from('profiles')
+    .select('id, points, created_at')
+    .order('points', { ascending: false })
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('❌ Gagal ambil data:', error);
+    return { success: false, error: error.message };
+  }
+
+  const updates = profiles.map((profile, i) => ({
+    id: profile.id,
+    rank: i + 1
+  }));
+
+  const results = await Promise.allSettled(
+    updates.map(update =>
+      supabase.from('profiles').update({ rank: update.rank }).eq('id', update.id)
+    )
+  );
+
+  const updated = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+
+  return { success: true, updated, failed };
+};

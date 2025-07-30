@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
-import { useRefreshProvinceStats, useRecalculateProvinceRanks, useRecalculatePoints } from '@/hooks/useSupabase';
+import { useRefreshProvinceStats, useRecalculateProvinceRanks, useRecalculatePoints, useReassignRank} from '@/hooks/useSupabase';
 const PeringkatPage = () => {
   const [usersData, setUsersData] = useState<any[]>([])
   const [provincesData, setProvincesData] = useState<any[]>([])
@@ -18,8 +18,11 @@ const PeringkatPage = () => {
   
   const {
   loading: provinceLoading,
-} = useRefreshProvinceStats();
-const { loading : provinceRankLoading, error : provinceRankError, updated } = useRecalculateProvinceRanks();
+  } = useRefreshProvinceStats();
+  const { loading : provinceRankLoading, error : provinceRankError, updated } = useRecalculateProvinceRanks();
+  const { loading: userRankLoading, result } = useReassignRank(true); 
+
+
   React.useEffect(() => {
     const fetchData = async () => {
       try {
