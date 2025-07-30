@@ -56,23 +56,39 @@ const PeringkatPage = () => {
     }
   }
 
-  const getFilteredUsers = () => {
-    if (!searchQuery.trim()) {
-      return usersData.slice(0, 10)
+  const formatPoints = (points: number) => {
+    if (points >= 1000000) {
+      return (points / 1000000).toFixed(points % 1000000 === 0 ? 0 : 1) + 'M'
+    } else if (points >= 1000) {
+      return (points / 1000).toFixed(points % 1000 === 0 ? 0 : 1) + 'k'
+    } else {
+      return points.toString()
     }
-    return usersData.filter(user =>
-      (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
-    )
+  }
+
+  const getFilteredUsers = () => {
+    const sortedUsers = usersData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+
+    if (searchQuery.trim()) {
+      return sortedUsers.filter(user =>
+        (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    } else {
+      return sortedUsers.slice(0, 10)
+    }
   }
 
   const getFilteredProvinces = () => {
-    if (!searchQuery.trim()) {
-      return provincesData.slice(0, 10)
+    const sortedProvinces = provincesData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+
+    if (searchQuery.trim()) {
+      return sortedProvinces.filter(province =>
+        (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    } else {
+      return sortedProvinces.slice(0, 10)
     }
-    return provincesData.filter(province =>
-      (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
-    )
   }
 
   return (
@@ -181,7 +197,7 @@ const PeringkatPage = () => {
 
                   <div className="text-right">
                     <div className="text-center text-2xl font-bold text-yellowGold">
-                      {user.points ? user.points : '0'}
+                      {formatPoints(user.points || 0)}
                     </div>
                     <div className="text-center text-sm text-whiteMint">poin</div>
                   </div>
@@ -234,7 +250,7 @@ const PeringkatPage = () => {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">{province.total_points}</div>
+                    <div className="text-2xl font-bold text-green-600">{formatPoints(province.total_points || 0)}</div>
                     <div className="text-sm text-gray-600">Poin</div>
                   </div>
                 </div>
