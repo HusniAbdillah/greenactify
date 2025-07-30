@@ -107,27 +107,27 @@ const PeringkatPage = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex bg-mintPastel border-greenDark border-2 rounded-full p-1 ">
+      <div className="flex bg-mintPastel border-greenDark border-2 rounded-full p-1 w-full md:w-fit md:mx-auto">
         <button
-          className={`flex-1 py-3 px-4 rounded-full font-semibold transition-colors ${
+          className={`flex-1 md:flex-none py-3 px-4 md:py-2 md:px-4 md:text-sm rounded-full font-semibold transition-colors ${
             activeTab === 'users'
               ? 'bg-greenDark text-whiteMint shadow-sm'
               : 'text-greenDark hover:text-tealLight active:text-tealLight'
           }`}
           onClick={() => setActiveTab('users')}
         >
-          <Users className="w-5 h-5 inline mr-2" />
+          <Users className="w-5 h-5 md:w-4 md:h-4 inline mr-2" />
           Pengguna
         </button>
         <button
-          className={`flex-1 py-3 px-4 rounded-full font-semibold transition-colors ${
+          className={`flex-1 md:flex-none py-3 px-4 md:py-2 md:px-4 md:text-sm rounded-full font-semibold transition-colors ${
             activeTab === 'provinces'
               ? 'bg-greenDark text-whiteMint shadow-sm'
               : 'text-greenDark hover:text-tealLight active:text-tealLight'
           }`}
           onClick={() => setActiveTab('provinces')}
         >
-          <MapPin className="w-5 h-5 inline mr-2" />
+          <MapPin className="w-5 h-5 md:w-4 md:h-4 inline mr-2" />
           Provinsi
         </button>
       </div>
