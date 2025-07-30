@@ -1,5 +1,5 @@
 import { currentUser } from '@clerk/nextjs/server';
-import { supabaseAdmin } from './supabase-admin'; 
+import { supabaseAdmin } from './supabase-admin';
 
 export const checkUser = async () => {
   try {
@@ -9,7 +9,7 @@ export const checkUser = async () => {
     // 1. Cek apakah profil sudah ada
     const { data: existing, error } = await supabaseAdmin
       .from('profiles')
-      .select('*') // Ambil semua kolom
+      .select('*')
       .eq('clerk_id', user.id)
       .single();
 
@@ -17,7 +17,29 @@ export const checkUser = async () => {
       throw new Error(`Supabase error: ${error.message}`);
     }
 
-    if (existing) return existing;
+    if (existing) {
+      // 1a. Update avatar_url dan username jika user sudah ada
+      const updates: Partial<{ avatar_url: string; username: string }> = {};
+      if (existing.avatar_url !== user.imageUrl) {
+        updates.avatar_url = user.imageUrl;
+      }
+      if (existing.username !== user.username && user.username) {
+        updates.username = user.username;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        const { error: updateError } = await supabaseAdmin
+          .from('profiles')
+          .update(updates)
+          .eq('clerk_id', user.id);
+
+        if (updateError) {
+          console.error('❌ Gagal update profil:', updateError.message);
+        }
+      }
+
+      return { ...existing, ...updates };
+    }
 
     // 2. Buat profil baru jika belum ada
     const { data: newProfile, error: insertError } = await supabaseAdmin
