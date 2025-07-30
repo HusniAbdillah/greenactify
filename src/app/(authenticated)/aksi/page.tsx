@@ -1,11 +1,18 @@
 // app/(authenticated)/aksi/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UploadStep from '@/components/aksi/1-UploadStep';
 import SelectActivityStep from '@/components/aksi/2-SelectActivityStep';
 import LocationPopup from '@/components/aksi/3-LocationPopup';
 import ResultStep from '@/components/aksi/4-ResultStep';
+import { uploadImage } from '@/lib/upload-image';
+import type { ActivityCategory } from '@/components/aksi/2-SelectActivityStep'; // atau definisikan sendiri
+import { useUser } from '@/hooks/useUser';
+import { createActivity } from '@/lib/create-activity'
+import { updateUserPoints } from '@/lib/update-user-points'
+import { updateProvinceStats } from '@/lib/update-province.stats'
+import { getProfileIdByClerkId } from '@/lib/get-profile-front';
 
 type FlowStep = 'UPLOADING' | 'SELECTING_ACTIVITY' | 'SHOWING_RESULT';
 
@@ -13,17 +20,37 @@ export default function AksiPage() {
   const [currentStep, setCurrentStep] = useState<FlowStep>('UPLOADING');
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [selectedActivity, setSelectedActivity] = useState<string>('');
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<ActivityCategory | null>(null);
   const [confirmedLocation, setConfirmedLocation] = useState<string>('');
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string>('');
 
   const [isLocationPopupOpen, setIsLocationPopupOpen] = useState(false);
 
-  const handleFileSelect = (file: File) => {
-    setUploadedFile(file);
-    setCurrentStep('SELECTING_ACTIVITY');
+  const { user } = useUser();
+  const [profileId, setProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.id) {
+      getProfileIdByClerkId(user.id).then(setProfileId);
+    }
+  }, [user?.id]);
+
+  const handleFileSelect = async (file: File) => {
+    // Buat path unik, misal pakai timestamp
+    const path = `user-uploads/${Date.now()}-${file.name}`;
+    try {
+      const url = await uploadImage(file, path);
+      setUploadedImageUrl(url);
+      setUploadedFile(file);
+      setCurrentStep('SELECTING_ACTIVITY');
+      // Lanjut ke step berikutnya atau simpan ke database
+    } catch (err) {
+      alert('Gagal upload gambar');
+    }
   };
 
-  const handleActivitySelect = (activity: string) => {
+  const handleActivitySelect = (activity: ActivityCategory) => {
     setSelectedActivity(activity);
     setIsLocationPopupOpen(true);
   };
@@ -35,11 +62,39 @@ export default function AksiPage() {
   };
 
 
-  const handleFinish = () => {
-    setCurrentStep('UPLOADING');
-    setUploadedFile(null);
-    setSelectedActivity('');
-    setConfirmedLocation('');
+  const handleFinish = async () => {
+    try {
+      if (!profileId || !selectedActivity || !uploadedImageUrl || !confirmedLocation) {
+        alert('Data belum lengkap!');
+        return;
+      }
+
+      await createActivity({
+        user_id: profileId, // <-- gunakan UUID dari profiles
+        category_id: selectedActivity.id,
+        title: selectedActivity.name,
+        points: selectedActivity.base_points,
+        image_url: uploadedImageUrl,
+        generated_image_url: generatedImageUrl,
+        latitude: 0,
+        longitude: 0,
+        province: confirmedLocation,
+        city: '',
+        is_shared: false
+      });
+
+      await updateUserPoints(profileId, selectedActivity.base_points);
+      await updateProvinceStats(confirmedLocation, selectedActivity.base_points);
+
+      // Reset state
+      setCurrentStep('UPLOADING');
+      setUploadedFile(null);
+      setUploadedImageUrl(null);
+      setSelectedActivity(null);
+      setConfirmedLocation('');
+    } catch (err: any) {
+      alert(err.message || JSON.stringify(err));
+    }
   };
 
   const handleBackToUpload = () => {
@@ -57,7 +112,6 @@ export default function AksiPage() {
 
       {currentStep === 'SELECTING_ACTIVITY' && uploadedFile && (
         <SelectActivityStep
-          imagePreviewUrl={URL.createObjectURL(uploadedFile)}
           onActivitySelect={handleActivitySelect}
           onBack={handleBackToUpload}
         />
@@ -69,15 +123,17 @@ export default function AksiPage() {
         onConfirm={handleLocationConfirm}
       />
 
-      {currentStep === 'SHOWING_RESULT' && uploadedFile && (
+      {currentStep === 'SHOWING_RESULT' && uploadedFile && selectedActivity && (
         <ResultStep
           imageData={{
             file: uploadedFile,
             activity: selectedActivity,
             location: confirmedLocation,
-            points: 150, // Poin bisa didapat dari logika lain
+            points: selectedActivity.base_points,
+            username: user?.username || user?.fullName || user?.firstName || ''
           }}
           onFinish={handleFinish}
+          onGeneratedImageReady={setGeneratedImageUrl}
         />
       )}
     </div>
