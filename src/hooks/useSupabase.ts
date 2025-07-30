@@ -223,27 +223,89 @@ export function useActivities() {
   return { activities, loading, error, refetch: fetchActivities } 
 }
 
+interface UserProfile {
+  id: string; // uuid
+  email: string;
+  full_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  points: number | null;
+  level: number | null;
+  province: string | null;
+  city: string | null;
+  bio: string | null;
+  last_activity_upload: string | null;
+  total_activities: number | null;
+  created_at: string | null;
+  updated_at: string | null; 
+  clerk_id: string | null;
+  pinned_post: string[] | null; 
+  rank: number | null;
+}
 
-export async function handleDeleteActivity(activityId: string): Promise<void> {
-  const confirmed = confirm("Yakin ingin menghapus aktivitas ini?");
-  if (!confirmed) return;
+export function useProfiles() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch('/api/profile');
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: 'Gagal mengambil data profil' }));
+        throw new Error(errorData.error || errorData.message || 'Gagal mengambil data profil');
+      }
+
+      const data: UserProfile = await res.json();
+      setProfile(data);
+    } catch (err) {
+      console.error("Error in useProfile hook:", err);
+      setError(err instanceof Error ? err : new Error('Terjadi kesalahan tidak dikenal saat mengambil profil.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  return { profile, loading, error, refetchProfile: fetchUserProfile };
+}
+
+
+
+
+export const handleDeleteActivity = async (activityId: string): Promise<boolean> => {
   try {
-    const res = await fetch(`/api//activities/delete/${activityId}`, {
-      method: "DELETE",
+    // Constructing the URL with the ID as a path segment
+    const res = await fetch(`/api/activities/delete/${activityId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Gagal menghapus aktivitas");
+      const errorData = await res.json();
+      console.error('Failed to delete activity:', errorData.error);
+      return false;
     }
 
+    const data = await res.json();
+    console.log(data.message);
+    window.location.reload();
+    return true;
 
-    window.location.reload(); 
-  } catch (err: any) {
-    alert("Gagal menghapus: " + err.message);
+  } catch (error) {
+    console.error('Error deleting activity:', error);
+    return false;
   }
-}
+};
 
 export async function handleUpdateActivity(
   id: string,
@@ -391,3 +453,5 @@ export function useReassignRank(autoRun = false) {
 
   return { run, loading, result };
 }
+
+

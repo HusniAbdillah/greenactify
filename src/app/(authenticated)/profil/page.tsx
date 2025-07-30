@@ -13,5 +13,5 @@ export default async function Page() {
       }
     : null;
 
-  return <ProfileContent user={plainUser} />;
+  return <ProfileContent user1={plainUser} />;
 }

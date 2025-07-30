@@ -58,7 +58,7 @@ export const getProfileByUserId = async (userId: string): Promise<Profile | null
   console.log('🔍 Fetching profile for userId:', userId)
   
   if (!userId) {
-    console.warn('❌ No userId provided')
+    console.warn(' No userId provided')
     return null
   }
 
@@ -80,7 +80,7 @@ export const getProfileByUserId = async (userId: string): Promise<Profile | null
     })
 
     if (error) {
-      console.error('❌ Profile query detailed error:', {
+      console.error(' Profile query detailed error:', {
         message: error.message || 'No message',
         details: error.details || 'No details',
         hint: error.hint || 'No hint',
@@ -90,10 +90,10 @@ export const getProfileByUserId = async (userId: string): Promise<Profile | null
       return null
     }
 
-    console.log('✅ Profile fetch successful:', data)
+    console.log(' Profile fetch successful:', data)
     return data
   } catch (err) {
-    console.error('❌ Profile query exception:', err)
+    console.error(' Profile query exception:', err)
     return null
   }
 }
@@ -242,8 +242,21 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
   return data
 }
 
+export const getProfileByProfileId = async (profileId: string): Promise<any | null> => {
+  const { data, error } = await supabase
+    .from('profiles') 
+    .select('*')
+    .eq('id', profileId); 
+
+  if (error) {
+    console.error('Error fetching profile:', error);
+    return null;
+  }
+
+  return data.length > 0 ? data[0] : null;
+};
+
 export const recalculateAllUserPoints = async () => {
-  // 1. Ambil semua aktivitas yang disetujui
   const { data: activities, error } = await supabase
     .from('activities')
     .select('user_id, points')
@@ -428,4 +441,103 @@ export const reassignProfileRanks = async () => {
   const failed = results.filter(r => r.status === 'rejected').length;
 
   return { success: true, updated, failed };
+};
+
+
+
+
+export const getActivityDetailsForDeletion = async (activityId: string): Promise<{ user_id: string; points: number } | null> => {
+  const { data, error } = await supabase
+    .from('activities')
+    .select('user_id, points')
+    .eq('id', activityId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching activity details for deletion:', error);
+    return null;
+  }
+  
+  if (!data) {
+    return null;
+  }
+
+  if ('user_id' in data && 'points' in data) {
+    return { user_id: data.user_id, points: data.points };
+  }
+  return null;
+};
+
+export const decrementUserPoints = async (profileId: string, pointsToDecrement: number): Promise<boolean> => {
+  const { data: currentProfile, error: fetchError } = await supabase
+    .from('profiles')
+    .select('points')
+    .eq('id', profileId)
+    .single();
+
+  if (fetchError || !currentProfile) {
+    console.error('Error fetching current user points:', fetchError);
+    return false;
+  }
+
+  const newPoints = Math.max(0, (currentProfile.points || 0) - pointsToDecrement);
+
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ points: newPoints })
+    .eq('id', profileId);
+
+  if (updateError) {
+    console.error('Error decrementing user points:', updateError);
+    return false;
+  }
+  return true;
+};
+
+export const deleteActivityAndDecrementPoints = async (activityId: string): Promise<boolean> => {
+  const activityDetails = await getActivityDetailsForDeletion(activityId);
+
+  if (!activityDetails) {
+    console.warn(`Activity with ID ${activityId} not found or details incomplete.`);
+    return false;
+  }
+
+  const { error: deleteError } = await supabase
+    .from('activities')
+    .delete()
+    .eq('id', activityId);
+
+  if (deleteError) {
+    console.error('Error deleting activity:', deleteError);
+    return false;
+  }
+
+  const successDecrement = await decrementUserPoints(activityDetails.user_id, activityDetails.points);
+  
+  if (!successDecrement) {
+    console.error('Failed to decrement user points after activity deletion.');
+  }
+
+  return true;
+};
+
+
+export const updateProfile = async ({
+  full_name,
+  username,
+  province,
+  clerk_id,
+}: {
+  full_name: string;
+  username: string;
+  province: string;
+  clerk_id: string;
+}) => {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ full_name, username, province })
+    .eq('clerk_id', clerk_id);
+    
+
+  return { error };
 };

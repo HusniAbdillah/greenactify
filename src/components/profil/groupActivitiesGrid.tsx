@@ -28,7 +28,7 @@ export default function GroupActivityGrid() {
     return (
       <div className="flex items-center justify-center p-6 bg-red-50 rounded-lg shadow-md border border-red-200 text-red-700 font-medium">
         <AlertCircle className="h-6 w-6 mr-3 text-red-500" />
-        <span>Gagal memuat aktivitas: {error.message}</span>
+        <span>Gagal memuat aktivitas: {error.message}, Tolong Refresh halaman </span>
       </div>
     );
 
@@ -144,11 +144,11 @@ export default function GroupActivityGrid() {
           <h3 className="mb-1 text-base font-semibold text-green-800 text-center">
             {activity.label}
           </h3>
-          <p className="mb-4 text-xs text-green-700 text-center leading-relaxed flex-grow overflow-y-auto">
+          <p className="mb-4 sm:text-sm text-[9px]   text-green-700 text-center leading-relaxed flex-grow overflow-y-auto">
             {activity.description}
           </p>
           <div className="mt-auto flex flex-col items-center">
-            <span className="text-3xl font-extrabold text-green-800 leading-none">
+            <span className="text-xl  sm:text-3xl font-extrabold text-green-800 leading-none">
               {activity.count}
             </span>
             <span className="block text-sm font-medium text-green-600 mt-1">Aktivitas</span>
