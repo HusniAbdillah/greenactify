@@ -46,13 +46,13 @@ const PeringkatPage = () => {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="w-6 h-6 text-yellow-500" />
+        return <Trophy className="w-6 h-6 text-whiteMint" />
       case 2:
         return <Medal className="w-6 h-6 text-gray-400" />
       case 3:
         return <Award className="w-6 h-6 text-orange-500" />
       default:
-        return <span className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center text-sm font-bold">{rank}</span>
+        return <span className="w-6 h-6 bg-whiteMint rounded-full flex items-center justify-center text-sm font-bold">{rank}</span>
     }
   }
 
@@ -170,7 +170,7 @@ const PeringkatPage = () => {
             getFilteredUsers().map((user, index) => (
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
-                className="bg-greenDark rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer"
+                className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
                 onClick={() => {/* Navigate to user profile */}}
               >
                 <div className="flex items-center space-x-4">
@@ -192,7 +192,7 @@ const PeringkatPage = () => {
 
                   <div className="flex-1">
                     <h3 className="font-bold text-lg text-whiteMint">{user.full_name || 'Unknown User'}</h3>
-                    <p className="text-sm text-mintPastel italic">{user.province || 'Unknown Province'}</p>
+                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{user.province || 'Unknown Province'}</p>
                   </div>
 
                   <div className="text-right">
@@ -232,26 +232,24 @@ const PeringkatPage = () => {
             getFilteredProvinces().map((province: any, index: number) => (
               <div
                 key={province.id || province.province || index}
-                className="bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
+                className={`${province.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
+                onClick={() => {/* Navigate to province details */}}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">
                     {getRankIcon(province.rank)}
                   </div>
 
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-blue-600" />
-                  </div>
-
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg">{province.province}</h3>
-                    <p className="text-gray-600">{province.total_users} peserta</p>
-                    <p className="text-sm text-gray-500">{province.total_activities} aktivitas</p>
+                    <h3 className="font-bold text-lg text-whiteMint">{province.province}</h3>
+                    <p className={`${province.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{formatPoints(province.total_users || 0)} peserta • {formatPoints(province.total_activities || 0)} aktivitas</p>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">{formatPoints(province.total_points || 0)}</div>
-                    <div className="text-sm text-gray-600">Poin</div>
+                    <div className="text-center text-2xl font-bold text-yellowGold">
+                      {formatPoints(province.total_points || 0)}
+                    </div>
+                    <div className="text-center text-sm text-whiteMint">poin</div>
                   </div>
                 </div>
               </div>
