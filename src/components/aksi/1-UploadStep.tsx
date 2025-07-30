@@ -35,12 +35,6 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
         <p className="text-gray-500">Klik di sini untuk memilih foto</p>
         <p className="text-sm text-gray-400 mt-2">atau seret dan lepas gambar</p>
       </div>
-      <p className="my-4 text-gray-600 font-semibold">Atau Pilih Kategori</p>
-       {/* Di sini bisa ditambahkan tombol-tombol kategori jika perlu */}
-       <div className="flex gap-4">
-          <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Menanam Pohon</button>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Hemat Air</button>
-       </div>
     </div>
   );
 }

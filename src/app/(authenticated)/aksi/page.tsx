@@ -86,13 +86,14 @@ export default function AksiPage() {
       generatedImageUrl
     });
     try {
-      if (!profileId || !selectedActivity || !uploadedImageUrl || !confirmedLocation) {
+      if (!profileId || !selectedActivity || !uploadedImageUrl || !confirmedLocation || !generatedImageUrl) {
         alert('Data belum lengkap!');
         return;
       }
 
-      await createActivity({
-        user_id: profileId, // <-- gunakan UUID dari profiles
+      // 1. Simpan aktivitas
+      const activity = await createActivity({
+        user_id: profileId,
         category_id: selectedActivity.id,
         title: selectedActivity.name,
         points: selectedActivity.base_points,
@@ -105,7 +106,11 @@ export default function AksiPage() {
         is_shared: false
       });
 
+      // 2. Update poin user
+      console.log('Update user points:', { user_id: profileId, base_points: selectedActivity.base_points });
       await updateUserPoints(profileId, selectedActivity.base_points);
+
+      // 3. Update statistik provinsi
       await updateProvinceStats(confirmedLocation, selectedActivity.base_points);
 
       // Reset state
@@ -114,6 +119,7 @@ export default function AksiPage() {
       setUploadedImageUrl(null);
       setSelectedActivity(null);
       setConfirmedLocation('');
+      setGeneratedImageUrl('');
     } catch (err: any) {
       alert(err.message || JSON.stringify(err));
     }
