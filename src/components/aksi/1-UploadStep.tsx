@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useRef, useState } from 'react';
-import { UploadCloud, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { useRef, useState } from "react";
+import { UploadCloud, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 interface UploadStepProps {
   onFileSelect: (file: File) => void;
@@ -11,57 +11,66 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      setUploadStatus('idle');
-      try {
-        await new Promise(res => setTimeout(res, 1200));
-        onFileSelect(file);
-        setIsUploading(false);
-        setUploadStatus('success');
-      } catch {
-        setIsUploading(false);
-        setUploadStatus('error');
-      }
+  const resetStatus = () => {
+    setIsUploading(false);
+    setUploadStatus("idle");
+  };
+
+  const processFile = async (file: File | undefined) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Hanya file gambar yang diizinkan!");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadStatus("idle");
+    try {
+      // Simulasi proses upload di parent
+      await onFileSelect(file); 
+      setUploadStatus("success");
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setUploadStatus("error");
+    } finally {
+      setIsUploading(false);
+      // Reset status setelah beberapa saat untuk memberi feedback ke user
+      setTimeout(resetStatus, 2000);
     }
   };
 
-  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    processFile(event.target.files?.[0]);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
-    const file = event.dataTransfer.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      setUploadStatus('idle');
-      try {
-        await new Promise(res => setTimeout(res, 1200));
-        onFileSelect(file);
-        setIsUploading(false);
-        setUploadStatus('success');
-      } catch {
-        setIsUploading(false);
-        setUploadStatus('error');
-      }
-    }
+    processFile(event.dataTransfer.files?.[0]);
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setIsDragging(true);
+    if (!isUploading) setIsDragging(true);
   };
   const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
   };
 
-  const handleBoxClick = () => !isUploading && fileInputRef.current?.click();
+  const handleBoxClick = () => {
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
+  };
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center w-full">
+    <div className="flex min-h-[60vh] w-full items-center justify-center">
       <div
         onClick={handleBoxClick}
         onDragOver={handleDragOver}
@@ -70,10 +79,13 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
         className={`
           flex flex-col items-center justify-center
           w-full max-w-lg p-6 md:p-10 border-2 border-dashed rounded-xl
-          bg-whiteMint
-          text-center cursor-pointer transition-colors
-          ${isDragging ? 'border-tealLight bg-mintPastel' : 'border-greenDark hover:bg-whiteGreen hover:border-tealLight'}
-          ${isUploading ? 'cursor-not-allowed' : ''}
+          bg-whiteMint text-center transition-colors
+          ${
+            isDragging
+              ? "border-tealLight bg-mintPastel"
+              : "border-greenDark hover:bg-whiteGreen hover:border-tealLight"
+          }
+          ${isUploading ? "cursor-not-allowed" : "cursor-pointer"}
         `}
       >
         <input
@@ -89,39 +101,45 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
           className={`
             w-16 h-16 mb-4 text-greenDark
             transition-all duration-300
-            ${isDragging ? 'scale-110 text-tealLight' : ''}
-            ${isUploading ? 'animate-pulse' : ''}
+            ${isDragging ? "scale-110 text-tealLight" : ""}
           `}
           strokeWidth={1.5}
         />
 
         {/* Status Upload */}
-        {isUploading && (
-          <div className="flex items-center gap-2 mb-2">
-            <Loader2 className="animate-spin text-tealLight w-5 h-5" />
-            <span className="text-tealLight text-sm">Mengunggah...</span>
-          </div>
-        )}
-        {uploadStatus === 'success' && (
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle2 className="text-greenDark w-5 h-5" />
-            <span className="text-greenDark text-sm">Unggah berhasil!</span>
-          </div>
-        )}
-        {uploadStatus === 'error' && (
-          <div className="flex items-center gap-2 mb-2">
-            <XCircle className="text-red w-5 h-5" />
-            <span className="text-red text-sm">Unggah gagal!</span>
-          </div>
-        )}
+        <div className="flex h-6 items-center justify-center mb-2">
+          {isUploading && (
+            <div className="flex items-center gap-2">
+              <Loader2 className="animate-spin text-tealLight w-5 h-5" />
+              <span className="text-tealLight text-sm">Mengunggah...</span>
+            </div>
+          )}
+          {uploadStatus === "success" && (
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="text-greenDark w-5 h-5" />
+              <span className="text-greenDark text-sm">Unggah berhasil!</span>
+            </div>
+          )}
+          {uploadStatus === "error" && (
+            <div className="flex items-center gap-2">
+              <XCircle className="text-red-500 w-5 h-5" />
+              <span className="text-red-500 text-sm">Unggah gagal!</span>
+            </div>
+          )}
+        </div>
 
         <p className="text-lg font-semibold text-greenDark">
           Seret & Lepas Foto
         </p>
         <p className="text-gray-500">atau</p>
+
+        {/* [FIX] Tambahkan e.stopPropagation() untuk mencegah event bubbling */}
         <button
           type="button"
-          onClick={handleBoxClick}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleBoxClick();
+          }}
           disabled={isUploading}
           className="mt-2 px-4 py-2 rounded-lg bg-mintPastel text-greenDark font-semibold hover:bg-tealLight disabled:bg-whiteGreen disabled:text-gray-400 disabled:cursor-not-allowed transition"
         >
