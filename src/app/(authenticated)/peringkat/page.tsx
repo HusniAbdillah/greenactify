@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useRefreshProvinceStats, useRecalculateProvinceRanks, useRecalculatePoints, useReassignRank} from '@/hooks/useSupabase';
 const PeringkatPage = () => {
   const [usersData, setUsersData] = useState<any[]>([])
@@ -10,6 +11,8 @@ const PeringkatPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
   const [searchQuery, setSearchQuery] = useState('')
+  const router = useRouter()
+
   const {
   loading: recalcLoading,
   error: recalcError
@@ -182,7 +185,7 @@ const PeringkatPage = () => {
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
                 className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
-                onClick={() => {/* Navigate to user profile */}}
+                onClick={() => router.push(`/profil/${user.id}`)}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">
