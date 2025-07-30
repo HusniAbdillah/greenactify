@@ -3,15 +3,6 @@
 import { useUser } from '@clerk/nextjs'
 import { useEffect, useState, useCallback } from 'react'
 import {
-  Profile,
-  Activity,
-  LeaderboardUser,
-  LeaderboardProvince,
-  ActivityCategory,
-  DailyChallenge,
-  UserChallenge,
-} from '@/lib/types/supabase'
-import {
   getProfileByUserId,
   getActivitiesByUserId,
   getLeaderboardUsers,
@@ -21,6 +12,16 @@ import {
   getUserChallengeProgress,
   testSupabaseConnection
 } from '@/lib/supabase-client'
+
+import {
+  Profile,
+  Activity,
+  LeaderboardUser,
+  LeaderboardProvince,
+  ActivityCategory,
+  DailyChallenge,
+  UserChallenge,
+} from '@/lib/types/supabase'
 
 export const useProfile = () => {
   const { user, isLoaded } = useUser()
@@ -129,6 +130,7 @@ export const useActivityCategories = () => {
   return { categories, loading, error }
 }
 
+
 export const useUserActivities = () => {
   const { user, isLoaded } = useUser()
   const [activities, setActivities] = useState<Activity[]>([])
@@ -178,3 +180,93 @@ export const useDailyChallenge = () => {
 
   return { challenge, progress, loading }
 }
+
+
+
+export type ActivityItem = {
+  id: string
+  title: string
+  location_name?: string
+  created_at: string
+  image_url?: string 
+  points: number
+  activity_categories: {
+    name: string
+    base_points: number
+    group_category: string
+  }
+}
+
+export function useActivities() {
+  const [activities, setActivities] = useState<ActivityItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  const fetchActivities = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/activities')
+      if (!res.ok) throw new Error('Gagal mengambil data')
+      const data = await res.json()
+      setActivities(data)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Terjadi kesalahan'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchActivities()
+  }, [])
+
+  return { activities, loading, error, refetch: fetchActivities } 
+}
+
+
+export async function handleDeleteActivity(activityId: string): Promise<void> {
+  const confirmed = confirm("Yakin ingin menghapus aktivitas ini?");
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api//activities/delete/${activityId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Gagal menghapus aktivitas");
+    }
+
+
+    window.location.reload(); 
+  } catch (err: any) {
+    alert("Gagal menghapus: " + err.message);
+  }
+}
+
+export async function handleUpdateActivity(
+  id: string,
+  title: string,
+  location_name: string,
+  image_url: string
+) {
+  try {
+    const res = await fetch('/api/activities/edit', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, title, location_name, image_url }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error || 'Gagal update aktivitas')
+    }
+
+    return true
+  } catch (err: any) {
+    alert('Gagal update: ' + err.message)
+    return false
+  }
+}
+
