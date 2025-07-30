@@ -270,3 +270,32 @@ export async function handleUpdateActivity(
   }
 }
 
+
+
+'use client';
+import { useEffect, useState } from 'react';
+
+export function useRecalculatePoints() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const callAPI = async () => {
+      try {
+        const res = await fetch('/api/recalculate-points', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Unknown error');
+        console.log('✅ Recalculated:', data);
+        setError(null);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    callAPI();
+  }, []);
+
+  return { loading, error };
+}

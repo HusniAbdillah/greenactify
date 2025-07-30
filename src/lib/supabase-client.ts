@@ -242,3 +242,45 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
   return data
 }
 
+export const recalculateAllUserPoints = async () => {
+  // 1. Ambil semua aktivitas yang disetujui
+  const { data: activities, error } = await supabase
+    .from('activities')
+    .select('user_id, points')
+    .eq('status', 'approved');
+
+  if (error) {
+    console.error('❌ Error fetching activities:', error);
+    return { success: false, error };
+  }
+
+  // 2. Hitung total poin per user
+  const pointMap: Record<string, number> = {};
+  for (const { user_id, points } of activities) {
+    pointMap[user_id] = (pointMap[user_id] || 0) + points;
+  }
+
+  // 3. Update ke `profiles` dan `leaderboard_users`
+  const updates = Object.entries(pointMap).map(async ([userId, totalPoints]) => {
+    // Update ke `profiles`
+    const profileUpdate = supabase
+      .from('profiles')
+      .update({ points: totalPoints })
+      .eq('id', userId);
+
+    // Upsert ke `leaderboard_users`
+    const leaderboardUpdate = supabase
+      .from('leaderboard_users')
+      .upsert({ user_id: userId, points: totalPoints }, { onConflict: 'user_id' });
+
+    return Promise.all([profileUpdate, leaderboardUpdate]);
+  });
+
+  const results = await Promise.allSettled(updates);
+  const updated = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+
+  return { success: true, updated, failed };
+};
+
+

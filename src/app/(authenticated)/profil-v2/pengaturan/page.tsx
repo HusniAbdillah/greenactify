@@ -30,7 +30,7 @@ export default function EditProfilePage() {
   if (!isLoaded) return <p>Loading...</p>;
 
   return (
-    <main className="max-w-md mx-auto mt-10 p-4 border rounded-xl bg-white shadow">
+    <main className="max-w-md mx-auto my-auto mt-10 p-4 border rounded-xl bg-white shadow">
       <h1 className="text-xl font-bold mb-4">Edit Profil</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
