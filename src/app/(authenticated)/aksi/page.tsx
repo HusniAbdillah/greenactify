@@ -14,8 +14,29 @@ import { updateUserPoints } from '@/lib/update-user-points'
 import { updateProvinceStats } from '@/lib/update-province.stats'
 import { getProfileIdByClerkId } from '@/lib/get-profile-front';
 import { createProfileForClerkUser } from '@/lib/create-profile';
+import { supabase } from '@/lib/supabase-client';
 
 type FlowStep = 'UPLOADING' | 'SELECTING_ACTIVITY' | 'SHOWING_RESULT';
+
+const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
+  UPLOADING: {
+    title: 'Unggah Aksi Hijaumu',
+    subtitle: 'Aksi hijau kamu mana nih? Unggah fotonya di sini!',
+  },
+  SELECTING_ACTIVITY: {
+    title: 'Pilih Jenis Aksimu',
+    subtitle: 'Kamu lagi ngapain? Pilih jenis aksinya, ya!',
+  },
+  SHOWING_RESULT: {
+    title: 'Bagikan Aksimu',
+    subtitle: 'Semangat! Sekarang tinggal bagikan biar makin menginspirasi!',
+  },
+};
+
+const getLocationStep = () => ({
+  title: 'Konfirmasi Lokasi',
+  subtitle: 'Di mana kamu melakukan aksi ini? Biar kami tahu!',
+});
 
 export default function AksiPage() {
   const [currentStep, setCurrentStep] = useState<FlowStep>('UPLOADING');
@@ -91,6 +112,20 @@ export default function AksiPage() {
         return;
       }
 
+      // 0. Update province di profiles jika belum ada
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('province')
+        .eq('id', profileId)
+        .single();
+
+      if (!profileError && (!profile?.province || profile.province === '')) {
+        await supabase
+          .from('profiles')
+          .update({ province: confirmedLocation })
+          .eq('id', profileId);
+      }
+
       // 1. Simpan aktivitas
       const activity = await createActivity({
         user_id: profileId,
@@ -107,7 +142,6 @@ export default function AksiPage() {
       });
 
       // 2. Update poin user
-      console.log('Update user points:', { user_id: profileId, base_points: selectedActivity.base_points });
       await updateUserPoints(profileId, selectedActivity.base_points);
 
       // 3. Update statistik provinsi
@@ -132,7 +166,16 @@ export default function AksiPage() {
 
   return (
     <div className="w-full p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Unggah Aktivitas Hijau Anda</h1>
+      <h1 className="text-2xl font-bold mb-2 text-gray-800 text-center">
+        {isLocationPopupOpen
+          ? getLocationStep().title
+          : stepTitles[currentStep].title}
+      </h1>
+      <p className="text-center text-gray-500 mb-6">
+        {isLocationPopupOpen
+          ? getLocationStep().subtitle
+          : stepTitles[currentStep].subtitle}
+      </p>
 
       {currentStep === 'UPLOADING' && (
         <UploadStep onFileSelect={handleFileSelect} />
@@ -149,6 +192,8 @@ export default function AksiPage() {
         isOpen={isLocationPopupOpen}
         onClose={() => setIsLocationPopupOpen(false)}
         onConfirm={handleLocationConfirm}
+        title={getLocationStep().title}
+        subtitle={getLocationStep().subtitle}
       />
 
       {currentStep === 'SHOWING_RESULT' && uploadedFile && selectedActivity && (
