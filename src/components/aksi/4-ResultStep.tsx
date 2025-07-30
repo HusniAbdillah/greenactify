@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { uploadGeneratedImage } from '@/lib/upload-generated-image';
 
-// Props Interface (tidak diubah)
+// Interface untuk props, tidak diubah
 interface ResultStepProps {
   imageData: {
     file: File;
@@ -19,96 +19,89 @@ interface ResultStepProps {
   onGeneratedImageReady?: (url: string) => void;
 }
 
-// Komponen Ikon sederhana untuk digunakan di dalam JSX
-const IconPin = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-const IconClock = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-
 // Komponen Utama
 export default function ResultStep({ imageData, onFinish, onGeneratedImageReady }: ResultStepProps) {
-  // State untuk menyimpan URL gambar yang di-generate oleh canvas
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
   
-  // Mendapatkan tanggal dan waktu saat ini untuk ditampilkan
   const now = new Date();
   const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  const formattedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' WIB';
+  const formattedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-  // useEffect untuk menggambar canvas saat komponen dimuat
   useEffect(() => {
     const originalImageUrl = URL.createObjectURL(imageData.file);
     const userImage = new window.Image();
     userImage.src = originalImageUrl;
-    userImage.crossOrigin = "anonymous"; // Penting jika gambar dari sumber lain
+    userImage.crossOrigin = "anonymous";
 
     userImage.onload = async () => {
-      // Setup canvas dengan dimensi kartu
+      // 1. Setup Canvas dengan rasio 9:16 (resolusi Story)
       const canvas = document.createElement('canvas');
-      const cardWidth = 800;
-      const cardHeight = 1200;
+      const cardWidth = 1080;
+      const cardHeight = 1920;
       canvas.width = cardWidth;
       canvas.height = cardHeight;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // 1. Gambar background utama kartu
+      // 2. Gambar background utama kartu
       ctx.fillStyle = '#0C3B2E'; // bg-greenDark
       ctx.fillRect(0, 0, cardWidth, cardHeight);
 
-      // 2. Gambar header (Logo & tagline)
+      // 3. Gambar header (Logo & tagline)
       ctx.fillStyle = '#D2E8BB'; // bg-mintPastel
-      ctx.font = 'bold 72px sans-serif';
+      ctx.font = 'bold 90px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('GrenActify', cardWidth / 2, 90);
-      ctx.font = '24px sans-serif';
-      ctx.fillText('Aksi Hijau Hari Ini, Nafas Segar Esok Hari.', cardWidth / 2, 130);
+      ctx.fillText('GrenActify', cardWidth / 2, 180);
       
-      // 3. Gambar info pengguna
+      // 4. Gambar info pengguna
       ctx.fillStyle = '#F1FFF3'; // bg-whiteMint
-      ctx.textAlign = 'left';
-      ctx.font = '32px sans-serif';
-      ctx.fillText(`@${imageData.username || 'User'}`, 50, 200);
-
-      ctx.textAlign = 'right';
-      ctx.font = 'bold 32px sans-serif';
-      ctx.fillStyle = '#FFBA00'; // bg-yellowGold
-      ctx.fillText(`${imageData.points * 100 + 4570} Poin`, cardWidth - 50, 200);
-
-      // 4. Gambar foto utama pengguna
-      const imageY = 250;
-      const imageHeight = 550;
-      // Menjaga aspect ratio gambar asli
-      const scale = Math.max(cardWidth / userImage.width, imageHeight / userImage.height);
-      const imgX = (cardWidth - userImage.width * scale) / 2;
-      const imgY = imageY + (imageHeight - userImage.height * scale) / 2;
-      ctx.drawImage(userImage, imgX, imgY, userImage.width * scale, userImage.height * scale);
-
-      // 5. Gambar footer
-      const footerY = 850;
-      ctx.textAlign = 'left';
+      ctx.font = '48px sans-serif';
+      ctx.fillText(`@${imageData.username || 'User'}`, cardWidth / 2, 260);
       
-      // Aktivitas
-      ctx.fillStyle = '#F1FFF3'; // bg-whiteMint
-      ctx.font = 'bold 64px sans-serif';
-      ctx.fillText(imageData.activity.name, 50, footerY + 60);
+      // 5. Gambar foto utama pengguna
+      const imageY = 320;
+      const imageHeight = 960; // Area tinggi untuk gambar
+      // Kalkulasi untuk memotong dan memposisikan gambar agar pas (cover)
+      const imageAspectRatio = userImage.width / userImage.height;
+      const canvasAspectRatio = cardWidth / imageHeight;
+      let drawWidth = cardWidth;
+      let drawHeight = imageHeight;
+      let imgX = 0;
+      let imgY = imageY;
 
-      // Poin
+      if (imageAspectRatio > canvasAspectRatio) {
+        drawHeight = cardWidth / imageAspectRatio;
+        imgY += (imageHeight - drawHeight) / 2;
+      } else {
+        drawWidth = imageHeight * imageAspectRatio;
+        imgX = (cardWidth - drawWidth) / 2;
+      }
+      ctx.drawImage(userImage, imgX, imgY, drawWidth, drawHeight);
+
+      // 6. Gambar bagian bawah (Aktivitas, Poin, Detail)
+      const bottomAreaY = cardHeight - 450;
+      
+      // Nama Aktivitas (kiri)
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#F1FFF3'; // bg-whiteMint
+      ctx.font = 'bold 92px sans-serif';
+      ctx.fillText(imageData.activity.name, 80, bottomAreaY + 120);
+      
+      // Poin (kanan)
       ctx.textAlign = 'right';
       ctx.fillStyle = '#FFBA00'; // bg-yellowGold
-      ctx.font = 'bold 64px sans-serif';
-      ctx.fillText(`+${imageData.points} Poin`, cardWidth - 50, footerY + 60);
-
-      // Lokasi & Waktu
-      const footerMetaY = footerY + 150;
-      ctx.textAlign = 'left';
+      ctx.fillText(`+${imageData.points}`, cardWidth - 80, bottomAreaY + 120);
+      
+      // Detail Lokasi dan Waktu (paling bawah, di tengah)
+      const detailsY = bottomAreaY + 280;
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#DFF7E2'; // bg-whiteGreen
-      ctx.font = '32px sans-serif';
-      ctx.fillText(`📍 ${imageData.location}`, 50, footerMetaY);
+      ctx.font = '42px sans-serif';
+      const detailsText = `${imageData.location} • ${formattedDate}, ${formattedTime}`;
+      ctx.fillText(detailsText, cardWidth / 2, detailsY);
       
-      ctx.textAlign = 'right';
-      ctx.fillText(`🕒 ${formattedDate}, ${formattedTime}`, cardWidth - 50, footerMetaY);
-
       // Selesai, set URL dan upload ke storage
-      const generatedDataUrl = canvas.toDataURL('image/png');
+      const generatedDataUrl = canvas.toDataURL('image/png', 0.9);
       setGeneratedUrl(generatedDataUrl);
 
       if (onGeneratedImageReady) {
@@ -123,8 +116,6 @@ export default function ResultStep({ imageData, onFinish, onGeneratedImageReady 
     };
   }, [imageData, onGeneratedImageReady, formattedDate, formattedTime]);
 
-
-  // Handler untuk download dan share (tidak diubah)
   const handleDownload = () => {
     if (!generatedUrl) return;
     const link = document.createElement('a');
@@ -156,25 +147,33 @@ export default function ResultStep({ imageData, onFinish, onGeneratedImageReady 
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md mx-auto p-4">
-      <h2 className="text-3xl font-bold text-oliveSoft mb-4 text-center">Aksi Berhasil Dicatat!</h2>
-      <p className="text-center text-gray-600 mb-6">Bagikan kartu ini untuk menginspirasi teman-temanmu.</p>
+    <div className="flex flex-col items-center w-full max-w-sm mx-auto p-4">
+      <h2 className="text-3xl font-bold text-oliveSoft mb-2 text-center">Aksi Berhasil Dicatat!</h2>
+      <p className="text-center text-gray-600 mb-6">Bagikan kartu Story ini untuk menginspirasi teman-temanmu.</p>
       
-      {/* Tampilan Kartu Preview */}
-      {generatedUrl ? (
-        <img src={generatedUrl} alt="Generated Activity Card" className="w-full rounded-2xl shadow-xl border-4 border-white" />
-      ) : (
-        <div className="w-full h-96 bg-gray-200 animate-pulse rounded-2xl flex items-center justify-center">
-          <p className="text-gray-500">Membuat kartu...</p>
-        </div>
-      )}
+      {/* Tampilan Kartu Preview dengan rasio 9:16 */}
+      <div className="w-full shadow-xl rounded-2xl overflow-hidden border-4 border-white bg-gray-200">
+        {generatedUrl ? (
+          <img src={generatedUrl} alt="Generated Activity Card" className="w-full object-contain" />
+        ) : (
+          <div className="w-full aspect-[9/16] animate-pulse flex items-center justify-center">
+            <p className="text-gray-500">Membuat kartu...</p>
+          </div>
+        )}
+      </div>
 
       {/* Tombol Aksi */}
-      <div className="flex flex-col sm:flex-row gap-4 w-full mt-8">
-        <button onClick={handleShare} className="w-full px-6 py-3 rounded-xl bg-tealLight text-white font-bold text-lg hover:opacity-90 transition-opacity">Bagikan</button>
-        <button onClick={handleDownload} className="w-full px-6 py-3 rounded-xl bg-oliveSoft text-white font-bold text-lg hover:opacity-90 transition-opacity">Unduh</button>
+      <div className="flex flex-col gap-4 w-full mt-8">
+        <button onClick={handleShare} className="w-full px-6 py-3 rounded-xl bg-tealLight text-white font-bold text-lg hover:opacity-90 transition-opacity shadow-md">
+          Bagikan
+        </button>
+        <button onClick={handleDownload} className="w-full px-6 py-3 rounded-xl bg-oliveSoft text-white font-bold text-lg hover:opacity-90 transition-opacity shadow-md">
+          Unduh Gambar
+        </button>
       </div>
-       <button onClick={onFinish} className="w-full mt-4 px-6 py-3 rounded-xl bg-yellowGold text-greenDark font-bold text-lg hover:opacity-90 transition-opacity">Selesai</button>
+       <button onClick={onFinish} className="w-full mt-4 px-6 py-3 rounded-xl bg-yellowGold text-greenDark font-bold text-lg hover:opacity-90 transition-opacity shadow-md">
+        Selesai
+       </button>
     </div>
   );
 }
