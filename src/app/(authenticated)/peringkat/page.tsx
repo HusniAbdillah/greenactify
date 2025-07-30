@@ -18,12 +18,12 @@ const PeringkatPage = () => {
         setError(null)
 
         const [usersResponse, provincesResponse] = await Promise.all([
-          fetch('/api/leaderboard?type=users'),
-          fetch('/api/leaderboard?type=provinces')
+          fetch('/api/users'),
+          fetch('/api/provinces')
         ])
 
         if (!usersResponse.ok || !provincesResponse.ok) {
-          throw new Error('Failed to fetch leaderboard data')
+          throw new Error('Failed to fetch data')
         }
 
         const [usersData, provincesData] = await Promise.all([
@@ -34,7 +34,6 @@ const PeringkatPage = () => {
         setUsersData(usersData.data || [])
         setProvincesData(provincesData.data || [])
       } catch (error) {
-        console.error('Failed to fetch leaderboard data:', error)
         setError(error instanceof Error ? error.message : 'Failed to fetch data')
       } finally {
         setLoading(false)
