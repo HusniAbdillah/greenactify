@@ -1,157 +1,264 @@
-"use client";
+'use client'
 
-import { useChat } from 'ai/react';
-import { useRef, useEffect, useState } from 'react';
-import { SendHorizonal, Bot, User, BrainCircuit } from 'lucide-react';
-import { Message } from 'ai';
+import React, { useState } from 'react'
+import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+const PeringkatPage = () => {
+  const [usersData, setUsersData] = useState<any[]>([])
+  const [provincesData, setProvincesData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
+  const [searchQuery, setSearchQuery] = useState('')
+  const router = useRouter()
 
-// Daftar lengkap semua kemungkinan prompt
-const ALL_PROMPT_RECOMMENDATIONS = [
-  "Apa itu zero waste?",
-  "Bagaimana cara membuat kompos dari sampah dapur?",
-  "Jelaskan hubungan antara jejak karbon dan perubahan iklim",
-  "Sebutkan 3 contoh aksi ramah lingkungan di kantor",
-  "Apa saja yang termasuk dalam Sustainable Development Goals (SDGs)?",
-  "Bagaimana cara mengurangi penggunaan plastik sekali pakai?",
-  "Apa manfaat menanam pohon bagi lingkungan?",
-  "Jelaskan konsep ekonomi sirkular",
-];
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-export default function ChatbotPage() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
-    api: '/api/chat',
-  });
+        const [usersResponse, provincesResponse] = await Promise.all([
+          fetch('/api/users'),
+          fetch('/api/provinces')
+        ])
 
-  const [recommendedPrompts, setRecommendedPrompts] = useState<string[]>([]);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+        if (!usersResponse.ok || !provincesResponse.ok) {
+          throw new Error('Failed to fetch data')
+        }
 
-  // Efek untuk mengacak dan memilih beberapa prompt saat komponen pertama kali dimuat
-  useEffect(() => {
-    const shuffled = [...ALL_PROMPT_RECOMMENDATIONS].sort(() => 0.5 - Math.random());
-    setRecommendedPrompts(shuffled.slice(0, 5)); // Ambil 5 prompt secara acak
-  }, []);
+        const [usersData, provincesData] = await Promise.all([
+          usersResponse.json(),
+          provincesResponse.json()
+        ])
 
-
-  // Efek untuk otomatis scroll ke pesan paling bawah
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        setUsersData(usersData.data || [])
+        setProvincesData(provincesData.data || [])
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'Failed to fetch data')
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [messages]);
+    fetchData()
+  }, [])
 
-  // Fungsi untuk menangani klik pada saran prompt
-  const handlePromptClick = (prompt: string) => {
-    // Isi input
-    handleInputChange({ target: { value: prompt } } as React.ChangeEvent<HTMLInputElement>);
-    // Submit form setelah input terisi
-    setTimeout(() => {
-      handleSubmit(new Event('submit') as any);
-    }, 0);
-  };
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return <Trophy className="w-6 h-6 text-whiteMint" />
+      case 2:
+        return <Medal className="w-6 h-6 text-gray-400" />
+      case 3:
+        return <Award className="w-6 h-6 text-orange-500" />
+      default:
+        return <span className="w-6 h-6 bg-whiteMint rounded-full flex items-center justify-center text-sm font-bold">{rank}</span>
+    }
+  }
 
+  const formatPoints = (points: number) => {
+    if (points >= 1000000) {
+      return (points / 1000000).toFixed(points % 1000000 === 0 ? 0 : 1) + 'M'
+    } else if (points >= 1000) {
+      return (points / 1000).toFixed(points % 1000 === 0 ? 0 : 1) + 'k'
+    } else {
+      return points.toString()
+    }
+  }
+
+  const getFilteredUsers = () => {
+    const sortedUsers = usersData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+
+    if (searchQuery.trim()) {
+      return sortedUsers.filter(user =>
+        (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    } else {
+      return sortedUsers.slice(0, 10)
+    }
+  }
+
+  const getFilteredProvinces = () => {
+    const sortedProvinces = provincesData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+
+    if (searchQuery.trim()) {
+      return sortedProvinces.filter(province =>
+        (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    } else {
+      return sortedProvinces.slice(0, 10)
+    }
+  }
 
   return (
-    <main className="flex flex-col h-full bg-transparent font-poppins">
-      {/* Header Greena: Fixed Top, Full Width, Rounded Bottom */}
-      <div className="fixed top-0 left-0 w-full z-0">
-        <header className="bg-tealLight text-black rounded-b-2xl p-4 sm:p-6 w-full shadow-lg">
-          <div className="flex items-center gap-3 mb-1">
-            <BrainCircuit size={32}/>
-            <h1 className="text-2xl sm:text-3xl font-bold">Greena</h1>
-          </div>
-          <p className="text-sm sm:text-base text-gray-800">Asisten AI Anda untuk semua hal tentang gaya hidup hijau.</p>
-        </header>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-4 sm:p-6">
+        <h1 className="text-2xl font-bold mb-1 sm:mb-2">Papan Peringkat</h1>
+        <p>Lihat pencapaian komunitas GreenActify</p>
       </div>
 
-      {/* Spacer agar konten tidak tertutup header */}
-      <div className="h-[92px] sm:h-[110px]" />
-
-      {/* Container untuk history chat */}
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-        {messages.map((m) => (
-          <div key={m.id} className={`flex items-start gap-2 sm:gap-4 max-w-5xl mx-auto ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {/* Avatar untuk 'Greena' */}
-            {m.role !== 'user' && (
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-tealLight text-white flex items-center justify-center">
-                <Bot size={24} />
-              </div>
-            )}
-            
-            <div
-              className={`px-4 py-3 rounded-2xl w-fit max-w-[80%] sm:max-w-xl md:max-w-3xl ${
-                m.role === 'user'
-                  ? 'bg-greenDark text-white rounded-br-lg'
-                  : 'bg-whiteMint text-greenDark shadow-sm rounded-bl-lg'
-              }`}
-            >
-              {/* Ukuran font responsif */}
-              <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">{m.content}</p>
-            </div>
-
-             {/* Avatar untuk Pengguna */}
-             {m.role === 'user' && (
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellowAmber text-white flex items-center justify-center">
-                <User size={24} />
-              </div>
-            )}
-          </div>
-        ))}
-
-        {/* Indikator loading yang lebih halus */}
-        {isLoading && messages[messages.length - 1]?.role === 'user' && (
-           <div className="flex items-start gap-3 max-w-5xl mx-auto justify-start">
-            <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-tealLight text-white flex items-center justify-center">
-                <Bot size={24} />
-              </div>
-             <div className="px-4 py-3 rounded-2xl bg-whiteMint text-gray-500 shadow-sm rounded-bl-lg">
-                <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                    <span className="h-2 w-2 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                    <span className="h-2 w-2 bg-gray-300 rounded-full animate-bounce"></span>
-                </div>
-             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Area Input Pengguna: Fixed di atas bottom navbar pada mobile, static di desktop */}
-      <div className="fixed bottom-[56px] left-0 w-full z-20 sm:static sm:bottom-auto bg-white/50 backdrop-blur-md border-t border-mintPastel">
-        <div className="max-w-5xl mx-auto">
-          {messages.length === 0 && !isLoading && (
-            <div className="relative mb-3">
-              <div className="flex w-full gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {recommendedPrompts.map((prompt) => (
-                  <button
-                    key={prompt}
-                    onClick={() => handlePromptClick(prompt)}
-                    className="px-4 py-2 text-xs sm:text-sm font-medium bg-whiteGreen text-oliveSoft rounded-full hover:bg-mintPastel transition-colors duration-200 whitespace-nowrap"
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex items-center gap-3">
-            <input
-              value={input}
-              onChange={handleInputChange}
-              placeholder="Tanyakan sesuatu pada Greena..."
-              disabled={isLoading}
-              className="flex-1 w-full px-5 py-3 text-sm sm:text-base text-greenDark bg-whiteGreen border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-tealLight transition-shadow duration-200"
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="p-3 bg-greenDark text-white rounded-full disabled:bg-mintPastel disabled:cursor-not-allowed hover:bg-opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-greenDark transform enabled:hover:scale-110"
-              aria-label="Kirim pesan"
-            >
-              <SendHorizonal size={24} />
-            </button>
-          </form>
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          Error: {error}
         </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex bg-mintPastel border-greenDark border-2 rounded-full p-1 w-full md:w-fit md:mx-auto">
+        <button
+          className={`flex-1 md:flex-none py-3 px-4 md:py-2 md:px-4 md:text-sm rounded-full font-semibold transition-colors ${
+            activeTab === 'users'
+              ? 'bg-greenDark text-whiteMint shadow-sm'
+              : 'text-greenDark hover:text-tealLight active:text-tealLight'
+          }`}
+          onClick={() => setActiveTab('users')}
+        >
+          <Users className="w-5 h-5 md:w-4 md:h-4 inline mr-2" />
+          Pengguna
+        </button>
+        <button
+          className={`flex-1 md:flex-none py-3 px-4 md:py-2 md:px-4 md:text-sm rounded-full font-semibold transition-colors ${
+            activeTab === 'provinces'
+              ? 'bg-greenDark text-whiteMint shadow-sm'
+              : 'text-greenDark hover:text-tealLight active:text-tealLight'
+          }`}
+          onClick={() => setActiveTab('provinces')}
+        >
+          <MapPin className="w-5 h-5 md:w-4 md:h-4 inline mr-2" />
+          Provinsi
+        </button>
       </div>
-    </main>
-  );
+
+      {/* Search Bar */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          placeholder={activeTab === 'users' ? 'Cari penggguna...' : 'Cari provinsi...'}
+          className="block w-full pl-10 pr-3 py-4 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-tealLight sm:text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
+      {/* Users Leaderboard */}
+      {activeTab === 'users' && (
+        <div className="space-y-4">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
+              <p className="text-gray-500">Loading users...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">
+              Failed to load users. Please try again.
+            </div>
+          ) : usersData.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No users found.
+            </div>
+          ) : getFilteredUsers().length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No users found matching "{searchQuery}".
+            </div>
+          ) : (
+            getFilteredUsers().map((user, index) => (
+              <div
+                key={user.id || user.full_name || user.clerk_id || index}
+                className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
+                onClick={() => router.push(`/profil/${user.id}`)}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-center w-12 h-12">
+                    {getRankIcon(user.rank)}
+                  </div>
+
+                  <div className="hidden sm:block w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
+                    {user.avatar_url ? (
+                      <img
+                        src={user.avatar_url}
+                        alt={user.name || 'User'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600"></div>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-whiteMint">{user.full_name || 'Unknown User'}</h3>
+                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{user.province || 'Unknown Province'}</p>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-center text-2xl font-bold text-yellowGold">
+                      {formatPoints(user.points || 0)}
+                    </div>
+                    <div className="text-center text-sm text-whiteMint">poin</div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Provinces Leaderboard */}
+      {activeTab === 'provinces' && (
+        <div className="space-y-4">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
+              <p className="text-gray-500">Loading provinces...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">
+              Failed to load provinces. Please try again.
+            </div>
+          ) : provincesData.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No provinces found.
+            </div>
+          ) : getFilteredProvinces().length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No provinces found matching "{searchQuery}".
+            </div>
+          ) : (
+            getFilteredProvinces().map((province: any, index: number) => (
+              <div
+                key={province.id || province.province || index}
+                className={`${province.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
+                onClick={() => {/* Navigate to province details */}}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-center w-12 h-12">
+                    {getRankIcon(province.rank)}
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-whiteMint">{province.province}</h3>
+                    <p className={`${province.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{formatPoints(province.total_users || 0)} peserta • {formatPoints(province.total_activities || 0)} aktivitas</p>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-center text-2xl font-bold text-yellowGold">
+                      {formatPoints(province.total_points || 0)}
+                    </div>
+                    <div className="text-center text-sm text-whiteMint">poin</div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
+
+export default PeringkatPage

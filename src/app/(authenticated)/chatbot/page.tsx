@@ -3,6 +3,7 @@
 import { useChat } from 'ai/react';
 import { useRef, useEffect, useState } from 'react';
 import { SendHorizonal, Bot, User, BrainCircuit } from 'lucide-react';
+import { Message } from 'ai';
 
 // Daftar lengkap semua kemungkinan prompt
 const ALL_PROMPT_RECOMMENDATIONS = [
@@ -17,7 +18,7 @@ const ALL_PROMPT_RECOMMENDATIONS = [
 ];
 
 export default function ChatbotPage() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
   });
 
@@ -38,17 +39,29 @@ export default function ChatbotPage() {
     }
   }, [messages]);
 
+  // Fungsi untuk menangani klik pada saran prompt
+  const handlePromptClick = (prompt: string) => {
+    const message: Message = {
+      id: Date.now().toString(), // id sementara
+      role: 'user',
+      content: prompt,
+    };
+    append(message);
+  };
+
 
   return (
-    // Latar belakang dihilangkan agar mengikuti layout induk
-    <main className="flex flex-col h-screen bg-transparent font-poppins">
-      <div className="pt-4 sticky top-0 z-10">
-          <header className="py-3 px-6 bg-tealLight text-black rounded-[20px] flex items-center justify-center gap-2 w-fit mx-auto">
-            <BrainCircuit size={28}/>
-            <h1 className="text-2xl font-bold text-center">
-              Greena
-            </h1>
-          </header>
+    // Menggunakan h-full agar tinggi container fleksibel mengikuti layout induk
+    <main className="flex flex-col h-full bg-transparent font-poppins">
+      {/* Header yang didesain ulang */}
+      <div className="px-4 pt-4 sm:px-6">
+        <header className="bg-tealLight text-black rounded-lg p-4 sm:p-6 w-full">
+            <div className="flex items-center gap-3 mb-1">
+                <BrainCircuit size={32}/>
+                <h1 className="text-2xl sm:text-3xl font-bold">Greena</h1>
+            </div>
+            <p className="text-sm sm:text-base text-gray-800">Asisten AI Anda untuk semua hal tentang gaya hidup hijau.</p>
+        </header>
       </div>
 
 
@@ -100,37 +113,40 @@ export default function ChatbotPage() {
         )}
       </div>
 
-      {/* Area Input Pengguna yang Didesain Ulang */}
-      <div className="p-4 sticky bottom-0">
-        <div className="max-w-5xl mx-auto">
+      {/* Area Input Pengguna & Saran Prompt: Fixed, transparan, responsive */}
+      <div className="fixed left-0 w-full z-30 bottom-20 sm:bottom-8 px-4 pointer-events-none">
+        <div className="max-w-3xl mx-auto pointer-events-auto">
+          {/* Saran Prompt */}
           {messages.length === 0 && !isLoading && (
-            <div className="relative mb-3">
-                <div className="flex w-full gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                  {recommendedPrompts.map((prompt) => (
-                    <button
-                      key={prompt}
-                      onClick={() => handleSubmit(undefined, { data: { prompt } })}
-                      className="px-4 py-2 text-xs sm:text-sm font-medium bg-whiteGreen text-oliveSoft rounded-full hover:bg-mintPastel transition-colors duration-200 whitespace-nowrap"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
+            <div className="flex w-full gap-2 mb-3 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {recommendedPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  onClick={() => handlePromptClick(prompt)}
+                  className="px-4 py-2 text-xs sm:text-sm font-medium bg-whiteGreen text-oliveSoft rounded-full hover:bg-mintPastel transition-colors duration-200 whitespace-nowrap shadow-none border-none"
+                  style={{ boxShadow: 'none', background: 'rgba(255,255,255,0.85)' }}
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex items-center gap-3">
+          {/* Input Prompt */}
+          <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-transparent">
             <input
               value={input}
               onChange={handleInputChange}
               placeholder="Tanyakan sesuatu pada Greena..."
               disabled={isLoading}
-              className="flex-1 w-full px-5 py-3 text-sm sm:text-base text-greenDark bg-whiteGreen border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-tealLight transition-shadow duration-200"
+              className="flex-1 w-full px-5 py-3 text-sm sm:text-base text-greenDark bg-whiteGreen border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-tealLight transition-shadow duration-200 shadow-none"
+              style={{ boxShadow: 'none', background: 'rgba(255,255,255,0.85)' }}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="p-3 bg-greenDark text-white rounded-full disabled:bg-mintPastel disabled:cursor-not-allowed hover:bg-opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-greenDark transform enabled:hover:scale-110"
+              className="p-3 bg-greenDark text-white rounded-full disabled:bg-mintPastel disabled:cursor-not-allowed hover:bg-opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-greenDark transform enabled:hover:scale-110 shadow-none"
+              style={{ boxShadow: 'none' }}
               aria-label="Kirim pesan"
             >
               <SendHorizonal size={24} />
