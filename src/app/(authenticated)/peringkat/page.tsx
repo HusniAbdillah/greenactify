@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
-import { useRefreshProvinceStats, useRecalculateProvinceRanks, useRecalculatePoints, useReassignRank} from '@/hooks/useSupabase';
+import { useRouter } from 'next/navigation'
 const PeringkatPage = () => {
   const [usersData, setUsersData] = useState<any[]>([])
   const [provincesData, setProvincesData] = useState<any[]>([])
@@ -10,18 +10,7 @@ const PeringkatPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
   const [searchQuery, setSearchQuery] = useState('')
-  const {
-  loading: recalcLoading,
-  error: recalcError
-  } = useRecalculatePoints();
-
-  
-  const {
-  loading: provinceLoading,
-  } = useRefreshProvinceStats();
-  const { loading : provinceRankLoading, error : provinceRankError, updated } = useRecalculateProvinceRanks();
-  const { loading: userRankLoading, result } = useReassignRank(true); 
-
+  const router = useRouter()
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -105,8 +94,8 @@ const PeringkatPage = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-2">Papan Peringkat</h1>
+      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-4 sm:p-6">
+        <h1 className="text-2xl font-bold mb-1 sm:mb-2">Papan Peringkat</h1>
         <p>Lihat pencapaian komunitas GreenActify</p>
       </div>
 
@@ -118,27 +107,27 @@ const PeringkatPage = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex bg-mintPastel border-greenDark border-2 rounded-full p-1 ">
+      <div className="flex bg-mintPastel border-greenDark border-2 rounded-full p-1 w-full md:w-fit md:mx-auto">
         <button
-          className={`flex-1 py-3 px-4 rounded-full font-semibold transition-colors ${
+          className={`flex-1 md:flex-none py-3 px-4 md:py-2 md:px-4 md:text-sm rounded-full font-semibold transition-colors ${
             activeTab === 'users'
               ? 'bg-greenDark text-whiteMint shadow-sm'
               : 'text-greenDark hover:text-tealLight active:text-tealLight'
           }`}
           onClick={() => setActiveTab('users')}
         >
-          <Users className="w-5 h-5 inline mr-2" />
+          <Users className="w-5 h-5 md:w-4 md:h-4 inline mr-2" />
           Pengguna
         </button>
         <button
-          className={`flex-1 py-3 px-4 rounded-full font-semibold transition-colors ${
+          className={`flex-1 md:flex-none py-3 px-4 md:py-2 md:px-4 md:text-sm rounded-full font-semibold transition-colors ${
             activeTab === 'provinces'
               ? 'bg-greenDark text-whiteMint shadow-sm'
               : 'text-greenDark hover:text-tealLight active:text-tealLight'
           }`}
           onClick={() => setActiveTab('provinces')}
         >
-          <MapPin className="w-5 h-5 inline mr-2" />
+          <MapPin className="w-5 h-5 md:w-4 md:h-4 inline mr-2" />
           Provinsi
         </button>
       </div>
@@ -182,7 +171,7 @@ const PeringkatPage = () => {
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
                 className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
-                onClick={() => {/* Navigate to user profile */}}
+                onClick={() => router.push(`/profil/${user.id}`)}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">
