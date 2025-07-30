@@ -13,6 +13,7 @@ import { createActivity } from '@/lib/create-activity'
 import { updateUserPoints } from '@/lib/update-user-points'
 import { updateProvinceStats } from '@/lib/update-province.stats'
 import { getProfileIdByClerkId } from '@/lib/get-profile-front';
+import { createProfileForClerkUser } from '@/lib/create-profile';
 
 type FlowStep = 'UPLOADING' | 'SELECTING_ACTIVITY' | 'SHOWING_RESULT';
 
@@ -31,10 +32,24 @@ export default function AksiPage() {
   const [profileId, setProfileId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.id) {
-      getProfileIdByClerkId(user.id).then(setProfileId);
+    async function fetchProfileId() {
+      if (!user) return; // Guard: don't run if user is not loaded
+
+      const res = await fetch('/api/profile');
+      const json = await res.json();
+      if (json.profileId) {
+        setProfileId(json.profileId);
+      } else if (json.error === 'Profile not found') {
+        // Create new profile
+        const newId = await createProfileForClerkUser(
+          user.id,
+          user.username || user.fullName || user.firstName || ''
+        );
+        setProfileId(newId);
+      }
     }
-  }, [user?.id]);
+    fetchProfileId();
+  }, [user]);
 
   const handleFileSelect = async (file: File) => {
     // Buat path unik, misal pakai timestamp
@@ -63,6 +78,13 @@ export default function AksiPage() {
 
 
   const handleFinish = async () => {
+    console.log({
+      profileId,
+      selectedActivity,
+      uploadedImageUrl,
+      confirmedLocation,
+      generatedImageUrl
+    });
     try {
       if (!profileId || !selectedActivity || !uploadedImageUrl || !confirmedLocation) {
         alert('Data belum lengkap!');

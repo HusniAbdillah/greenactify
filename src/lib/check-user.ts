@@ -30,7 +30,6 @@ export const checkUser = async () => {
         avatar_url: user.imageUrl,
         points: 0,
         level: 0,
-        onboarding_completed: false,
         total_activities: 0,
       })
       .select()
