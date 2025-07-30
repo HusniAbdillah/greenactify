@@ -272,8 +272,6 @@ export async function handleUpdateActivity(
 
 
 
-'use client';
-import { useEffect, useState } from 'react';
 
 export function useRecalculatePoints() {
   const [loading, setLoading] = useState(true);
