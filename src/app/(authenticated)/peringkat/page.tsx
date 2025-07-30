@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useRefreshProvinceStats, useRecalculateProvinceRanks, useRecalculatePoints, useReassignRank} from '@/hooks/useSupabase';
 const PeringkatPage = () => {
   const [usersData, setUsersData] = useState<any[]>([])
   const [provincesData, setProvincesData] = useState<any[]>([])
@@ -12,19 +11,6 @@ const PeringkatPage = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
-
-  const {
-  loading: recalcLoading,
-  error: recalcError
-  } = useRecalculatePoints();
-
-
-  const {
-  loading: provinceLoading,
-  } = useRefreshProvinceStats();
-  const { loading : provinceRankLoading, error : provinceRankError, updated } = useRecalculateProvinceRanks();
-  const { loading: userRankLoading, result } = useReassignRank(true);
-
 
   React.useEffect(() => {
     const fetchData = async () => {
