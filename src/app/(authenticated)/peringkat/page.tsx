@@ -15,12 +15,12 @@ const PeringkatPage = () => {
   error: recalcError
   } = useRecalculatePoints();
 
-  
+
   const {
   loading: provinceLoading,
   } = useRefreshProvinceStats();
   const { loading : provinceRankLoading, error : provinceRankError, updated } = useRecalculateProvinceRanks();
-  const { loading: userRankLoading, result } = useReassignRank(true); 
+  const { loading: userRankLoading, result } = useReassignRank(true);
 
 
   React.useEffect(() => {
@@ -105,8 +105,8 @@ const PeringkatPage = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-2">Papan Peringkat</h1>
+      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-4 sm:p-6">
+        <h1 className="text-2xl font-bold mb-1 sm:mb-2">Papan Peringkat</h1>
         <p>Lihat pencapaian komunitas GreenActify</p>
       </div>
 
