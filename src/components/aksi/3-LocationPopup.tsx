@@ -3,13 +3,21 @@
 import { useEffect, useState, useMemo } from 'react';
 import { getProvinces } from '@/lib/get-provinces';
 
-interface LocationPopupProps {
+export type LocationPopupProps = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (location: string) => void;
+  title: string;
+  subtitle: string;
 }
 
-export default function LocationPopup({ isOpen, onClose, onConfirm }: LocationPopupProps) {
+export default function LocationPopup({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  subtitle,
+}: LocationPopupProps) {
   const [showProvinceSearch, setShowProvinceSearch] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<string>('Mendeteksi...');
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,8 +59,8 @@ export default function LocationPopup({ isOpen, onClose, onConfirm }: LocationPo
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl relative animate-fadeIn">
-        <h3 className="text-xl font-bold mb-3 text-green-700">Konfirmasi Lokasi</h3>
-        <p className="mb-2 text-sm text-gray-600">Aktivitas Anda akan dicatat di lokasi:</p>
+        <h3 className="text-xl font-bold mb-3 text-green-700">{title}</h3>
+        <p className="mb-2 text-sm text-gray-600">{subtitle}</p>
         <div className="w-full p-3 mb-4 bg-green-50 border border-green-200 rounded-lg text-center font-semibold text-green-800">
           {loading ? 'Memuat data...' : currentLocation}
         </div>

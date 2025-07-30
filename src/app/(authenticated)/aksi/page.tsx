@@ -7,7 +7,7 @@ import SelectActivityStep from '@/components/aksi/2-SelectActivityStep';
 import LocationPopup from '@/components/aksi/3-LocationPopup';
 import ResultStep from '@/components/aksi/4-ResultStep';
 import { uploadImage } from '@/lib/upload-image';
-import type { ActivityCategory } from '@/components/aksi/2-SelectActivityStep'; // atau definisikan sendiri
+import type { ActivityCategory } from '@/components/aksi/2-SelectActivityStep';
 import { useUser } from '@/hooks/useUser';
 import { createActivity } from '@/lib/create-activity'
 import { updateUserPoints } from '@/lib/update-user-points'
@@ -40,7 +40,6 @@ const getLocationStep = () => ({
 
 export default function AksiPage() {
   const [currentStep, setCurrentStep] = useState<FlowStep>('UPLOADING');
-
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityCategory | null>(null);
@@ -166,16 +165,19 @@ export default function AksiPage() {
 
   return (
     <div className="w-full p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-2 text-gray-800 text-center">
-        {isLocationPopupOpen
-          ? getLocationStep().title
-          : stepTitles[currentStep].title}
-      </h1>
-      <p className="text-center text-gray-500 mb-6">
-        {isLocationPopupOpen
-          ? getLocationStep().subtitle
-          : stepTitles[currentStep].subtitle}
-      </p>
+      <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6">
+        <h1 className="text-base md:text-3xl font-bold mb-1 md:mb-2 text-black text-center">
+          {isLocationPopupOpen
+            ? getLocationStep().title
+            : stepTitles[currentStep].title}
+        </h1>
+        <p className="text-center text-black text-xs md:text-lg">
+        {/* <p className="hidden md:block text-center text-black text-base md:text-lg"></p> */}
+          {isLocationPopupOpen
+            ? getLocationStep().subtitle
+            : stepTitles[currentStep].subtitle}
+        </p>
+      </div>
 
       {currentStep === 'UPLOADING' && (
         <UploadStep onFileSelect={handleFileSelect} />
