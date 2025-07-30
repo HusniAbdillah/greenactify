@@ -39,7 +39,7 @@ export const checkUser = async () => {
 
     return newProfile;
   } catch (err) {
-    console.error('❌ checkUser error:', err);
+    console.error('❌checkUser error:', err);
     return null;
   }
 };

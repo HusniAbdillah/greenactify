@@ -1,31 +1,51 @@
-import { auth } from '@clerk/nextjs/server';
-import { supabase } from '@/lib/supabase-client';
-import { NextResponse } from 'next/server';
-import { getProfileIdByClerkId } from '@/lib/get-profile';
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { deleteActivityAndDecrementPoints, supabase } from '@/lib/supabase-client';
+import { getProfileIdByClerkId } from '@/lib/get-profile'; 
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } } 
+) {
   const { userId: clerkId } = await auth();
 
   if (!clerkId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const profileId = await getProfileIdByClerkId(clerkId);
-  if (!profileId) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+  const activityId = params.id; // Extracting activityId from the dynamic route segment
+
+  if (!activityId || typeof activityId !== 'string') {
+    return NextResponse.json({ error: 'Activity ID is required' }, { status: 400 });
   }
 
-  const { id } = params;
+  try {
+    const userProfileId = await getProfileIdByClerkId(clerkId);
+    if (!userProfileId) {
+        return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+    }
 
-  const { error } = await supabase
-    .from('activities')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', profileId); // Supaya hanya bisa hapus milik sendiri
+    const { data: activityOwnerData, error: ownerError } = await supabase
+        .from('activities')
+        .select('user_id')
+        .eq('id', activityId)
+        .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (ownerError || !activityOwnerData || activityOwnerData.user_id !== userProfileId) {
+        return NextResponse.json({ error: 'Not authorized to delete this activity' }, { status: 403 });
+    }
+
+    const success = await deleteActivityAndDecrementPoints(activityId);
+
+    if (!success) {
+      return NextResponse.json({ error: 'Failed to delete activity or update points' }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Activity deleted and points updated successfully' }, { status: 200 });
+
+  } catch (error) {
+    console.error('API Error deleting activity:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true });
 }

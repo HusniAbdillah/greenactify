@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { uploadGeneratedImage } from '@/lib/upload-generated-image';
 
-
+// Interface untuk props, tidak diubah
 interface ResultStepProps {
   imageData: {
     file: File;
@@ -10,7 +10,6 @@ interface ResultStepProps {
       id: string;
       name: string;
       base_points: number;
-      activity_category_group?: { group_id: string }[];
     };
     location: string;
     points: number;
@@ -20,98 +19,161 @@ interface ResultStepProps {
   onGeneratedImageReady?: (url: string) => void;
 }
 
+// Komponen Utama
 export default function ResultStep({ imageData, onFinish, onGeneratedImageReady }: ResultStepProps) {
-  const imageUrl = URL.createObjectURL(imageData.file);
-
-  // Generate canvas image with overlay text
-  const [generatedUrl, setGeneratedUrl] = useState<string>(imageUrl);
+  const [generatedUrl, setGeneratedUrl] = useState<string>('');
+  
+  const now = new Date();
+  const formattedDate = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  const formattedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
   useEffect(() => {
-    const img = new window.Image();
-    img.src = imageUrl;
-    img.onload = async () => {
+    const originalImageUrl = URL.createObjectURL(imageData.file);
+    const userImage = new window.Image();
+    userImage.src = originalImageUrl;
+    userImage.crossOrigin = "anonymous";
+
+    userImage.onload = async () => {
+      // 1. Setup Canvas dengan rasio 9:16 (resolusi Story)
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      const cardWidth = 1080;
+      const cardHeight = 1920;
+      canvas.width = cardWidth;
+      canvas.height = cardHeight;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      ctx.drawImage(img, 0, 0);
-      // Card overlay
-      ctx.fillStyle = 'rgba(16,185,129,0.7)';
-      ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
-      ctx.font = 'bold 24px sans-serif';
-      ctx.fillStyle = '#fff';
-      ctx.fillText(`Aktivitas: ${imageData.activity.name}`, 20, canvas.height - 80);
-      ctx.font = '18px sans-serif';
-      ctx.fillText(`Lokasi: ${imageData.location}`, 20, canvas.height - 50);
-      ctx.fillText(`Poin: +${imageData.points}`, 20, canvas.height - 20);
-      if (imageData.username) {
-        ctx.font = 'italic 16px sans-serif';
-        ctx.fillText(`Oleh: ${imageData.username}`, canvas.width - 180, canvas.height - 20);
+
+      // 2. Gambar background utama kartu
+      ctx.fillStyle = '#0C3B2E'; // bg-greenDark
+      ctx.fillRect(0, 0, cardWidth, cardHeight);
+
+      // 3. Gambar header (Logo & tagline)
+      ctx.fillStyle = '#D2E8BB'; // bg-mintPastel
+      ctx.font = 'bold 90px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GrenActify', cardWidth / 2, 180);
+      
+      // 4. Gambar info pengguna
+      ctx.fillStyle = '#F1FFF3'; // bg-whiteMint
+      ctx.font = '48px sans-serif';
+      ctx.fillText(`@${imageData.username || 'User'}`, cardWidth / 2, 260);
+      
+      // 5. Gambar foto utama pengguna
+      const imageY = 320;
+      const imageHeight = 960; // Area tinggi untuk gambar
+      // Kalkulasi untuk memotong dan memposisikan gambar agar pas (cover)
+      const imageAspectRatio = userImage.width / userImage.height;
+      const canvasAspectRatio = cardWidth / imageHeight;
+      let drawWidth = cardWidth;
+      let drawHeight = imageHeight;
+      let imgX = 0;
+      let imgY = imageY;
+
+      if (imageAspectRatio > canvasAspectRatio) {
+        drawHeight = cardWidth / imageAspectRatio;
+        imgY += (imageHeight - drawHeight) / 2;
+      } else {
+        drawWidth = imageHeight * imageAspectRatio;
+        imgX = (cardWidth - drawWidth) / 2;
       }
-      const generatedDataUrl = canvas.toDataURL();
+      ctx.drawImage(userImage, imgX, imgY, drawWidth, drawHeight);
+
+      // 6. Gambar bagian bawah (Aktivitas, Poin, Detail)
+      const bottomAreaY = cardHeight - 450;
+      
+      // Nama Aktivitas (kiri)
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#F1FFF3'; // bg-whiteMint
+      ctx.font = 'bold 92px sans-serif';
+      ctx.fillText(imageData.activity.name, 80, bottomAreaY + 120);
+      
+      // Poin (kanan)
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#FFBA00'; // bg-yellowGold
+      ctx.fillText(`+${imageData.points}`, cardWidth - 80, bottomAreaY + 120);
+      
+      // Detail Lokasi dan Waktu (paling bawah, di tengah)
+      const detailsY = bottomAreaY + 280;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#DFF7E2'; // bg-whiteGreen
+      ctx.font = '42px sans-serif';
+      const detailsText = `${imageData.location} • ${formattedDate}, ${formattedTime}`;
+      ctx.fillText(detailsText, cardWidth / 2, detailsY);
+      
+      // Selesai, set URL dan upload ke storage
+      const generatedDataUrl = canvas.toDataURL('image/png', 0.9);
       setGeneratedUrl(generatedDataUrl);
 
-      // Upload ke storage di background
       if (onGeneratedImageReady) {
-        const path = `generated-uploads/${Date.now()}-${imageData.activity.id}.png`;
+        const path = `generated-cards/${Date.now()}-${imageData.activity.id}.png`;
         try {
           const url = await uploadGeneratedImage(generatedDataUrl, path);
           onGeneratedImageReady(url);
         } catch (err) {
-          // Optional: handle error upload
+          console.error("Gagal mengunggah gambar hasil generate:", err);
         }
       }
     };
-  }, [imageUrl, imageData, onGeneratedImageReady]);
+  }, [imageData, onGeneratedImageReady, formattedDate, formattedTime]);
 
   const handleDownload = () => {
+    if (!generatedUrl) return;
     const link = document.createElement('a');
     link.href = generatedUrl;
-    link.download = 'aktivitas-hijau.png';
+    link.download = 'grenactify-card.png';
     link.click();
   };
 
   const handleShare = async () => {
-    // Cek dukungan share file
-    if (navigator.canShare && navigator.canShare({ files: [] })) {
-      // Convert dataURL ke Blob
+    if (!generatedUrl) return;
+    try {
       const res = await fetch(generatedUrl);
       const blob = await res.blob();
-      const file = new File([blob], 'aktivitas-hijau.png', { type: 'image/png' });
+      const file = new File([blob], 'grenactify-card.png', { type: 'image/png' });
 
-      await navigator.share({
-        title: 'Aktivitas Hijau',
-        text: `Saya baru saja melakukan aktivitas hijau: ${imageData.activity.name}`,
-        files: [file],
-      });
-    } else {
-      alert('Fitur share gambar tidak didukung di browser ini. Silakan unduh dan bagikan manual.');
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Aksi Hijauku!',
+          text: `Saya baru saja melakukan ${imageData.activity.name} bersama GrenActify!`,
+          files: [file],
+        });
+      } else {
+        alert('Fitur share tidak didukung. Silakan unduh gambar untuk dibagikan.');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      alert('Gagal membagikan gambar.');
     }
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold text-green-600 mb-4">Aksi Berhasil Dicatat!</h2>
-      <div className="w-full max-w-sm border rounded-lg shadow-lg bg-white p-4 mb-6">
-        <img src={generatedUrl} alt="Aktivitas" className="w-full h-48 object-cover rounded-md" />
-        <div className="mt-4">
-          <p className="text-sm text-gray-500">Aktivitas:</p>
-          <p className="font-semibold text-lg">{imageData.activity.name}</p>
-        </div>
-        <div className="mt-2">
-          <p className="text-sm text-gray-500">Lokasi:</p>
-          <p className="font-semibold">{imageData.location}</p>
-        </div>
-        <div className="mt-3 pt-3 border-t text-center">
-          <p className="text-lg font-bold text-yellow-500">+{imageData.points} Poin!</p>
-        </div>
+    <div className="flex flex-col items-center w-full max-w-sm mx-auto p-4">
+      <h2 className="text-3xl font-bold text-oliveSoft mb-2 text-center">Aksi Berhasil Dicatat!</h2>
+      <p className="text-center text-gray-600 mb-6">Bagikan kartu Story ini untuk menginspirasi teman-temanmu.</p>
+      
+      {/* Tampilan Kartu Preview dengan rasio 9:16 */}
+      <div className="w-full shadow-xl rounded-2xl overflow-hidden border-4 border-white bg-gray-200">
+        {generatedUrl ? (
+          <img src={generatedUrl} alt="Generated Activity Card" className="w-full object-contain" />
+        ) : (
+          <div className="w-full aspect-[9/16] animate-pulse flex items-center justify-center">
+            <p className="text-gray-500">Membuat kartu...</p>
+          </div>
+        )}
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
-        <button onClick={handleDownload} className="w-full px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600">Unduh</button>
-        <button onClick={handleShare} className="w-full px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800">Bagikan</button>
-        <button onClick={onFinish} className="w-full px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600">Selesai</button>
+
+      {/* Tombol Aksi */}
+      <div className="flex flex-col gap-4 w-full mt-8">
+        <button onClick={handleShare} className="w-full px-6 py-3 rounded-xl bg-tealLight text-white font-bold text-lg hover:opacity-90 transition-opacity shadow-md">
+          Bagikan
+        </button>
+        <button onClick={handleDownload} className="w-full px-6 py-3 rounded-xl bg-oliveSoft text-white font-bold text-lg hover:opacity-90 transition-opacity shadow-md">
+          Unduh Gambar
+        </button>
       </div>
+       <button onClick={onFinish} className="w-full mt-4 px-6 py-3 rounded-xl bg-yellowGold text-greenDark font-bold text-lg hover:opacity-90 transition-opacity shadow-md">
+        Selesai
+       </button>
     </div>
   );
 }

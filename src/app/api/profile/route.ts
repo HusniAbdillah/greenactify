@@ -1,28 +1,32 @@
-import { auth } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
-import {
-  getProfileIdByClerkId,
-  getActivityGroupCounts,
-} from '@/lib/get-profile'
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { getProfileByProfileId } from '@/lib/supabase-client';
+import { getProfileIdByClerkId } from '@/lib/get-profile'; 
 
 export async function GET() {
-  const { userId: clerkId } = await auth()
+  const { userId: clerkId } = await auth();
 
   if (!clerkId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const profileId = await getProfileIdByClerkId(clerkId)
+  try {
+    const profileUuid = await getProfileIdByClerkId(clerkId);
+    
+    if (!profileUuid) {
+      return NextResponse.json({ error: 'Profile ID not found for this Clerk user' }, { status: 404 });
+    }
 
-  if (!profileId) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    const userProfileData = await getProfileByProfileId(profileUuid);
+
+    if (!userProfileData) {
+      return NextResponse.json({ error: 'User profile data not found in database' }, { status: 404 });
+    }
+
+    return NextResponse.json(userProfileData);
+
+  } catch (error) {
+    console.error('API Error fetching profile:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  const [activities] = await Promise.all([
-    getActivityGroupCounts(profileId),
-  ])
-
-  return NextResponse.json({
-    profileId,
-  })
 }
