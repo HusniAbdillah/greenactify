@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/profil/avatar"
+import { Button } from "@/components/profil/button"
+import { Card, CardContent } from "@/components/profil/card"
+import { Badge } from "@/components/profil/badge"
+import { Progress } from "@/components/profil/progress"
 import { Trophy, Leaf, Users, Target, Star, Menu, Bell, Plus, Home, Map, Award, User } from "lucide-react"
 
 export default function Component() {

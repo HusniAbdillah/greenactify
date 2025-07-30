@@ -1,6 +1,6 @@
 import React from 'react'
-import DesktopSidebar from '@/components/DesktopSidebar'
-import MobileBottomNav from '@/components/MobileBottomNav'
+import DesktopSidebar from '@/components/navbar/DesktopSidebar'
+import MobileBottomNav from '@/components/navbar/MobileBottomNav'
 import { checkUser } from '@/lib/check-user'
 
 export default async function AuthenticatedLayout({
