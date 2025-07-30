@@ -1,16 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-
-// Mock data provinsi di Indonesia
-const provinces = [
-  'Aceh', 'Sumatera Utara', 'Sumatera Barat', 'Riau', 'Jambi', 'Sumatera Selatan', 'Bengkulu', 'Lampung', 'Kepulauan Bangka Belitung', 'Kepulauan Riau',
-  'DKI Jakarta', 'Jawa Barat', 'Jawa Tengah', 'DI Yogyakarta', 'Jawa Timur', 'Banten',
-  'Bali', 'Nusa Tenggara Barat', 'Nusa Tenggara Timur',
-  'Kalimantan Barat', 'Kalimantan Tengah', 'Kalimantan Selatan', 'Kalimantan Timur', 'Kalimantan Utara',
-  'Sulawesi Utara', 'Sulawesi Tengah', 'Sulawesi Selatan', 'Sulawesi Tenggara', 'Gorontalo', 'Sulawesi Barat',
-  'Maluku', 'Maluku Utara', 'Papua Barat', 'Papua'
-];
+import { useEffect, useState, useMemo } from 'react';
+import { getProvinces } from '@/lib/get-provinces';
 
 interface LocationPopupProps {
   isOpen: boolean;
@@ -20,51 +11,78 @@ interface LocationPopupProps {
 
 export default function LocationPopup({ isOpen, onClose, onConfirm }: LocationPopupProps) {
   const [showProvinceSearch, setShowProvinceSearch] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState('Jawa Barat'); // Lokasi default/terdeteksi
+  const [currentLocation, setCurrentLocation] = useState<string>('Mendeteksi...');
   const [searchTerm, setSearchTerm] = useState('');
+  const [provinces, setProvinces] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProvinces = useMemo(() =>
-    provinces.filter(p => p.toLowerCase().includes(searchTerm.toLowerCase())),
-    [searchTerm]
+  // Ambil data provinsi dari database
+  useEffect(() => {
+    getProvinces().then((data) => {
+      setProvinces(data.map((p: any) => p.province));
+      setLoading(false);
+    });
+  }, []);
+
+  // Geotagging: deteksi lokasi user
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // Reverse geocode (contoh pakai Nominatim)
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const json = await res.json();
+        // Cocokkan nama provinsi dengan data dari DB
+        const detected = provinces.find(p =>
+          json.address?.state?.toLowerCase().includes(p.toLowerCase())
+        );
+        setCurrentLocation(detected || json.address?.state || 'Tidak Diketahui');
+      });
+    }
+  }, [provinces]);
+
+  const filteredProvinces = useMemo(
+    () => provinces.filter(p => p.toLowerCase().includes(searchTerm.toLowerCase())),
+    [searchTerm, provinces]
   );
-  
+
   if (!isOpen) return null;
 
-  const handleSelectProvince = (province: string) => {
-    setCurrentLocation(province);
-    setShowProvinceSearch(false);
-    setSearchTerm('');
-  };
-  
-  const handleConfirm = () => {
-    onConfirm(currentLocation);
-  };
-
   return (
-    // Backdrop
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      {/* Main Popup Content */}
-      <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl relative">
-        <h3 className="text-lg font-bold mb-4">Konfirmasi Lokasi</h3>
-        <p className="mb-2 text-sm">Aktivitas Anda akan dicatat di lokasi:</p>
-        <div className="w-full p-3 mb-4 bg-gray-100 border rounded-md text-center font-medium">
-          {currentLocation}
+      <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl relative animate-fadeIn">
+        <h3 className="text-xl font-bold mb-3 text-green-700">Konfirmasi Lokasi</h3>
+        <p className="mb-2 text-sm text-gray-600">Aktivitas Anda akan dicatat di lokasi:</p>
+        <div className="w-full p-3 mb-4 bg-green-50 border border-green-200 rounded-lg text-center font-semibold text-green-800">
+          {loading ? 'Memuat data...' : currentLocation}
         </div>
-        
-        <div className="flex justify-between items-center">
-          <button onClick={() => setShowProvinceSearch(true)} className="text-sm text-blue-600 hover:underline">
-            Ubah Lokasi
+        <div className="flex justify-between items-center mb-2">
+          <button
+            onClick={() => setShowProvinceSearch(true)}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Pilih Provinsi Lain
           </button>
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300">Batal</button>
-            <button onClick={handleConfirm} className="px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600">Konfirmasi</button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => onConfirm(currentLocation)}
+              className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 font-semibold"
+              disabled={loading || !currentLocation}
+            >
+              Konfirmasi
+            </button>
           </div>
         </div>
-
-        {/* --- Province Search Popup (Pop-up di dalam Pop-up) --- */}
+        {/* Province Search Popup */}
         {showProvinceSearch && (
-          <div className="absolute inset-0 bg-white rounded-lg p-6 flex flex-col">
-            <h4 className="font-bold mb-3">Cari Provinsi</h4>
+          <div className="absolute inset-0 bg-white rounded-xl p-6 flex flex-col shadow-xl animate-fadeIn">
+            <h4 className="font-bold mb-3 text-green-700">Cari Provinsi</h4>
             <input
               type="text"
               placeholder="Ketik nama provinsi..."
@@ -75,12 +93,28 @@ export default function LocationPopup({ isOpen, onClose, onConfirm }: LocationPo
             />
             <ul className="flex-1 overflow-y-auto">
               {filteredProvinces.map(p => (
-                <li key={p} onClick={() => handleSelectProvince(p)} className="p-2 hover:bg-gray-100 cursor-pointer rounded-md">
+                <li
+                  key={p}
+                  onClick={() => {
+                    setCurrentLocation(p);
+                    setShowProvinceSearch(false);
+                    setSearchTerm('');
+                  }}
+                  className="p-2 hover:bg-green-50 cursor-pointer rounded-md text-green-800"
+                >
                   {p}
                 </li>
               ))}
+              {filteredProvinces.length === 0 && (
+                <li className="p-2 text-gray-400">Provinsi tidak ditemukan.</li>
+              )}
             </ul>
-            <button onClick={() => setShowProvinceSearch(false)} className="mt-4 text-sm text-gray-600 self-center">Tutup</button>
+            <button
+              onClick={() => setShowProvinceSearch(false)}
+              className="mt-4 text-sm text-gray-600 self-center"
+            >
+              Tutup
+            </button>
           </div>
         )}
       </div>
