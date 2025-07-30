@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
       const { data: provinces, error } = await supabase()
         .from('leaderboard_provinces')
         .select('*')
+        .order('rank', { ascending: true })
 
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
       const { data: users, error } = await supabase()
         .from('leaderboard_users')
         .select('*')
+        .order('rank', { ascending: true })
 
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })

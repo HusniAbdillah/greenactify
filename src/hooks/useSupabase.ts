@@ -280,7 +280,7 @@ export function useRecalculatePoints() {
   useEffect(() => {
     const callAPI = async () => {
       try {
-        const res = await fetch('/api/recalculate-points', { method: 'POST' });
+        const res = await fetch('/api/points', { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Unknown error');
         console.log('✅ Recalculated:', data);
@@ -297,3 +297,66 @@ export function useRecalculatePoints() {
 
   return { loading, error };
 }
+
+
+
+
+export function useRefreshProvinceStats() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<null | { updated: number; failed: number }>(null);
+
+  useEffect(() => {
+    const callAPI = async () => {
+      try {
+        const res = await fetch('/api/refresh-province');
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Unknown error');
+        setResult(json);
+        setError(null);
+        console.log('🌍 Province stats refreshed:', json);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    callAPI();
+  }, []);
+
+  return { loading, error, result };
+}
+
+export const useRecalculateProvinceRanks = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [updated, setUpdated] = useState<number | null>(null);
+
+  useEffect(() => {
+    const recalculate = async () => {
+      try {
+        const res = await fetch('/api/recalculate/province-rank', {
+          method: 'POST',
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(json.error || 'Unknown error');
+        }
+
+        setUpdated(json.updated);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    recalculate(); // langsung jalan saat hook dipakai
+  }, []);
+
+  return { loading, error, updated };
+};
+
