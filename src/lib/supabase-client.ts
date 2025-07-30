@@ -242,3 +242,190 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
   return data
 }
 
+export const recalculateAllUserPoints = async () => {
+  // 1. Ambil semua aktivitas yang disetujui
+  const { data: activities, error } = await supabase
+    .from('activities')
+    .select('user_id, points')
+    .eq('status', 'approved');
+
+  if (error) {
+    console.error('❌ Error fetching activities:', error);
+    return { success: false, error };
+  }
+
+  // 2. Hitung total poin per user
+  const pointMap: Record<string, number> = {};
+  for (const { user_id, points } of activities) {
+    pointMap[user_id] = (pointMap[user_id] || 0) + points;
+  }
+
+  // 3. Update ke `profiles` dan `leaderboard_users`
+  const updates = Object.entries(pointMap).map(async ([userId, totalPoints]) => {
+    // Update ke `profiles`
+  const profileUpdate = await supabase
+    .from('profiles')
+    .update({ points: totalPoints })
+    .eq('id', userId);
+    
+  console.log('📝 Updated profile:', userId, profileUpdate);
+
+  const leaderboardUpdate = await supabase
+    .from('leaderboard_users')
+    .upsert({ user_id: userId, points: totalPoints }, { onConflict: 'user_id' });
+  console.log('🏆 Upserted leaderboard:', userId, leaderboardUpdate);
+  return [profileUpdate, leaderboardUpdate];
+
+
+  });
+
+  const results = await Promise.allSettled(updates);
+  const updated = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+
+  return { success: true, updated, failed };
+};
+
+
+
+
+
+
+export const refreshProvinceStats = async () => {
+  // Ambil semua activity yang disetujui
+  const { data: activities, error: activitiesError } = await supabase
+    .from('activities')
+    .select('user_id, points, province')
+    .eq('status', 'approved');
+
+  if (activitiesError) {
+    console.error('❌ Error fetching activities:', activitiesError);
+    return { success: false, error: activitiesError };
+  }
+
+  // Ambil semua user beserta provinsinya
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('id, province');
+
+  if (profilesError) {
+    console.error('❌ Error fetching profiles:', profilesError);
+    return { success: false, error: profilesError };
+  }
+
+  // Buat map user ke provinsi
+  const userProvinceMap = Object.fromEntries(
+    profiles.map(p => [p.id, p.province])
+  );
+
+  // Grouping data per provinsi
+  const provinceMap: Record<string, { userIds: Set<string>, totalPoints: number, totalActivities: number }> = {};
+
+  for (const activity of activities) {
+    const userId = activity.user_id;
+    const userProvince = userProvinceMap[userId];
+    if (!userProvince) continue;
+
+    if (!provinceMap[userProvince]) {
+      provinceMap[userProvince] = {
+        userIds: new Set(),
+        totalPoints: 0,
+        totalActivities: 0
+      };
+    }
+
+    provinceMap[userProvince].userIds.add(userId);
+    provinceMap[userProvince].totalPoints += activity.points;
+    provinceMap[userProvince].totalActivities += 1;
+  }
+
+  const updates = Object.entries(provinceMap).map(async ([province, stats]) => {
+    const { userIds, totalPoints, totalActivities } = stats;
+    const totalUsers = userIds.size;
+    const avgPoints = totalUsers > 0 ? Math.round(totalPoints / totalUsers) : 0;
+
+    const update = await supabase.from('province_stats').upsert(
+      {
+        province,
+        total_users: totalUsers,
+        total_activities: totalActivities,
+        total_points: totalPoints,
+        avg_points_per_user: avgPoints,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'province' }
+    );
+    console.log('📍 Upsert result for province:', province, update);
+
+    return update;
+  });
+
+  const results = await Promise.allSettled(updates);
+  const updated = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+
+  return { success: true, updated, failed };
+};
+
+export const recalculateProvinceRanks = async () => {
+  const { data: provinces, error } = await supabase
+    .from('province_stats')
+    .select('*');
+
+  if (error) {
+    console.error('❌ Error fetching province_stats:', error);
+    return { success: false, error };
+  }
+
+  // Urutkan: total_points DESC, province ASC
+  const sorted = [...provinces].sort((a, b) => {
+    if (b.total_points !== a.total_points) {
+      return b.total_points - a.total_points;
+    }
+    return a.province.localeCompare(b.province);
+  });
+
+  // Buat array update
+  const updates = sorted.map((province, index) => {
+    return supabase
+      .from('province_stats')
+      .update({ rank: index + 1 })
+      .eq('province', province.province);
+  });
+
+  const results = await Promise.allSettled(updates);
+  const success = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.length - success;
+
+  return { success: true, updated: success, failed };
+};
+
+
+export const reassignProfileRanks = async () => {
+  const { data: profiles, error } = await supabase
+    .from('profiles')
+    .select('id, points, created_at')
+    .order('points', { ascending: false })
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('❌ Gagal ambil data:', error);
+    return { success: false, error: error.message };
+  }
+
+  const updates = profiles.map((profile, i) => ({
+    id: profile.id,
+    rank: i + 1
+  }));
+
+  const results = await Promise.allSettled(
+    updates.map(update =>
+      supabase.from('profiles').update({ rank: update.rank }).eq('id', update.id)
+    )
+  );
+
+  const updated = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+
+  return { success: true, updated, failed };
+};

@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-mintPastel: oklch(0.9031 0.0642 128.87);
+  --color-mintPastel: oklch(0.9449 0.0612 126.57);
   --color-oliveSoft: oklch(0.6355 0.0706 148.47);
   --color-greenDark: oklch(0.3172 0.0549 170.43);
   --color-yellowAmber: oklch(0.7211 0.153585 73.0139);

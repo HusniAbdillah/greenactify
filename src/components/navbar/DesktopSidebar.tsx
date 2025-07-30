@@ -14,9 +14,11 @@ import {
   History, 
   UserRound,
 } from 'lucide-react'
+import { useUser } from "@clerk/nextjs";
 
 const DesktopSidebar = () => {
   const pathname = usePathname()
+  const { user } = useUser();
 
   const navItems = [
     { href: '/beranda', icon: Home, label: 'Beranda' },
@@ -62,25 +64,24 @@ const DesktopSidebar = () => {
           })}
         </nav>
 
-        {/* User Profile */}
-        <div className="mb-8 flex flex-col items-center">
-          <UserButton 
-            appearance={{
-              elements: {
-                avatarBox: "w-12 h-12 rounded-2xl shadow-lg border-2 border-tealLight"
-              }
-            }}
-          />
-          <div className="mt-2 text-center">
-            <p className="text-xs font-bold text-black truncate">
-              Ahmad
-            </p>
-            <p className="text-xs text-tealLight truncate">
-              2.4k
-            </p>
+          {/* User Profile */}
+          <div className="flex-shrink-0 p-4 pb-6 -mt-8">
+            <div className="flex flex-col items-center">
+              <UserButton 
+                appearance={{
+                  elements: {
+                    avatarBox: "w-12 h-12 rounded-2xl shadow-lg border-2 border-white"
+                  }
+                }}
+              />
+              <div className="mt-2 text-center">
+                <p className="text-xs font-medium text-green-800 truncate">
+                  {user?.firstName}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
     </>
   )
 }

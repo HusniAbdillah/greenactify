@@ -270,3 +270,124 @@ export async function handleUpdateActivity(
   }
 }
 
+
+
+
+export function useRecalculatePoints() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const callAPI = async () => {
+      try {
+        const res = await fetch('/api/points', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Unknown error');
+        console.log('✅ Recalculated:', data);
+        setError(null);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    callAPI();
+  }, []);
+
+  return { loading, error };
+}
+
+
+
+
+export function useRefreshProvinceStats() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<null | { updated: number; failed: number }>(null);
+
+  useEffect(() => {
+    const callAPI = async () => {
+      try {
+        const res = await fetch('/api/refresh-province');
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Unknown error');
+        setResult(json);
+        setError(null);
+        console.log('🌍 Province stats refreshed:', json);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    callAPI();
+  }, []);
+
+  return { loading, error, result };
+}
+
+export const useRecalculateProvinceRanks = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [updated, setUpdated] = useState<number | null>(null);
+
+  useEffect(() => {
+    const recalculate = async () => {
+      try {
+        const res = await fetch('/api/recalculate/province-rank', {
+          method: 'POST',
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(json.error || 'Unknown error');
+        }
+
+        setUpdated(json.updated);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    recalculate(); // langsung jalan saat hook dipakai
+  }, []);
+
+  return { loading, error, updated };
+};
+
+
+
+
+export function useReassignRank(autoRun = false) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{
+    success?: boolean;
+    updated?: number;
+    failed?: number;
+    error?: string;
+  } | null>(null);
+
+  const run = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/recalculate/user-rank');
+      const json = await res.json();
+      setResult(json);
+    } catch (err) {
+      setResult({ success: false, error: 'Gagal fetch API' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (autoRun) run();
+  }, [autoRun]);
+
+  return { run, loading, result };
+}
