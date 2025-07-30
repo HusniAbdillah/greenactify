@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import UploadStep from "@/components/aksi/1-UploadStep";
 import SelectActivityStep from "@/components/aksi/2-SelectActivityStep";
-import LocationPopup from "@/components/aksi/3-LocationPopup";
+import LocationStep from "@/components/aksi/3-LocationStep";
 import ResultStep from "@/components/aksi/4-ResultStep";
 import { uploadImage } from "@/lib/upload-image";
 import type { ActivityCategory } from "@/components/aksi/2-SelectActivityStep";
@@ -15,7 +15,11 @@ import { createProfileForClerkUser } from "@/lib/create-profile";
 import { supabase } from "@/lib/supabase-client";
 import { ArrowLeft } from "lucide-react";
 
-type FlowStep = "UPLOADING" | "SELECTING_ACTIVITY" | "SHOWING_RESULT";
+type FlowStep =
+  | "UPLOADING"
+  | "SELECTING_ACTIVITY"
+  | "CONFIRMING_LOCATION"
+  | "SHOWING_RESULT";
 
 const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
   UPLOADING: {
@@ -26,33 +30,30 @@ const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
     title: "Pilih Jenis Aksimu",
     subtitle: "Kamu lagi ngapain? Pilih jenis aksinya, ya!",
   },
+  CONFIRMING_LOCATION: {
+    title: "Konfirmasi Lokasi",
+    subtitle: "Di mana kamu melakukan aksi ini? Biar kami tahu!",
+  },
   SHOWING_RESULT: {
     title: "Bagikan Aksimu",
     subtitle: "Semangat! Sekarang tinggal bagikan biar makin menginspirasi!",
   },
 };
 
-const getLocationStep = () => ({
-  title: "Konfirmasi Lokasi",
-  subtitle: "Di mana kamu melakukan aksi ini? Biar kami tahu!",
-});
-
 export default function AksiPage() {
   const [currentStep, setCurrentStep] = useState<FlowStep>("UPLOADING");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [selectedActivity, setSelectedActivity] =
-    useState<ActivityCategory | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<ActivityCategory | null>(null);
   const [confirmedLocation, setConfirmedLocation] = useState<string>("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
-  const [isLocationPopupOpen, setIsLocationPopupOpen] = useState(false);
+
   const { user } = useUser();
   const [profileId, setProfileId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProfileId() {
       if (!user) return;
-
       const res = await fetch("/api/profile");
       const json = await res.json();
       if (json.profileId) {
@@ -83,12 +84,11 @@ export default function AksiPage() {
 
   const handleActivitySelect = (activity: ActivityCategory) => {
     setSelectedActivity(activity);
-    setIsLocationPopupOpen(true);
+    setCurrentStep("CONFIRMING_LOCATION");
   };
 
   const handleLocationConfirm = (location: string) => {
     setConfirmedLocation(location);
-    setIsLocationPopupOpen(false);
     setCurrentStep("SHOWING_RESULT");
   };
 
@@ -149,17 +149,20 @@ export default function AksiPage() {
   const handleBackToUpload = () => {
     setCurrentStep("UPLOADING");
     setUploadedFile(null);
-    setUploadedImageUrl(null); // Juga reset URL gambar agar konsisten
+    setUploadedImageUrl(null);
+  };
+
+  const handleBackToSelectActivity = () => {
+    setCurrentStep("SELECTING_ACTIVITY");
   };
 
   return (
-    <div className="w-full p-4 md:p-6">
+    <div className="w-full p-4 md:p-8">
       <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6 flex items-center">
-        {/* Kolom Kiri: Untuk Tombol Kembali */}
         <div className="w-1/5">
-          {currentStep === "SELECTING_ACTIVITY" && (
+          {(currentStep === "SELECTING_ACTIVITY" || currentStep === "CONFIRMING_LOCATION") && (
             <button
-              onClick={handleBackToUpload}
+              onClick={currentStep === "SELECTING_ACTIVITY" ? handleBackToUpload : handleBackToSelectActivity}
               className="flex items-center gap-2 text-black font-semibold hover:bg-black/10 p-2 rounded-lg transition-colors -ml-2"
             >
               <ArrowLeft size={22} />
@@ -167,22 +170,14 @@ export default function AksiPage() {
             </button>
           )}
         </div>
-
-        {/* Kolom Tengah: Judul yang Terpusat */}
         <div className="w-3/5 text-center">
           <h1 className="text-base md:text-2xl font-bold text-black">
-            {isLocationPopupOpen
-              ? getLocationStep().title
-              : stepTitles[currentStep].title}
+            {stepTitles[currentStep].title}
           </h1>
           <p className="text-center text-black text-xs md:text-lg mt-1">
-            {isLocationPopupOpen
-              ? getLocationStep().subtitle
-              : stepTitles[currentStep].subtitle}
+            {stepTitles[currentStep].subtitle}
           </p>
         </div>
-
-        {/* Kolom Kanan: Spacer untuk menjaga judul tetap di tengah */}
         <div className="w-1/5"></div>
       </div>
 
@@ -197,13 +192,12 @@ export default function AksiPage() {
         />
       )}
 
-      <LocationPopup
-        isOpen={isLocationPopupOpen}
-        onClose={() => setIsLocationPopupOpen(false)}
-        onConfirm={handleLocationConfirm}
-        title={getLocationStep().title}
-        subtitle={getLocationStep().subtitle}
-      />
+      {currentStep === "CONFIRMING_LOCATION" && (
+        <LocationStep
+          onConfirm={handleLocationConfirm}
+          onBack={handleBackToSelectActivity}
+        />
+      )}
 
       {currentStep === "SHOWING_RESULT" && uploadedFile && selectedActivity && (
         <ResultStep
