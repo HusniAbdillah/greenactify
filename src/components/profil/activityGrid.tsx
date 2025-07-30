@@ -23,13 +23,13 @@ export default function ActivitiesGrid() {
 
   if (error) return (
     <div className="rounded-lg bg-red-50 p-4 text-center text-red-600">
-      ❌ Gagal memuat aktivitas: {error.message}
+       Gagal memuat aktivitas: {error.message}, Tolong Refresh halaman
     </div>
   );
 
   if (activities.length === 0) return (
     <div className="rounded-lg bg-blue-50 p-4 text-center text-blue-600">
-      📭 Belum ada aktivitas yang tercatat
+       Belum ada aktivitas yang tercatat
     </div>
   );
 

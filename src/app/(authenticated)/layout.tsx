@@ -2,7 +2,7 @@ import React from 'react'
 import DesktopSidebar from '@/components/navbar/DesktopSidebar'
 import MobileBottomNav from '@/components/navbar/MobileBottomNav'
 import { checkUser } from '@/lib/check-user'
-
+import { Toaster } from 'sonner';
 export default async function AuthenticatedLayout({
   children,
 }: {
@@ -20,6 +20,7 @@ export default async function AuthenticatedLayout({
       <div className="lg:ml-35 h-full"> {/* Sesuaikan dengan width sidebar */}
         <main className="h-full">
           {children}
+          <Toaster /> 
         </main>
       </div>
 
