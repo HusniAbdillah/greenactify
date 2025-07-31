@@ -51,6 +51,8 @@ export default function AksiPage() {
   const [confirmedLongitude, setConfirmedLongitude] = useState<number | null>(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
   const [isActivityInserted, setIsActivityInserted] = useState(false);
+  const [totalActivities, setTotalActivities] = useState<number>(0);
+  const [totalPoints, setTotalPoints] = useState<number>(0);
 
   const { user } = useUser();
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -196,6 +198,22 @@ export default function AksiPage() {
     }
   }, [profileId, selectedActivity, confirmedLocation, generatedImageUrl, isActivityInserted]);
 
+  useEffect(() => {
+    if (!profileId) return;
+    async function fetchProfileStats() {
+      try {
+        const res = await fetch(`/api/profile-stats?id=${profileId}`);
+        const data = await res.json();
+        setTotalActivities(data.total_activities ?? 0);
+        setTotalPoints(data.points ?? 0);
+      } catch (err) {
+        setTotalActivities(0);
+        setTotalPoints(0);
+      }
+    }
+    fetchProfileStats();
+  }, [profileId]);
+
   return (
     <div className="w-full p-4 md:p-8">
       {/* Judul hanya tampil jika bukan step 4 */}
@@ -251,6 +269,8 @@ export default function AksiPage() {
             points: selectedActivity.base_points,
             username: user?.username || user?.fullName || user?.firstName || "",
           }}
+          totalActivities={totalActivities} // <-- kirim ke ResultStep
+          totalPoints={totalPoints}         // <-- kirim ke ResultStep
           onFinish={handleFinish}
           onGeneratedImageReady={setGeneratedImageUrl}
         />

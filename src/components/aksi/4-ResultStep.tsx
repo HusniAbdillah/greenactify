@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { Share2, Download, CheckCircle2, LoaderCircle } from "lucide-react";
 
-// Interface (tidak diubah)
 interface ResultStepProps {
   imageData: {
     file: File;
@@ -16,13 +15,62 @@ interface ResultStepProps {
     points: number;
     username?: string;
   };
+  totalActivities: number;
+  totalPoints: number;
   onFinish: () => void;
   onGeneratedImageReady?: (url: string) => void;
 }
 
-// Komponen Utama yang Telah Disempurnakan
+const wrapText = (
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number
+): number => {
+  const words = text.split(' ');
+  let line = '';
+  let currentY = y;
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = context.measureText(testLine);
+    const testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      context.fillText(line, x, currentY);
+      line = words[n] + ' ';
+      currentY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  context.fillText(line, x, currentY);
+  return currentY;
+};
+
+function countWrappedLines(context: CanvasRenderingContext2D, text: string, maxWidth: number) {
+  const words = text.split(' ');
+  let line = '';
+  let lines = 1;
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = context.measureText(testLine);
+    const testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      line = words[n] + ' ';
+      lines++;
+    } else {
+      line = testLine;
+    }
+  }
+  return lines;
+}
+
 export default function ResultStep({
   imageData,
+  totalActivities,
+  totalPoints,
   onFinish,
   onGeneratedImageReady,
 }: ResultStepProps) {
@@ -36,74 +84,143 @@ export default function ResultStep({
   const now = new Date();
   const formattedDate = now.toLocaleDateString("id-ID", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
   const formattedTime = now.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
+    hour: "2-digit", minute: "2-digit",
   });
 
-  // --- LOGIKA PEMBUATAN GAMBAR & UPLOAD (TIDAK DIUBAH) ---
   useEffect(() => {
     if (uploadRef.current) return;
-    const originalImageUrl = URL.createObjectURL(imageData.file);
+
+    const logoImage = new window.Image();
+    logoImage.src = "/logo-greenactify.png";
+    logoImage.crossOrigin = "anonymous";
+
     const userImage = new window.Image();
-    userImage.src = originalImageUrl;
+    userImage.src = URL.createObjectURL(imageData.file);
     userImage.crossOrigin = "anonymous";
-    userImage.onload = async () => {
+
+    Promise.all([
+      new Promise(resolve => logoImage.onload = resolve),
+      new Promise(resolve => userImage.onload = resolve)
+    ]).then(async () => {
+      
       const canvas = document.createElement("canvas");
       const cardWidth = 1080;
       const cardHeight = 1920;
+      const padding = 80;
       canvas.width = cardWidth;
       canvas.height = cardHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.fillStyle = "#0C3B2E";
+
+      ctx.fillStyle = "#D2E8BB"; // bg-mintPastel
       ctx.fillRect(0, 0, cardWidth, cardHeight);
-      ctx.fillStyle = "#D2E8BB";
-      ctx.font = "bold 90px sans-serif";
+
+      const logoHeight = 180;
+      const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
+      ctx.drawImage(logoImage, cardWidth / 2 - logoWidth / 2, padding, logoWidth, logoHeight);
+
+      let currentY = padding + logoHeight + 80;
+      ctx.fillStyle = "#008373"; // bg-greenDark
+      ctx.font = "italic bold 52px 'Poppins', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("GrenActify", cardWidth / 2, 180);
-      ctx.fillStyle = "#F1FFF3";
-      ctx.font = "48px sans-serif";
-      ctx.fillText(`@${imageData.username || "User"}`, cardWidth / 2, 260);
-      const imageY = 320;
-      const imageHeight = 960;
-      const imageAspectRatio = userImage.width / userImage.height;
-      const canvasAspectRatio = cardWidth / imageHeight;
-      let drawWidth = cardWidth;
-      let drawHeight = imageHeight;
-      let imgX = 0;
-      let imgY = imageY;
-      if (imageAspectRatio > canvasAspectRatio) {
-        drawHeight = cardWidth / imageAspectRatio;
-        imgY += (imageHeight - drawHeight) / 2;
-      } else {
-        drawWidth = imageHeight * imageAspectRatio;
-        imgX = (cardWidth - drawWidth) / 2;
-      }
-      ctx.drawImage(userImage, imgX, imgY, drawWidth, drawHeight);
-      const bottomAreaY = cardHeight - 450;
+      ctx.fillText(`@${imageData.username || "User"}`, cardWidth / 2, currentY);
+
+      currentY += 120;
+      ctx.fillStyle = "#0C3B2E"; // bg-yellowAmber
+      ctx.font = "bold 62px 'Poppins', sans-serif";
       ctx.textAlign = "left";
-      ctx.fillStyle = "#F1FFF3";
-      ctx.font = "bold 92px sans-serif";
-      ctx.fillText(imageData.activity.name, 80, bottomAreaY + 120);
+      ctx.fillText(`${totalActivities} Aktivitas`, padding, currentY);
+      ctx.fillStyle = "#A56D00"; // bg-yellowAmber
       ctx.textAlign = "right";
-      ctx.fillStyle = "#FFBA00";
-      ctx.fillText(`+${imageData.points}`, cardWidth - 80, bottomAreaY + 120);
-      const detailsY = bottomAreaY + 280;
+      ctx.fillText(`${totalPoints} Poin`, cardWidth - padding, currentY);
+
+      currentY += 50;
+      const imageContainerX = padding;
+      const imageContainerY = currentY;
+      const imageContainerWidth = cardWidth - (padding);
+      const imageContainerHeight = imageContainerWidth * (1/1);
+
+      const imgAspectRatio = userImage.width / userImage.height;
+      const containerAspectRatio = imageContainerWidth / imageContainerHeight;
+      let drawWidth, drawHeight, imgX, imgY;
+
+      if (imgAspectRatio > containerAspectRatio) {
+        drawWidth = imageContainerWidth;
+        drawHeight = drawWidth / imgAspectRatio;
+        imgX = imageContainerX;
+        imgY = imageContainerY + (imageContainerHeight - drawHeight) / 2;
+      } else {
+        drawHeight = imageContainerHeight;
+        drawWidth = drawHeight * imgAspectRatio;
+        imgX = imageContainerX + (imageContainerWidth - drawWidth) / 2;
+        imgY = imageContainerY;
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(imgX, imgY, drawWidth, drawHeight, 30);
+      ctx.clip();
+      ctx.drawImage(userImage, imgX, imgY, drawWidth, drawHeight);
+      ctx.restore();
+      
+      currentY += imageContainerHeight + 90;
+      
+      const activityText = imageData.activity.name;
+      const lineHeightDefault = 85;
+      const maxWidth = cardWidth - (padding * 2);
+
+      const wordsCount = activityText.trim().split(/\s+/).length;
+      const lines = countWrappedLines(ctx, activityText, maxWidth);
+
+      let activityFont = "bold 72px 'Poppins', sans-serif";
+      let poinFont = "bold 72px 'Poppins', sans-serif";
+      let footerFont = "bold 50px 'Poppins', sans-serif";
+      let lineHeight = lineHeightDefault;
+      let areaHeight = 200;
+      let poinYOffset = 90;
+
+      if (wordsCount <= 2 && lines === 1) {
+        activityFont = "bold 100px 'Poppins', sans-serif";
+        poinFont = "bold 100px 'Poppins', sans-serif";
+        lineHeight = 100;
+        areaHeight = 250;
+        poinYOffset = 110;
+      }
+
+      const totalTextHeight = lines * lineHeight;
+
+      const areaTop = currentY;
+      const startY = areaTop + (areaHeight - totalTextHeight) / 2;
+
+      ctx.font = activityFont;
+      ctx.fillStyle = "#0C3B2E";
       ctx.textAlign = "center";
-      ctx.fillStyle = "#DFF7E2";
-      ctx.font = "42px sans-serif";
-      const detailsText = `${imageData.location} • ${formattedDate}, ${formattedTime}`;
-      ctx.fillText(detailsText, cardWidth / 2, detailsY);
-      const generatedDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+      const lastLineY = wrapText(ctx, activityText, cardWidth / 2, startY, maxWidth, lineHeight);
+      
+      const footerY = cardHeight - padding;
+      const poinY = footerY - poinYOffset;
+      ctx.fillStyle = "#A56D00";
+      ctx.font = poinFont;
+      ctx.textAlign = "center";
+      ctx.fillText(`+${imageData.points} Poin`, cardWidth / 2, poinY);
+
+      ctx.fillStyle = "#003123";
+      ctx.font = footerFont;
+      ctx.textAlign = "left";
+      ctx.fillText(imageData.location, padding, footerY);
+      ctx.textAlign = "right";
+      ctx.fillText(`${formattedDate}, ${formattedTime}`, cardWidth - padding, footerY);
+
+      const generatedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setGeneratedUrl(generatedDataUrl);
+
       if (onGeneratedImageReady && generatedDataUrl && !hasUploaded) {
         setIsUploading(true);
         uploadRef.current = true;
-        const path = `generated-images/${fileId}-${imageData.activity.id}.png`;
+        const path = `generated-images/${fileId}-${imageData.activity.id}.jpg`;
         try {
           const url = await uploadGeneratedImage(generatedDataUrl, path);
           setHasUploaded(true);
@@ -119,11 +236,9 @@ export default function ResultStep({
           setIsUploading(false);
         }
       }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    })
   }, [fileId]);
 
-  // --- FUNGSI HANDLER (TIDAK DIUBAH) ---
   const handleDownload = () => {
     if (!generatedUrl) return;
     const link = document.createElement("a");
@@ -137,19 +252,15 @@ export default function ResultStep({
     try {
       const res = await fetch(generatedUrl);
       const blob = await res.blob();
-      const file = new File([blob], "grenactify-card.png", {
-        type: "image/png",
-      });
+      const file = new File([blob], "grenactify-card.png", { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: "Aksi Hijauku!",
-          text: `Saya baru saja melakukan ${imageData.activity.name} bersama GrenActify!`,
+          text: `${imageData.activity.name} bareng GrenActify ✔️ Kamu masih scroll? 😭 Ayo ikutan juga dong! 🌱`,
           files: [file],
         });
       } else {
-        alert(
-          "Fitur share tidak didukung. Silakan unduh gambar untuk dibagikan."
-        );
+        alert("Belum bisa share langsung. Tenang, tinggal unduh terus bagikan manual ya!");
       }
     } catch (error) {
       console.error("Error sharing:", error);
@@ -162,21 +273,15 @@ export default function ResultStep({
     router.push("/");
   };
 
-  // --- JSX / Tampilan Baru yang Responsif ---
   return (
-    // Ganti dari div pembungkus utama ini
     <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto py-4 md:items-center md:gap-2 lg:gap-8">
-      {/* Header Khusus Mobile */}
       <div className="w-full md:hidden mb-3 pb-1 text-center">
-        <h2 className="text-xl font-bold text-greenDark">
-          Satu Aksi, Sejuta Inspirasi!
-        </h2>
+        <h2 className="text-xl font-bold text-greenDark">Satu Aksi, Sejuta Inspirasi!</h2>
         <p className="text-black/90 mt-1">
           Bagikan aksimu dan tebarkan semangat hijau ke seluruh dunia.
         </p>
       </div>
 
-      {/* Kolom Kiri: Preview Gambar (Tidak Berubah) */}
       <div className="w-full md:w-5/12 flex-shrink-0">
         <div className="w-full max-w-xs mx-auto shadow-2xl rounded-2xl overflow-hidden aspect-[9/16] bg-whiteGreen">
           {generatedUrl ? (
@@ -196,9 +301,7 @@ export default function ResultStep({
         </div>
       </div>
 
-      {/* Kolom Kanan: Judul & Tombol Aksi (Diperbarui) */}
       <div className="w-full md:w-7/12 flex flex-col justify-center items-center mt-8 md:mt-0">
-        {/* Judul & Subjudul untuk Desktop */}
         <div className="hidden md:block text-center mb-8">
           <h2 className="text-4xl font-bold text-greenDark leading-tight">
             Satu Aksi, <br /> Sejuta Inspirasi!
@@ -208,7 +311,6 @@ export default function ResultStep({
           </p>
         </div>
 
-        {/* --- Tombol Aksi (Tampilan Desktop) --- */}
         <div className="hidden md:flex flex-col gap-4 w-full max-w-xs">
           <button
             onClick={handleShare}
@@ -238,7 +340,6 @@ export default function ResultStep({
           </button>
         </div>
 
-        {/* --- Tombol Aksi (Tampilan Mobile) --- */}
         <div className="flex flex-col items-center w-full mt-2 md:hidden">
           <div className="flex justify-center w-full gap-4">
             <button
