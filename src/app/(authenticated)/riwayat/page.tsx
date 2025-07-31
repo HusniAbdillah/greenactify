@@ -1,16 +1,26 @@
 'use client'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import React, { useState } from 'react' // Baris ini yang diperbaiki
+import React, { useState, useEffect } from 'react' // Baris ini yang diperbaiki
 import { useActivities } from '@/hooks/useSupabase'
 import { Calendar, Filter, Search, MapPin, Share2, Download, TrendingUp } from 'lucide-react'
+
+import { useRouter } from 'next/navigation';
+import { useUser, useClerk } from '@clerk/nextjs';
 
 export default function RiwayatPage() {
   const { activities, loading, error } = useActivities()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'week' | 'month' | 'year'>('all')
   const [selectedCategory, setSelectedCategory] = useState('all')
-
+  const { user } = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    if (user === null) {
+      router.push('/');
+    }
+  }, [user]);
+  
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
     { value: 'Penghijauan', label: 'Penghijauan' },
