@@ -29,17 +29,17 @@ const wrapText = (
   maxWidth: number,
   lineHeight: number
 ): number => {
-  const words = text.split(' ');
-  let line = '';
+  const words = text.split(" ");
+  let line = "";
   let currentY = y;
 
   for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
+    const testLine = line + words[n] + " ";
     const metrics = context.measureText(testLine);
     const testWidth = metrics.width;
     if (testWidth > maxWidth && n > 0) {
       context.fillText(line, x, currentY);
-      line = words[n] + ' ';
+      line = words[n] + " ";
       currentY += lineHeight;
     } else {
       line = testLine;
@@ -49,16 +49,20 @@ const wrapText = (
   return currentY;
 };
 
-function countWrappedLines(context: CanvasRenderingContext2D, text: string, maxWidth: number) {
-  const words = text.split(' ');
-  let line = '';
+function countWrappedLines(
+  context: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number
+) {
+  const words = text.split(" ");
+  let line = "";
   let lines = 1;
   for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
+    const testLine = line + words[n] + " ";
     const metrics = context.measureText(testLine);
     const testWidth = metrics.width;
     if (testWidth > maxWidth && n > 0) {
-      line = words[n] + ' ';
+      line = words[n] + " ";
       lines++;
     } else {
       line = testLine;
@@ -88,7 +92,8 @@ export default function ResultStep({
     year: "numeric",
   });
   const formattedTime = now.toLocaleTimeString("id-ID", {
-    hour: "2-digit", minute: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   useEffect(() => {
@@ -103,14 +108,13 @@ export default function ResultStep({
     userImage.crossOrigin = "anonymous";
 
     Promise.all([
-      new Promise(resolve => logoImage.onload = resolve),
-      new Promise(resolve => userImage.onload = resolve)
+      new Promise((resolve) => (logoImage.onload = resolve)),
+      new Promise((resolve) => (userImage.onload = resolve)),
     ]).then(async () => {
-      
       const canvas = document.createElement("canvas");
       const cardWidth = 1080;
       const cardHeight = 1920;
-      const padding = 80;
+      const padding = 60;
       canvas.width = cardWidth;
       canvas.height = cardHeight;
       const ctx = canvas.getContext("2d");
@@ -121,7 +125,13 @@ export default function ResultStep({
 
       const logoHeight = 180;
       const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
-      ctx.drawImage(logoImage, cardWidth / 2 - logoWidth / 2, padding, logoWidth, logoHeight);
+      ctx.drawImage(
+        logoImage,
+        cardWidth / 2 - logoWidth / 2,
+        padding,
+        logoWidth,
+        logoHeight
+      );
 
       let currentY = padding + logoHeight + 80;
       ctx.fillStyle = "#008373"; // bg-greenDark
@@ -141,8 +151,8 @@ export default function ResultStep({
       currentY += 50;
       const imageContainerX = padding;
       const imageContainerY = currentY;
-      const imageContainerWidth = cardWidth - (padding);
-      const imageContainerHeight = imageContainerWidth * (1/1);
+      const imageContainerWidth = cardWidth - padding * 2;
+      const imageContainerHeight = imageContainerWidth * (1 / 1);
 
       const imgAspectRatio = userImage.width / userImage.height;
       const containerAspectRatio = imageContainerWidth / imageContainerHeight;
@@ -165,29 +175,29 @@ export default function ResultStep({
       ctx.clip();
       ctx.drawImage(userImage, imgX, imgY, drawWidth, drawHeight);
       ctx.restore();
-      
+
       currentY += imageContainerHeight + 90;
-      
+
       const activityText = imageData.activity.name;
       const lineHeightDefault = 85;
-      const maxWidth = cardWidth - (padding * 2);
+      const maxWidth = cardWidth - padding * 2;
 
       const wordsCount = activityText.trim().split(/\s+/).length;
       const lines = countWrappedLines(ctx, activityText, maxWidth);
-      const footerFont = "bold 50px 'Poppins', sans-serif";
+      const footerFont = "bold 45px 'Poppins', sans-serif";
 
       let activityFont = "bold 72px 'Poppins', sans-serif";
       let poinFont = "bold 72px 'Poppins', sans-serif";
       let lineHeight = lineHeightDefault;
-      let areaHeight = 200;
+      let areaHeight = 230;
       let poinYOffset = 90;
 
       if (wordsCount <= 2 && lines === 1) {
-        activityFont = "bold 100px 'Poppins', sans-serif";
-        poinFont = "bold 100px 'Poppins', sans-serif";
+        activityFont = "bold 90px 'Poppins', sans-serif";
+        poinFont = "bold 90px 'Poppins', sans-serif";
         lineHeight = 100;
-        areaHeight = 250;
-        poinYOffset = 110;
+        areaHeight = 200;
+        poinYOffset = 120;
       }
 
       const totalTextHeight = lines * lineHeight;
@@ -198,8 +208,15 @@ export default function ResultStep({
       ctx.font = activityFont;
       ctx.fillStyle = "#0C3B2E";
       ctx.textAlign = "center";
-      const lastLineY = wrapText(ctx, activityText, cardWidth / 2, startY, maxWidth, lineHeight);
-      
+      const lastLineY = wrapText(
+        ctx,
+        activityText,
+        cardWidth / 2,
+        startY,
+        maxWidth,
+        lineHeight
+      );
+
       const footerY = cardHeight - padding;
       const poinY = footerY - poinYOffset;
       ctx.fillStyle = "#A56D00";
@@ -212,7 +229,11 @@ export default function ResultStep({
       ctx.textAlign = "left";
       ctx.fillText(imageData.location, padding, footerY);
       ctx.textAlign = "right";
-      ctx.fillText(`${formattedDate}, ${formattedTime}`, cardWidth - padding, footerY);
+      ctx.fillText(
+        `${formattedDate}, ${formattedTime}`,
+        cardWidth - padding,
+        footerY
+      );
 
       const generatedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setGeneratedUrl(generatedDataUrl);
@@ -236,7 +257,7 @@ export default function ResultStep({
           setIsUploading(false);
         }
       }
-    })
+    });
   }, [
     fileId,
     formattedDate,
@@ -257,7 +278,7 @@ export default function ResultStep({
     if (!generatedUrl) return;
     const link = document.createElement("a");
     link.href = generatedUrl;
-    link.download = "grenactify-card.png";
+    link.download = "greenactify-card.png";
     link.click();
   };
 
@@ -266,15 +287,21 @@ export default function ResultStep({
     try {
       const res = await fetch(generatedUrl);
       const blob = await res.blob();
-      const file = new File([blob], "grenactify-card.png", { type: "image/png" });
+      const file = new File([blob], "greenactify-card.png", {
+        type: "image/png",
+      });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: "Aksi Hijauku!",
-          text: `${imageData.activity.name} bareng GrenActify ✔️ Kamu masih scroll? 😭 Ayo ikutan juga dong! 🌱`,
+          text: `${imageData.activity.name} bareng GreenActify ✔️
+Aksi kecil, dampak besar.
+Yuk ikutan juga 😎🌱`,
           files: [file],
         });
       } else {
-        alert("Belum bisa share langsung. Tenang, tinggal unduh terus bagikan manual ya!");
+        alert(
+          "Belum bisa share langsung. Tenang, tinggal unduh terus bagikan manual ya!"
+        );
       }
     } catch (error) {
       console.error("Error sharing:", error);
@@ -294,7 +321,9 @@ export default function ResultStep({
   return (
     <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto py-4 md:items-center md:gap-2 lg:gap-8">
       <div className="w-full md:hidden mb-3 pb-1 text-center">
-        <h2 className="text-xl font-bold text-greenDark">Satu Aksi, Sejuta Inspirasi!</h2>
+        <h2 className="text-xl font-bold text-greenDark">
+          Satu Aksi, Sejuta Inspirasi!
+        </h2>
         <p className="text-black/90 mt-1">
           Bagikan aksimu dan tebarkan semangat hijau ke seluruh dunia.
         </p>

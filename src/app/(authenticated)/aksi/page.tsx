@@ -272,8 +272,8 @@ export default function AksiPage() {
             points: selectedActivity.base_points,
             username: user?.username || user?.fullName || user?.firstName || "",
           }}
-          totalActivities={totalActivities} // <-- kirim ke ResultStep
-          totalPoints={totalPoints}         // <-- kirim ke ResultStep
+          totalActivities={totalActivities} 
+          totalPoints={totalPoints}         
           onFinish={handleFinish}
           onGeneratedImageReady={setGeneratedImageUrl}
         />
