@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import {
   SignInButton,
@@ -10,25 +10,39 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 import { Users, Target, Heart, Trophy, Medal, Award, MapPin, Download, FileText, TreePine } from 'lucide-react'
+import { fetchStats, type StatsData } from '@/lib/calculate-stats'
 import './globals.css'
 
-// Dummy leaderboard data
-const dummyLeaderboard = [
-  { id: 1, name: "Eko Santoso", province: "DKI Jakarta", points: 12450, rank: 1 },
-  { id: 2, name: "Sari Wijaya", province: "Jawa Barat", points: 11200, rank: 2 },
-  { id: 3, name: "Ahmad Rizki", province: "Jawa Tengah", points: 10800, rank: 3 },
-  { id: 4, name: "Maya Putri", province: "Jawa Timur", points: 9650, rank: 4 },
-  { id: 5, name: "Budi Hartono", province: "Sumatera Utara", points: 8900, rank: 5 },
-]
+interface UserLeaderboard {
+  id: string
+  name: string | null
+  full_name: string | null
+  province: string | null
+  points: number
+  rank: number
+}
 
-// Dummy provinces data
-const dummyProvinces = [
-  { id: 1, province: "DKI Jakarta", total_users: 8520, total_activities: 25600, total_points: 456780, rank: 1 },
-  { id: 2, province: "Jawa Barat", total_users: 7890, total_activities: 23400, total_points: 423100, rank: 2 },
-  { id: 3, province: "Jawa Timur", total_users: 6750, total_activities: 20100, total_points: 398500, rank: 3 },
-  { id: 4, province: "Jawa Tengah", total_users: 5920, total_activities: 18700, total_points: 365200, rank: 4 },
-  { id: 5, province: "Sumatera Utara", total_users: 4680, total_activities: 15200, total_points: 298700, rank: 5 },
-]
+interface ProvinceLeaderboard {
+  id: number
+  province: string
+  total_users: number
+  total_activities: number
+  total_points: number
+  rank: number
+}
+
+const formatNumber = (num: number) => {
+  if (num >= 1500000) {
+    return (num / 1000000).toFixed(1) + 'M+'
+  } else if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M'
+  } else if (num >= 1500) {
+    return (num / 1000).toFixed(1) + 'k+'
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'k'
+  }
+  return num.toString()
+}
 
 const formatPoints = (points: number) => {
   if (points >= 1000) {
@@ -53,6 +67,62 @@ const getRankIcon = (rank: number) => {
 export default function HomePage() {
   const { isSignedIn } = useAuth()
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
+  const [userLeaderboard, setUserLeaderboard] = useState<UserLeaderboard[]>([])
+  const [provinceLeaderboard, setProvinceLeaderboard] = useState<ProvinceLeaderboard[]>([])
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<StatsData>({
+    totalUsers: 0,
+    totalActivities: 0,
+    activeProvinces: 0
+  })
+
+  useEffect(() => {
+    const fetchLeaderboardData = async () => {
+      try {
+        setLoading(true)
+
+        // Fetch stats data
+        const statsData = await fetchStats()
+        setStats(statsData)
+
+        const userResponse = await fetch('/api/leaderboard?type=users')
+        if (userResponse.ok) {
+          const userResult = await userResponse.json()
+          const userData = userResult.data || userResult
+
+          const sortedUsers = userData
+            .sort((a: any, b: any) => (b.points || 0) - (a.points || 0))
+            .slice(0, 5)
+            .map((user: any, index: number) => ({
+              ...user,
+              rank: index + 1
+            }))
+          setUserLeaderboard(sortedUsers)
+        }
+
+        const provinceResponse = await fetch('/api/provinces')
+        if (provinceResponse.ok) {
+          const provinceResult = await provinceResponse.json()
+          const provinceData = provinceResult.data || provinceResult
+
+          const sortedProvinces = provinceData
+            .sort((a: any, b: any) => (b.total_points || 0) - (a.total_points || 0))
+            .slice(0, 5)
+            .map((province: any, index: number) => ({
+              ...province,
+              rank: index + 1
+            }))
+          setProvinceLeaderboard(sortedProvinces)
+        }
+      } catch (error) {
+        console.error('Error fetching leaderboard data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLeaderboardData()
+  }, [])
 
   if (isSignedIn) {
     window.location.href = '/beranda'
@@ -101,18 +171,24 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-8 md:mb-12">
             <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
               <Users className="w-12 h-12 text-tealLight mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">25,000+</h3>
+              <h3 className="text-3xl font-bold text-greenDark">
+                {loading ? '...' : formatNumber(stats.totalUsers)}
+              </h3>
               <p className="text-gray-600">Pejuang Lingkungan</p>
             </div>
             <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
               <Target className="w-12 h-12 text-yellowGold mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">150,000+</h3>
+              <h3 className="text-3xl font-bold text-greenDark">
+                {loading ? '...' : formatNumber(stats.totalActivities)}
+              </h3>
               <p className="text-gray-600">Aksi Lingkungan</p>
             </div>
             <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
               <Heart className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">34</h3>
-              <p className="text-gray-600">Provinsi Terjangkau</p>
+              <h3 className="text-3xl font-bold text-greenDark">
+                {loading ? '...' : stats.activeProvinces}
+              </h3>
+              <p className="text-gray-600">Provinsi Aktif</p>
             </div>
           </div>
 
@@ -178,68 +254,98 @@ export default function HomePage() {
               </h3>
             </div>
 
-            <div className="p-6">
-              {activeTab === 'users' ? (
-                // Users Leaderboard
-                <>
-                  {dummyLeaderboard.map((user) => (
-                    <div
-                      key={user.id}
-                      className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-100 to-orange-100' : 'bg-gray-50'} rounded-xl p-4 mb-3 hover:shadow-md transition-shadow`}
-                    >
+            <div className="p-4 md:p-6">
+              {loading ? (
+                // Loading state
+                <div className="space-y-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="bg-gray-50 rounded-xl p-4 animate-pulse">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="flex items-center justify-center w-10 h-10">
-                            {getRankIcon(user.rank)}
-                          </div>
-
-                          <div className="flex-1">
-                            <h4 className="font-bold text-greenDark">{user.name}</h4>
-                            <p className="text-sm text-gray-600">{user.province}</p>
+                          <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                          <div className="space-y-2">
+                            <div className="h-4 bg-gray-300 rounded w-24"></div>
+                            <div className="h-3 bg-gray-300 rounded w-16"></div>
                           </div>
                         </div>
-
-                        <div className="text-right">
-                          <div className="text-xl font-bold text-yellowGold">
-                            {formatPoints(user.points)}
-                          </div>
-                          <div className="text-sm text-gray-600">poin</div>
-                        </div>
+                        <div className="h-6 bg-gray-300 rounded w-12"></div>
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : activeTab === 'users' ? (
+                // Users Leaderboard
+                <>
+                  {userLeaderboard.length > 0 ? (
+                    userLeaderboard.map((user) => (
+                      <div
+                        key={user.id}
+                        className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-100 to-orange-100' : 'bg-whiteGreen'} rounded-xl p-4 mb-3 hover:shadow-md transition-shadow`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center justify-center w-10 h-10">
+                              {getRankIcon(user.rank)}
+                            </div>
+
+                            <div className="flex-1">
+                              <h4 className="font-bold text-greenDark">{user.full_name || user.name || 'Unknown User'}</h4>
+                              <p className="text-sm text-gray-600">{user.province || 'Unknown Province'}</p>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <div className="text-xl font-bold text-yellowGold">
+                              {formatPoints(user.points || 0)}
+                            </div>
+                            <div className="text-sm text-gray-600">poin</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      Belum ada data pengguna tersedia
+                    </div>
+                  )}
                 </>
               ) : (
                 // Provinces Leaderboard
                 <>
-                  {dummyProvinces.map((province) => (
-                    <div
-                      key={province.id}
-                      className={`${province.rank === 1 ? 'bg-gradient-to-r from-yellow-100 to-orange-100' : 'bg-gray-50'} rounded-xl p-4 mb-3 hover:shadow-md transition-shadow`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center justify-center w-10 h-10">
-                            {getRankIcon(province.rank)}
+                  {provinceLeaderboard.length > 0 ? (
+                    provinceLeaderboard.map((province) => (
+                      <div
+                        key={province.id}
+                        className={`${province.rank === 1 ? 'bg-gradient-to-r from-yellow-100 to-orange-100' : 'bg-whiteGreen'} rounded-xl p-4 mb-3 hover:shadow-md transition-shadow`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center justify-center w-10 h-10">
+                              {getRankIcon(province.rank)}
+                            </div>
+
+                            <div className="flex-1">
+                              <h4 className="font-bold text-greenDark">{province.province}</h4>
+                              <p className="text-sm text-gray-600">
+                                {formatPoints(province.total_users || 0)} peserta • {formatPoints(province.total_activities || 0)} aktivitas
+                              </p>
+                            </div>
                           </div>
 
-                          <div className="flex-1">
-                            <h4 className="font-bold text-greenDark">{province.province}</h4>
-                            <p className="text-sm text-gray-600">
-                              {formatPoints(province.total_users)} peserta • {formatPoints(province.total_activities)} aktivitas
-                            </p>
+                          <div className="text-right">
+                            <div className="text-xl font-bold text-yellowGold">
+                              {formatPoints(province.total_points || 0)}
+                            </div>
+                            <div className="text-sm text-gray-600">poin</div>
                           </div>
-                        </div>
-
-                        <div className="text-right">
-                          <div className="text-xl font-bold text-yellowGold">
-                            {formatPoints(province.total_points)}
-                          </div>
-                          <div className="text-sm text-gray-600">poin</div>
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      Belum ada data provinsi tersedia
                     </div>
-                  ))}
+                  )}
                 </>
               )}
             </div>
@@ -269,7 +375,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-mintPastel rounded-xl p-6">
+              <div className="bg-whiteGreen rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <Target className="w-6 h-6 text-tealLight" />
                   <h3 className="font-bold text-greenDark">Laporan Bulanan</h3>
@@ -283,7 +389,7 @@ export default function HomePage() {
                 </button>
               </div>
 
-              <div className="bg-mintPastel rounded-xl p-6">
+              <div className="bg-whiteGreen rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <Trophy className="w-6 h-6 text-yellowGold" />
                   <h3 className="font-bold text-greenDark">Laporan Tahunan</h3>
@@ -299,7 +405,7 @@ export default function HomePage() {
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 mb-10 md:mb-4">
                 Laporan ini berisi data real-time dari aktivitas pengguna dan dampak lingkungan yang terukur
               </p>
               <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400">
