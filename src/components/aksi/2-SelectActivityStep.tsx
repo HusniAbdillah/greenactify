@@ -11,7 +11,9 @@ export type ActivityCategory = {
   id: string;
   name: string;
   base_points: number;
+  description: string;
   activity_category_group?: { group_id: string }[];
+  
 };
 
 interface ActivityGroup {

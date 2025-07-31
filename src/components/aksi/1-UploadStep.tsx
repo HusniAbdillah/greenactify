@@ -133,7 +133,6 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
         </p>
         <p className="text-gray-500">atau</p>
 
-        {/* [FIX] Tambahkan e.stopPropagation() untuk mencegah event bubbling */}
         <button
           type="button"
           onClick={(e) => {

@@ -14,6 +14,7 @@ import { updateProvinceStats } from "@/lib/update-province.stats";
 import { createProfileForClerkUser } from "@/lib/create-profile";
 import { supabase } from "@/lib/supabase-client";
 import { ArrowLeft } from "lucide-react";
+import { getProfileIdByClerkId } from "@/lib/get-profile-front";
 
 type FlowStep =
   | "UPLOADING"
@@ -47,6 +48,7 @@ export default function AksiPage() {
   const [selectedActivity, setSelectedActivity] = useState<ActivityCategory | null>(null);
   const [confirmedLocation, setConfirmedLocation] = useState<string>("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
+  const [isActivityInserted, setIsActivityInserted] = useState(false);
 
   const { user } = useUser();
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -54,11 +56,12 @@ export default function AksiPage() {
   useEffect(() => {
     async function fetchProfileId() {
       if (!user) return;
-      const res = await fetch("/api/profile");
-      const json = await res.json();
-      if (json.profileId) {
-        setProfileId(json.profileId);
-      } else if (json.error === "Profile not found") {
+      // Ambil profileId langsung dari Supabase berdasarkan clerkId (client-side)
+      const id = await getProfileIdByClerkId(user.id);
+      if (id) {
+        setProfileId(id);
+      } else {
+        // Jika belum ada profile, buat profile baru
         const newId = await createProfileForClerkUser(
           user.id,
           user.username || user.fullName || user.firstName || ""
@@ -94,14 +97,15 @@ export default function AksiPage() {
 
   const handleFinish = async () => {
     try {
-      if (
-        !profileId ||
-        !selectedActivity ||
-        !uploadedImageUrl ||
-        !confirmedLocation ||
-        !generatedImageUrl
-      ) {
-        alert("Data belum lengkap!");
+      const missingFields: string[] = [];
+      if (!profileId) missingFields.push("Profile ID");
+      if (!selectedActivity) missingFields.push("Jenis Aksi");
+      if (!uploadedImageUrl) missingFields.push("Gambar yang diunggah");
+      if (!confirmedLocation) missingFields.push("Lokasi");
+      if (!generatedImageUrl) missingFields.push("Gambar hasil generate");
+
+      if (missingFields.length > 0) {
+        alert(`Data belum lengkap!\n\nMohon lengkapi: ${missingFields.join(", ")}`);
         return;
       }
 
@@ -119,21 +123,22 @@ export default function AksiPage() {
       }
 
       await createActivity({
-        user_id: profileId,
-        category_id: selectedActivity.id,
-        title: selectedActivity.name,
-        points: selectedActivity.base_points,
-        image_url: uploadedImageUrl,
-        generated_image_url: generatedImageUrl,
+        user_id: profileId!,
+        category_id: selectedActivity!.id,
+        title: selectedActivity!.name,
+        description: selectedActivity!.description, // <-- tambahkan ini
+        points: selectedActivity!.base_points,
         latitude: 0,
         longitude: 0,
-        province: confirmedLocation,
+        province: confirmedLocation ?? "",
         city: "",
         is_shared: false,
+        image_url: uploadedImageUrl ?? "",
+        generated_image_url: generatedImageUrl ?? "",
       });
 
-      await updateUserPoints(profileId, selectedActivity.base_points);
-      await updateProvinceStats(confirmedLocation, selectedActivity.base_points);
+      await updateUserPoints(profileId!, selectedActivity!.base_points);
+      await updateProvinceStats(confirmedLocation, selectedActivity!.base_points);
 
       setCurrentStep("UPLOADING");
       setUploadedFile(null);
@@ -155,6 +160,42 @@ export default function AksiPage() {
   const handleBackToSelectActivity = () => {
     setCurrentStep("SELECTING_ACTIVITY");
   };
+
+  useEffect(() => {
+    // Insert otomatis jika semua data sudah lengkap dan belum pernah insert
+    if (
+      profileId &&
+      selectedActivity &&
+      confirmedLocation &&
+      generatedImageUrl &&
+      !isActivityInserted
+    ) {
+      setIsActivityInserted(true); // Mencegah insert ganda
+      createActivity({
+        user_id: profileId,
+        category_id: selectedActivity.id,
+        title: selectedActivity.name,
+        description: selectedActivity.description, // <-- tambahkan ini
+        points: selectedActivity.base_points,
+        latitude: 0,
+        longitude: 0,
+        province: confirmedLocation,
+        city: "",
+        is_shared: false,
+        image_url: uploadedImageUrl ?? "",
+        generated_image_url: generatedImageUrl,
+      })
+        .then(() => {
+          // Optional: update user points, province stats, dsb
+          updateUserPoints(profileId, selectedActivity.base_points);
+          updateProvinceStats(confirmedLocation, selectedActivity.base_points);
+        })
+        .catch((err) => {
+          // Optional: handle error
+          setIsActivityInserted(false); // Boleh retry jika gagal
+        });
+    }
+  }, [profileId, selectedActivity, confirmedLocation, generatedImageUrl, isActivityInserted]);
 
   return (
     <div className="w-full p-4 md:p-8">
