@@ -198,28 +198,31 @@ export default function AksiPage() {
 
   return (
     <div className="w-full p-4 md:p-8">
-      <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6 flex items-center">
-        <div className="w-1/5">
-          {(currentStep === "SELECTING_ACTIVITY" || currentStep === "CONFIRMING_LOCATION") && (
-            <button
-              onClick={currentStep === "SELECTING_ACTIVITY" ? handleBackToUpload : handleBackToSelectActivity}
-              className="flex items-center gap-2 text-black font-semibold hover:bg-black/10 p-2 rounded-lg transition-colors -ml-2"
-            >
-              <ArrowLeft size={22} />
-              <span className="hidden md:inline">Kembali</span>
-            </button>
-          )}
+      {/* Judul hanya tampil jika bukan step 4 */}
+      {currentStep !== "SHOWING_RESULT" && (
+        <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6 flex items-center">
+          <div className="w-1/5">
+            {(currentStep === "SELECTING_ACTIVITY" || currentStep === "CONFIRMING_LOCATION") && (
+              <button
+                onClick={currentStep === "SELECTING_ACTIVITY" ? handleBackToUpload : handleBackToSelectActivity}
+                className="flex items-center gap-2 text-black font-semibold hover:bg-black/10 p-2 rounded-lg transition-colors -ml-2"
+              >
+                <ArrowLeft size={22} />
+                <span className="hidden md:inline">Kembali</span>
+              </button>
+            )}
+          </div>
+          <div className="w-3/5 text-center">
+            <h1 className="text-base md:text-2xl font-bold text-black">
+              {stepTitles[currentStep].title}
+            </h1>
+            <p className="text-center text-black text-xs md:text-lg mt-1">
+              {stepTitles[currentStep].subtitle}
+            </p>
+          </div>
+          <div className="w-1/5"></div>
         </div>
-        <div className="w-3/5 text-center">
-          <h1 className="text-base md:text-2xl font-bold text-black">
-            {stepTitles[currentStep].title}
-          </h1>
-          <p className="text-center text-black text-xs md:text-lg mt-1">
-            {stepTitles[currentStep].subtitle}
-          </p>
-        </div>
-        <div className="w-1/5"></div>
-      </div>
+      )}
 
       {currentStep === "UPLOADING" && (
         <UploadStep onFileSelect={handleFileSelect} />

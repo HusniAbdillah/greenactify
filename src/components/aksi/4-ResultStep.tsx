@@ -35,10 +35,13 @@ export default function ResultStep({
 
   const now = new Date();
   const formattedDate = now.toLocaleDateString("id-ID", {
-    day: "numeric", month: "long", year: "numeric",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
   const formattedTime = now.toLocaleTimeString("id-ID", {
-    hour: "2-digit", minute: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   // --- LOGIKA PEMBUATAN GAMBAR & UPLOAD (TIDAK DIUBAH) ---
@@ -117,7 +120,7 @@ export default function ResultStep({
         }
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fileId]);
 
   // --- FUNGSI HANDLER (TIDAK DIUBAH) ---
@@ -134,7 +137,9 @@ export default function ResultStep({
     try {
       const res = await fetch(generatedUrl);
       const blob = await res.blob();
-      const file = new File([blob], "grenactify-card.png", { type: "image/png" });
+      const file = new File([blob], "grenactify-card.png", {
+        type: "image/png",
+      });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: "Aksi Hijauku!",
@@ -142,7 +147,9 @@ export default function ResultStep({
           files: [file],
         });
       } else {
-        alert("Fitur share tidak didukung. Silakan unduh gambar untuk dibagikan.");
+        alert(
+          "Fitur share tidak didukung. Silakan unduh gambar untuk dibagikan."
+        );
       }
     } catch (error) {
       console.error("Error sharing:", error);
@@ -157,9 +164,19 @@ export default function ResultStep({
 
   // --- JSX / Tampilan Baru yang Responsif ---
   return (
-    <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto p-4 md:items-center md:gap-8 lg:gap-16">
-      
-      {/* Kolom Kiri: Preview Gambar */}
+    // Ganti dari div pembungkus utama ini
+    <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto py-4 md:items-center md:gap-2 lg:gap-8">
+      {/* Header Khusus Mobile */}
+      <div className="w-full md:hidden mb-3 pb-1 text-center">
+        <h2 className="text-xl font-bold text-greenDark">
+          Satu Aksi, Sejuta Inspirasi!
+        </h2>
+        <p className="text-black/90 mt-1">
+          Bagikan aksimu dan tebarkan semangat hijau ke seluruh dunia.
+        </p>
+      </div>
+
+      {/* Kolom Kiri: Preview Gambar (Tidak Berubah) */}
       <div className="w-full md:w-5/12 flex-shrink-0">
         <div className="w-full max-w-xs mx-auto shadow-2xl rounded-2xl overflow-hidden aspect-[9/16] bg-whiteGreen">
           {generatedUrl ? (
@@ -179,8 +196,17 @@ export default function ResultStep({
         </div>
       </div>
 
-      {/* Kolom Kanan: Tombol Aksi */}
+      {/* Kolom Kanan: Judul & Tombol Aksi (Diperbarui) */}
       <div className="w-full md:w-7/12 flex flex-col justify-center items-center mt-8 md:mt-0">
+        {/* Judul & Subjudul untuk Desktop */}
+        <div className="hidden md:block text-center mb-8">
+          <h2 className="text-4xl font-bold text-greenDark leading-tight">
+            Satu Aksi, <br /> Sejuta Inspirasi!
+          </h2>
+          <p className="text-oliveSoft mt-2 max-w-md">
+            Bagikan aksimu dan tebarkan semangat hijau ke seluruh dunia.
+          </p>
+        </div>
 
         {/* --- Tombol Aksi (Tampilan Desktop) --- */}
         <div className="hidden md:flex flex-col gap-4 w-full max-w-xs">
@@ -213,29 +239,42 @@ export default function ResultStep({
         </div>
 
         {/* --- Tombol Aksi (Tampilan Mobile) --- */}
-        <div className="flex md:hidden items-center justify-around w-full mt-6">
-          <button onClick={handleDownload} className="flex flex-col items-center gap-1 text-oliveSoft font-semibold">
-            <Download size={24} />
-            <span className="text-xs">Unduh</span>
-          </button>
-          
-          <button
-            onClick={handleFinish}
-            disabled={!generatedUrl || !hasUploaded || isUploading}
-            className="flex items-center justify-center gap-3 w-auto px-8 py-3 rounded-full bg-yellowGold text-greenDark font-bold text-lg shadow-lg hover:bg-yellowGold/90 transition-all disabled:opacity-50"
-          >
-            {isUploading ? (
-              <LoaderCircle size={22} className="animate-spin" />
-            ) : (
-              <CheckCircle2 size={22} />
-            )}
-            <span>Selesai</span>
-          </button>
-
-          <button onClick={handleShare} className="flex flex-col items-center gap-1 text-tealLight font-semibold">
-            <Share2 size={24} />
-            <span className="text-xs">Bagikan</span>
-          </button>
+        <div className="flex flex-col items-center w-full mt-2 md:hidden">
+          <div className="flex justify-center w-full gap-4">
+            <button
+              onClick={handleDownload}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-oliveSoft text-whiteMint font-bold shadow-lg hover:bg-oliveSoft/90 transition-all"
+            >
+              <Download size={20} />
+              <span>Unduh</span>
+            </button>
+            <button
+              onClick={handleShare}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-tealLight text-whiteMint font-bold shadow-lg hover:bg-tealLight/90 transition-all"
+            >
+              <Share2 size={20} />
+              <span>Bagikan</span>
+            </button>
+          </div>
+          <div className="w-full mt-4">
+            <button
+              onClick={handleFinish}
+              disabled={!generatedUrl || !hasUploaded || isUploading}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-whiteGreen border border-greenDark/20 text-greenDark font-bold shadow-sm hover:bg-greenDark/10 transition-all disabled:opacity-50"
+            >
+              {isUploading ? (
+                <>
+                  <LoaderCircle size={20} className="animate-spin" />
+                  <span>Mengunggah...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={20} />
+                  <span>Selesai</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
