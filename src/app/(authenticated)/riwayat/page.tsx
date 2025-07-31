@@ -19,7 +19,7 @@ export default function RiwayatPage() {
     if (user === null) {
       router.push('/');
     }
-  }, [user]);
+  }, [user, router]);
   
   const categories = [
     { value: 'all', label: 'Semua Kategori' },

@@ -59,7 +59,7 @@ export default function ProfileActivity({
     </div>
   );
 
-  let countMap = {
+  const  countMap = {
     'Daur Ulang': 0,
     'Bersih-bersih': 0,
     'Hemat Energi': 0,
@@ -69,7 +69,7 @@ export default function ProfileActivity({
     'Transportasi Hijau': 0,
     'Penghijauan': 0,
   };
-  
+
   for (const activity of activities) {
     const group = activity.activity_categories.group_category;
     if (group in countMap) {
