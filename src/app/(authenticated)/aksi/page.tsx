@@ -173,7 +173,6 @@ export default function AksiPage() {
       generatedImageUrl &&
       !isActivityInserted
     ) {
-      setIsActivityInserted(true);
       createActivity({
         user_id: profileId,
         category_id: selectedActivity.id,
@@ -188,15 +187,19 @@ export default function AksiPage() {
         image_url: uploadedImageUrl ?? "",
         generated_image_url: generatedImageUrl,
       })
-        .then(() => {
-          updateUserPoints(profileId, selectedActivity.base_points);
-          updateProvinceStats(confirmedLocation, selectedActivity.base_points);
-        })
-        .catch((err) => {
-          setIsActivityInserted(false);
-        });
+        .then(() => { /* ... */ })
+        .catch((err) => { /* ... */ });
     }
-  }, [profileId, selectedActivity, confirmedLocation, generatedImageUrl, isActivityInserted]);
+  }, [
+    profileId,
+    selectedActivity,
+    confirmedLocation,
+    generatedImageUrl,
+    isActivityInserted,
+    confirmedLatitude,
+    confirmedLongitude,
+    uploadedImageUrl,
+  ]);
 
   useEffect(() => {
     if (!profileId) return;

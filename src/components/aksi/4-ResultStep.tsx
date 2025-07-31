@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { uploadGeneratedImage } from "@/lib/upload-generated-image";
 import Image from "next/image";
 import { v4 as uuidv4 } from "uuid";
@@ -174,10 +174,10 @@ export default function ResultStep({
 
       const wordsCount = activityText.trim().split(/\s+/).length;
       const lines = countWrappedLines(ctx, activityText, maxWidth);
+      const footerFont = "bold 50px 'Poppins', sans-serif";
 
       let activityFont = "bold 72px 'Poppins', sans-serif";
       let poinFont = "bold 72px 'Poppins', sans-serif";
-      let footerFont = "bold 50px 'Poppins', sans-serif";
       let lineHeight = lineHeightDefault;
       let areaHeight = 200;
       let poinYOffset = 90;
@@ -237,7 +237,21 @@ export default function ResultStep({
         }
       }
     })
-  }, [fileId]);
+  }, [
+    fileId,
+    formattedDate,
+    formattedTime,
+    hasUploaded,
+    imageData.activity.id,
+    imageData.activity.name,
+    imageData.file,
+    imageData.location,
+    imageData.points,
+    imageData.username,
+    onGeneratedImageReady,
+    totalActivities,
+    totalPoints,
+  ]);
 
   const handleDownload = () => {
     if (!generatedUrl) return;
@@ -272,6 +286,10 @@ export default function ResultStep({
     onFinish();
     router.push("/");
   };
+
+  const handleGeneratedImageReady = useCallback((url: string) => {
+    setGeneratedUrl(url);
+  }, []);
 
   return (
     <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto py-4 md:items-center md:gap-2 lg:gap-8">
