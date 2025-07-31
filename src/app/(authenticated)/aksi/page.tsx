@@ -25,19 +25,19 @@ type FlowStep =
 const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
   UPLOADING: {
     title: "Unggah Aksi Hijaumu",
-    subtitle: "Aksi hijau kamu mana nih? Unggah fotonya di sini!",
+    subtitle: "Aksi hijaumu mana? Unggah fotonya!",
   },
   SELECTING_ACTIVITY: {
     title: "Pilih Jenis Aksimu",
-    subtitle: "Kamu lagi ngapain? Pilih jenis aksinya, ya!",
+    subtitle: "Lagi ngapain? Pilih jenis aksinya, ya!",
   },
   CONFIRMING_LOCATION: {
     title: "Konfirmasi Lokasi",
-    subtitle: "Di mana kamu melakukan aksi ini? Biar kami tahu!",
+    subtitle: "Di mana kamu melakukan aksi ini?",
   },
   SHOWING_RESULT: {
     title: "Bagikan Aksimu",
-    subtitle: "Semangat! Sekarang tinggal bagikan biar makin menginspirasi!",
+    subtitle: "Yuk, bagikan biar makin menginspirasi!",
   },
 };
 
@@ -47,6 +47,8 @@ export default function AksiPage() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityCategory | null>(null);
   const [confirmedLocation, setConfirmedLocation] = useState<string>("");
+  const [confirmedLatitude, setConfirmedLatitude] = useState<number | null>(null);
+  const [confirmedLongitude, setConfirmedLongitude] = useState<number | null>(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
   const [isActivityInserted, setIsActivityInserted] = useState(false);
 
@@ -56,12 +58,10 @@ export default function AksiPage() {
   useEffect(() => {
     async function fetchProfileId() {
       if (!user) return;
-      // Ambil profileId langsung dari Supabase berdasarkan clerkId (client-side)
       const id = await getProfileIdByClerkId(user.id);
       if (id) {
         setProfileId(id);
       } else {
-        // Jika belum ada profile, buat profile baru
         const newId = await createProfileForClerkUser(
           user.id,
           user.username || user.fullName || user.firstName || ""
@@ -90,8 +90,10 @@ export default function AksiPage() {
     setCurrentStep("CONFIRMING_LOCATION");
   };
 
-  const handleLocationConfirm = (location: string) => {
+  const handleLocationConfirm = (location: string, latitude?: number, longitude?: number) => {
     setConfirmedLocation(location);
+    setConfirmedLatitude(latitude ?? null);
+    setConfirmedLongitude(longitude ?? null);
     setCurrentStep("SHOWING_RESULT");
   };
 
@@ -126,10 +128,10 @@ export default function AksiPage() {
         user_id: profileId!,
         category_id: selectedActivity!.id,
         title: selectedActivity!.name,
-        description: selectedActivity!.description, // <-- tambahkan ini
+        description: selectedActivity!.description,
         points: selectedActivity!.base_points,
-        latitude: 0,
-        longitude: 0,
+        latitude: confirmedLatitude ?? 0,
+        longitude: confirmedLongitude ?? 0,
         province: confirmedLocation ?? "",
         city: "",
         is_shared: false,
@@ -162,7 +164,6 @@ export default function AksiPage() {
   };
 
   useEffect(() => {
-    // Insert otomatis jika semua data sudah lengkap dan belum pernah insert
     if (
       profileId &&
       selectedActivity &&
@@ -170,15 +171,15 @@ export default function AksiPage() {
       generatedImageUrl &&
       !isActivityInserted
     ) {
-      setIsActivityInserted(true); // Mencegah insert ganda
+      setIsActivityInserted(true);
       createActivity({
         user_id: profileId,
         category_id: selectedActivity.id,
         title: selectedActivity.name,
-        description: selectedActivity.description, // <-- tambahkan ini
+        description: selectedActivity.description,
         points: selectedActivity.base_points,
-        latitude: 0,
-        longitude: 0,
+        latitude: confirmedLatitude ?? 0,
+        longitude: confirmedLongitude ?? 0,
         province: confirmedLocation,
         city: "",
         is_shared: false,
@@ -186,13 +187,11 @@ export default function AksiPage() {
         generated_image_url: generatedImageUrl,
       })
         .then(() => {
-          // Optional: update user points, province stats, dsb
           updateUserPoints(profileId, selectedActivity.base_points);
           updateProvinceStats(confirmedLocation, selectedActivity.base_points);
         })
         .catch((err) => {
-          // Optional: handle error
-          setIsActivityInserted(false); // Boleh retry jika gagal
+          setIsActivityInserted(false);
         });
     }
   }, [profileId, selectedActivity, confirmedLocation, generatedImageUrl, isActivityInserted]);
