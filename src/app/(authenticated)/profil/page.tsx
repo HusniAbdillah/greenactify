@@ -17,8 +17,7 @@ export default function ProfileContent() {
     if (user === null) {
       router.push('/');
     }
-  }, [user]);
-
+  }, [user, router]);
   function getRankInfo(rank: number | null) {
     if (rank === 1) {
       return {
@@ -84,11 +83,11 @@ export default function ProfileContent() {
           )}
 
           <div className="flex flex-col justify-start items-center gap-2 lg:mr-13">
-            <p className="font-bold sm:text-xl text-lg md:text-3xl text-black">
+            <p className="font-bold sm:text-xl text-lg lg:text-3xl text-black">
               @{profile?.username}
             </p>
 
-            <p className="font-bold text-sm md:text-lg text-black">
+            <p className="font-bold text-sm lg:text-lg text-black">
               {profile?.full_name}
             </p>
 
@@ -130,8 +129,7 @@ export default function ProfileContent() {
               {profile?.points} poin
             </p>
           </div>
-
-          <div className="font-bold text-center text-[17px] md:text-[24px] pl-12 max-w-65 md:max-w-100">
+          <div className="font-bold text-center text-[17px] lg:text-[24px] pl-12 max-w-65 lg:max-w-100">
             {profile && profile.rank !== null && profile.rank <= 1000 && (
               <p className="font-extrabold text-yellowGold text-[23px] md:text-[28px]">
                 Selamat!
