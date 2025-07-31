@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { ArrowLeft, MapPin, Calendar, Trophy, Activity } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 interface UserProfile {
   id: string
@@ -104,10 +105,12 @@ const UserProfilePage = () => {
           {/* Avatar */}
           <div className="w-20 h-20 bg-gray-300 rounded-full overflow-hidden">
             {profile.avatar_url ? (
-              <img
+              <Image
                 src={profile.avatar_url}
                 alt={profile.full_name}
-                className="w-full h-full object-cover"
+                width={100}
+                height={100}
+                className="rounded-full"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600"></div>
