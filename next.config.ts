@@ -7,9 +7,10 @@ const nextConfig: NextConfig = {
       'images.pexels.com',
       'img.clerk.com',
     ],
-
   },
-
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

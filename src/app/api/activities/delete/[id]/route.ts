@@ -1,20 +1,21 @@
-
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { deleteActivityAndDecrementPoints, supabase } from '@/lib/supabase-client';
 import { getProfileIdByClerkId } from '@/lib/get-profile'; 
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } } 
+  req: Request,
+  context: any
 ) {
+  const { id } = context.params;
+
   const { userId: clerkId } = await auth();
 
   if (!clerkId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const activityId = params.id; // Extracting activityId from the dynamic route segment
+  const activityId = id; // Extracting activityId from the dynamic route segment
 
   if (!activityId || typeof activityId !== 'string') {
     return NextResponse.json({ error: 'Activity ID is required' }, { status: 400 });

@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     // Panggil model Gemini dengan pesan dan dapatkan hasilnya sebagai stream
     const result = await streamText({
       // Gunakan model yang stabil dan cepat
-      model: google('models/gemini-1.5-flash-latest'),
+      model: google('models/gemini-1.5-flash'),
       
       // Berikan 'kepribadian' pada chatbot Anda
       system: `
@@ -35,6 +35,9 @@ export async function POST(req: Request) {
       
       // Teruskan riwayat percakapan
       messages,
+
+      // Konfigurasi tambahan untuk proses generasi
+      temperature: 0.7,
     });
 
     // Kembalikan hasilnya sebagai StreamingTextResponse
