@@ -1,76 +1,125 @@
-// app/(authenticated)/aksi/page.tsx
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import UploadStep from '@/components/aksi/1-UploadStep';
-import SelectActivityStep from '@/components/aksi/2-SelectActivityStep';
-import LocationPopup from '@/components/aksi/3-LocationPopup';
-import ResultStep from '@/components/aksi/4-ResultStep';
-import { uploadImage } from '@/lib/upload-image';
-import type { ActivityCategory } from '@/components/aksi/2-SelectActivityStep'; // atau definisikan sendiri
-import { useUser } from '@/hooks/useUser';
-import { createActivity } from '@/lib/create-activity'
-import { updateUserPoints } from '@/lib/update-user-points'
-import { updateProvinceStats } from '@/lib/update-province.stats'
-import { getProfileIdByClerkId } from '@/lib/get-profile-front';
+import { useState, useEffect } from "react";
+import UploadStep from "@/components/aksi/1-UploadStep";
+import SelectActivityStep from "@/components/aksi/2-SelectActivityStep";
+import LocationStep from "@/components/aksi/3-LocationStep";
+import ResultStep from "@/components/aksi/4-ResultStep";
+import { uploadImage } from "@/lib/upload-image";
+import type { ActivityCategory } from "@/components/aksi/2-SelectActivityStep";
+import { useUser } from "@/hooks/useUser";
+import { createActivity } from "@/lib/create-activity";
+import { updateUserPoints } from "@/lib/update-user-points";
+import { updateProvinceStats } from "@/lib/update-province.stats";
+import { createProfileForClerkUser } from "@/lib/create-profile";
+import { supabase } from "@/lib/supabase-client";
+import { ArrowLeft } from "lucide-react";
 
-type FlowStep = 'UPLOADING' | 'SELECTING_ACTIVITY' | 'SHOWING_RESULT';
+type FlowStep =
+  | "UPLOADING"
+  | "SELECTING_ACTIVITY"
+  | "CONFIRMING_LOCATION"
+  | "SHOWING_RESULT";
+
+const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
+  UPLOADING: {
+    title: "Unggah Aksi Hijaumu",
+    subtitle: "Aksi hijau kamu mana nih? Unggah fotonya di sini!",
+  },
+  SELECTING_ACTIVITY: {
+    title: "Pilih Jenis Aksimu",
+    subtitle: "Kamu lagi ngapain? Pilih jenis aksinya, ya!",
+  },
+  CONFIRMING_LOCATION: {
+    title: "Konfirmasi Lokasi",
+    subtitle: "Di mana kamu melakukan aksi ini? Biar kami tahu!",
+  },
+  SHOWING_RESULT: {
+    title: "Bagikan Aksimu",
+    subtitle: "Semangat! Sekarang tinggal bagikan biar makin menginspirasi!",
+  },
+};
 
 export default function AksiPage() {
-  const [currentStep, setCurrentStep] = useState<FlowStep>('UPLOADING');
-
+  const [currentStep, setCurrentStep] = useState<FlowStep>("UPLOADING");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<ActivityCategory | null>(null);
-  const [confirmedLocation, setConfirmedLocation] = useState<string>('');
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string>('');
-
-  const [isLocationPopupOpen, setIsLocationPopupOpen] = useState(false);
+  const [confirmedLocation, setConfirmedLocation] = useState<string>("");
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
 
   const { user } = useUser();
   const [profileId, setProfileId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.id) {
-      getProfileIdByClerkId(user.id).then(setProfileId);
+    async function fetchProfileId() {
+      if (!user) return;
+      const res = await fetch("/api/profile");
+      const json = await res.json();
+      if (json.profileId) {
+        setProfileId(json.profileId);
+      } else if (json.error === "Profile not found") {
+        const newId = await createProfileForClerkUser(
+          user.id,
+          user.username || user.fullName || user.firstName || ""
+        );
+        setProfileId(newId);
+      }
     }
-  }, [user?.id]);
+    fetchProfileId();
+  }, [user]);
 
   const handleFileSelect = async (file: File) => {
-    // Buat path unik, misal pakai timestamp
     const path = `user-uploads/${Date.now()}-${file.name}`;
     try {
       const url = await uploadImage(file, path);
       setUploadedImageUrl(url);
       setUploadedFile(file);
-      setCurrentStep('SELECTING_ACTIVITY');
-      // Lanjut ke step berikutnya atau simpan ke database
+      setCurrentStep("SELECTING_ACTIVITY");
     } catch (err) {
-      alert('Gagal upload gambar');
+      alert("Gagal upload gambar");
+      throw err;
     }
   };
 
   const handleActivitySelect = (activity: ActivityCategory) => {
     setSelectedActivity(activity);
-    setIsLocationPopupOpen(true);
+    setCurrentStep("CONFIRMING_LOCATION");
   };
 
   const handleLocationConfirm = (location: string) => {
     setConfirmedLocation(location);
-    setIsLocationPopupOpen(false);
-    setCurrentStep('SHOWING_RESULT');
+    setCurrentStep("SHOWING_RESULT");
   };
-
 
   const handleFinish = async () => {
     try {
-      if (!profileId || !selectedActivity || !uploadedImageUrl || !confirmedLocation) {
-        alert('Data belum lengkap!');
+      if (
+        !profileId ||
+        !selectedActivity ||
+        !uploadedImageUrl ||
+        !confirmedLocation ||
+        !generatedImageUrl
+      ) {
+        alert("Data belum lengkap!");
         return;
       }
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("province")
+        .eq("id", profileId)
+        .single();
+
+      if (!profileError && (!profile?.province || profile.province === "")) {
+        await supabase
+          .from("profiles")
+          .update({ province: confirmedLocation })
+          .eq("id", profileId);
+      }
+
       await createActivity({
-        user_id: profileId, // <-- gunakan UUID dari profiles
+        user_id: profileId,
         category_id: selectedActivity.id,
         title: selectedActivity.name,
         points: selectedActivity.base_points,
@@ -79,58 +128,85 @@ export default function AksiPage() {
         latitude: 0,
         longitude: 0,
         province: confirmedLocation,
-        city: '',
-        is_shared: false
+        city: "",
+        is_shared: false,
       });
 
       await updateUserPoints(profileId, selectedActivity.base_points);
       await updateProvinceStats(confirmedLocation, selectedActivity.base_points);
 
-      // Reset state
-      setCurrentStep('UPLOADING');
+      setCurrentStep("UPLOADING");
       setUploadedFile(null);
       setUploadedImageUrl(null);
       setSelectedActivity(null);
-      setConfirmedLocation('');
+      setConfirmedLocation("");
+      setGeneratedImageUrl("");
     } catch (err: any) {
       alert(err.message || JSON.stringify(err));
     }
   };
 
   const handleBackToUpload = () => {
-    setCurrentStep('UPLOADING');
+    setCurrentStep("UPLOADING");
     setUploadedFile(null);
-  }
+    setUploadedImageUrl(null);
+  };
+
+  const handleBackToSelectActivity = () => {
+    setCurrentStep("SELECTING_ACTIVITY");
+  };
 
   return (
     <div className="w-full p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Unggah Aktivitas Hijau Anda</h1>
+      <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6 flex items-center">
+        <div className="w-1/5">
+          {(currentStep === "SELECTING_ACTIVITY" || currentStep === "CONFIRMING_LOCATION") && (
+            <button
+              onClick={currentStep === "SELECTING_ACTIVITY" ? handleBackToUpload : handleBackToSelectActivity}
+              className="flex items-center gap-2 text-black font-semibold hover:bg-black/10 p-2 rounded-lg transition-colors -ml-2"
+            >
+              <ArrowLeft size={22} />
+              <span className="hidden md:inline">Kembali</span>
+            </button>
+          )}
+        </div>
+        <div className="w-3/5 text-center">
+          <h1 className="text-base md:text-2xl font-bold text-black">
+            {stepTitles[currentStep].title}
+          </h1>
+          <p className="text-center text-black text-xs md:text-lg mt-1">
+            {stepTitles[currentStep].subtitle}
+          </p>
+        </div>
+        <div className="w-1/5"></div>
+      </div>
 
-      {currentStep === 'UPLOADING' && (
+      {currentStep === "UPLOADING" && (
         <UploadStep onFileSelect={handleFileSelect} />
       )}
 
-      {currentStep === 'SELECTING_ACTIVITY' && uploadedFile && (
+      {currentStep === "SELECTING_ACTIVITY" && uploadedFile && (
         <SelectActivityStep
           onActivitySelect={handleActivitySelect}
           onBack={handleBackToUpload}
         />
       )}
-      
-      <LocationPopup
-        isOpen={isLocationPopupOpen}
-        onClose={() => setIsLocationPopupOpen(false)}
-        onConfirm={handleLocationConfirm}
-      />
 
-      {currentStep === 'SHOWING_RESULT' && uploadedFile && selectedActivity && (
+      {currentStep === "CONFIRMING_LOCATION" && (
+        <LocationStep
+          onConfirm={handleLocationConfirm}
+          onBack={handleBackToSelectActivity}
+        />
+      )}
+
+      {currentStep === "SHOWING_RESULT" && uploadedFile && selectedActivity && (
         <ResultStep
           imageData={{
             file: uploadedFile,
             activity: selectedActivity,
             location: confirmedLocation,
             points: selectedActivity.base_points,
-            username: user?.username || user?.fullName || user?.firstName || ''
+            username: user?.username || user?.fullName || user?.firstName || "",
           }}
           onFinish={handleFinish}
           onGeneratedImageReady={setGeneratedImageUrl}
