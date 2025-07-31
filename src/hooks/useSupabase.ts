@@ -226,17 +226,17 @@ export function useActivities() {
 interface UserProfile {
   id: string; // uuid
   email: string;
-  full_name: string | null;
+  full_name: string ;
   username: string | null;
   avatar_url: string | null;
-  points: number | null;
-  level: number | null;
+  points: number | 0;
+  level: number | 0;
   province: string | null;
   city: string | null;
-  bio: string | null;
+  bio: string | "";
   last_activity_upload: string | null;
   total_activities: number | null;
-  created_at: string | null;
+  created_at: string  ;
   updated_at: string | null; 
   clerk_id: string | null;
   pinned_post: string[] | null; 

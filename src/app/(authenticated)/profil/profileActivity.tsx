@@ -13,6 +13,7 @@ Bike,
 Trees,
 Loader2,
 AlertCircle,
+BrushCleaning,
 } from 'lucide-react';
 
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -98,7 +99,7 @@ export default function ProfileActivity(){
         {
         name: 'bersih_bersih',
         count: bersih_bersih_count,
-        icon: <Trash2 className="h-10 w-10 text-blue-500" />,
+        icon: <BrushCleaning className="h-10 w-10 text-blue-500" />,
         label: 'Bersih-Bersih',
         description:
             'Menjaga lingkungan tetap rapi dan bebas dari sampah, untuk kesehatan bersama.',

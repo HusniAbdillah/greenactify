@@ -34,14 +34,13 @@ export const checkUser = async () => {
           .eq('clerk_id', user.id);
 
         if (updateError) {
-          console.error('❌ Gagal update profil:', updateError.message);
+          console.error('Gagal update profil:', updateError.message);
         }
       }
 
       return { ...existing, ...updates };
     }
 
-    // 2. Buat profil baru jika belum ada
     const { data: newProfile, error: insertError } = await supabaseAdmin
       .from('profiles')
       .insert({
@@ -61,7 +60,7 @@ export const checkUser = async () => {
 
     return newProfile;
   } catch (err) {
-    console.error('❌checkUser error:', err);
+    console.error(' CheckUser error:', err);
     return null;
   }
 };
