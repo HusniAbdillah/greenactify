@@ -1,7 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { uploadGeneratedImage } from "@/lib/upload-generated-image";
 import Image from "next/image";
+import { v4 as uuidv4 } from "uuid"; // install: npm i uuid
+import { useRouter } from "next/navigation";
 
 // Interface untuk props, tidak diubah
 interface ResultStepProps {
@@ -27,6 +29,11 @@ export default function ResultStep({
   onGeneratedImageReady,
 }: ResultStepProps) {
   const [generatedUrl, setGeneratedUrl] = useState<string>("");
+  const [hasUploaded, setHasUploaded] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [fileId] = useState(() => uuidv4());
+  const uploadRef = useRef(false);
+  const router = useRouter();
 
   const now = new Date();
   const formattedDate = now.toLocaleDateString("id-ID", {
@@ -40,6 +47,8 @@ export default function ResultStep({
   });
 
   useEffect(() => {
+    if (uploadRef.current) return; // Sudah pernah upload, skip
+
     const originalImageUrl = URL.createObjectURL(imageData.file);
     const userImage = new window.Image();
     userImage.src = originalImageUrl;
@@ -113,22 +122,33 @@ export default function ResultStep({
       ctx.fillText(detailsText, cardWidth / 2, detailsY);
 
       // Selesai, set URL dan upload ke storage
-      const generatedDataUrl = canvas.toDataURL("image/png", 0.9);
+      // Ubah PNG ke JPEG dan atur kualitas
+      const generatedDataUrl = canvas.toDataURL("image/jpeg", 0.8);
       setGeneratedUrl(generatedDataUrl);
 
-      if (onGeneratedImageReady) {
-        const path = `generated-cards/${Date.now()}-${
-          imageData.activity.id
-        }.png`;
+      if (onGeneratedImageReady && generatedDataUrl && !hasUploaded) {
+        setIsUploading(true);
+        uploadRef.current = true; // Tandai sudah upload
+        const path = `generated-images/${fileId}-${imageData.activity.id}.png`;
         try {
           const url = await uploadGeneratedImage(generatedDataUrl, path);
+          setHasUploaded(true); // Aktifkan tombol selesai
           onGeneratedImageReady(url);
-        } catch (err) {
-          console.error("Gagal mengunggah gambar hasil generate:", err);
+        } catch (err: any) {
+          // Jika error "already exists", anggap sudah upload
+          if (err?.message?.includes("already exists")) {
+            setHasUploaded(true); // Aktifkan tombol selesai
+          } else {
+            setHasUploaded(false);
+            uploadRef.current = false;
+          }
+        } finally {
+          setIsUploading(false);
         }
       }
     };
-  }, [imageData, onGeneratedImageReady, formattedDate, formattedTime]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileId]); // Dependency hanya fileId agar hanya sekali per aksi
 
   const handleDownload = () => {
     if (!generatedUrl) return;
@@ -166,12 +186,6 @@ export default function ResultStep({
 
   return (
     <div className="flex flex-col items-center w-full max-w-sm mx-auto p-4">
-      <h2 className="text-3xl font-bold text-oliveSoft mb-2 text-center">
-        Aksi Berhasil Dicatat!
-      </h2>
-      <p className="text-center text-gray-600 mb-6">
-        Bagikan kartu Story ini untuk menginspirasi teman-temanmu.
-      </p>
 
       {/* Tampilan Kartu Preview dengan rasio 9:16 */}
       <div className="w-full shadow-xl rounded-2xl overflow-hidden border-4 border-white bg-gray-200">
@@ -206,10 +220,11 @@ export default function ResultStep({
         </button>
       </div>
       <button
-        onClick={onFinish}
-        className="w-full mt-4 px-6 py-3 rounded-xl bg-yellowGold text-greenDark font-bold text-lg hover:opacity-90 transition-opacity shadow-md"
+        onClick={() => router.push("/")}
+        disabled={!generatedUrl || !hasUploaded || isUploading}
+        className="w-full mt-4 px-6 py-3 rounded-xl bg-yellowGold text-greenDark font-bold text-lg hover:opacity-90 transition-opacity shadow-md disabled:opacity-50"
       >
-        Selesai
+        {(!generatedUrl || isUploading) ? "Mengunggah..." : "Selesai"}
       </button>
     </div>
   );

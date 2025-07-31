@@ -42,7 +42,7 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
           if (!isMounted) return;
           const { latitude, longitude } = pos.coords;
           try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const res = await fetch(`/api/reverse-geocode?lat=${latitude}&lon=${longitude}`);
             const json = await res.json();
             const detectedState = json.address?.state || 'Lokasi tidak diketahui';
             setDetectedLocation(detectedState);
