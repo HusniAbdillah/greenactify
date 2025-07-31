@@ -5,7 +5,7 @@ import ActivitiesGrid from '@/components/profil/activityGrid';
 import GroupActivityGrid from '@/components/profil/groupActivitiesGrid';
 import { useProfiles } from '@/hooks/useSupabase';
 import { useUser, useClerk } from '@clerk/nextjs';
-
+import ProfileActivity from './profileActivity';
 type Props = {
   user1: {
     id: string
@@ -24,19 +24,55 @@ export default function ProfileContent({ user1 }: Props) {
 
   // 🔍 Fungsi bantu untuk menampilkan pesan dan gambar berdasarkan rank
   function getRankInfo(rank: number | null) {
-    if (rank === 1) return { message: "Kamu Juara 1 Nasional! 🌟", image: "trophy_1.svg" };
-    if (rank && rank <= 3) return { message: "Masuk 3 Besar Terbaik!", image: "trophy_3.svg" };
-    if (rank && rank <= 10) return { message: "Top 10 Terbaik Nasional!", image: "trophy_10.svg" };
-    if (rank && rank <= 100) return { message: "Top 100 Terbaik Berkelanjutan!", image: "trophy_100.svg" };
-    if (rank && rank <= 1000) return { message: "Top 1000 Pejuang Lingkungan!", image: "trophy_1000.svg" };
-    return { message: "Ayo tingkatkan aksimu!", image: "trophy_default.png" };
+  if (rank === 1) {
+    return {
+      message: " Kamu berhasil menjadi Juara 1 Nasional. Aksimu adalah inspirasi bagi seluruh Indonesia! ",
+      image: "trophy_1.svg",
+    };
   }
+
+  if (rank && rank <= 3) {
+    return {
+      message: " Kamu termasuk 3 Besar Nasional. Terus pertahankan semangat dan dampak positifmu! ",
+      image: "trophy_3.svg",
+    };
+  }
+
+  if (rank && rank <= 10) {
+    return {
+      message: " Kamu berada di Top 10 Pejuang Lingkungan. Aksimu menciptakan perubahan nyata! ",
+      image: "trophy_10.svg",
+    };
+  }
+
+  if (rank && rank <= 100) {
+    return {
+      message: "Kamu termasuk 100 Aktivis Terbaik. Setiap langkahmu membawa perubahan! ",
+      image: "trophy_100.svg",
+    };
+  }
+
+  if (rank && rank <= 1000) {
+    return {
+      message: "Kamu bagian dari 1000 pejuang lingkungan yang berdampak. Lanjutkan perjuanganmu! ",
+      image: "trophy_1000.svg",
+    };
+  }
+
+  return {
+    message: "Ayo mulai dan tingkatkan aksi ramah lingkunganmu. Setiap langkah kecil sangat berarti! ",
+    image: "trophy_default.png",
+  };
+}
+
+
+
 
   const { message, image } = getRankInfo(profile?.rank ?? null);
 
   return (
     <div className="min-h-screen bg-mintPastel min-w-full pb-2 px-4 md:px-8">
-      <h1 className="py-5 text-center xl:pl-12 font-bold text-2xl">
+      <h1 className="py-5 text-center xl:pl-4 font-bold text-2xl">
         Profil
       </h1>
 
@@ -105,58 +141,20 @@ export default function ProfileContent({ user1 }: Props) {
             </p>
           </div>
 
-          <div className="font-bold text-center text-[22px] md:text-[26px] pl-12 max-w-65 md:max-w-full">
-            <p className="font-extrabold text-yellowGold text-[23px] md:text-[28px]">
-              Selamat!
-            </p>
+          <div className="font-bold text-center text-[17px] md:text-[24px] pl-12 max-w-65 md:max-w-100">
+            {profile && profile.rank !== null && profile.rank <= 1000 && ( 
+              <p className="font-extrabold text-yellowGold text-[23px] md:text-[28px]">
+                Selamat!
+              </p>
+            )}
+
             {message}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto flex bg-oliveSoft rounded-4xl p-1 mt-5 max-w-7xl">
-        <button
-          className={`flex-1 py-3 px-4 rounded-4xl font-semibold transition-colors ${
-            activeTab === 'overview'
-              ? 'bg-greenDark text-whiteMint shadow-sm'
-              : 'text-greenDark hover:bg-mintPastel hover:shadow-lg'
-          }`}
-          onClick={() => setActiveTab('overview')}
-        >
-          Jejakku
-        </button>
 
-        <button
-          className={`flex-1 py-3 px-4 rounded-4xl font-semibold transition-colors ${
-            activeTab === 'activities'
-              ? 'bg-greenDark text-whiteMint shadow-sm'
-              : 'text-greenDark hover:bg-mintPastel hover:shadow-lg'
-          }`}
-          onClick={() => setActiveTab('activities')}
-        >
-          Riwayat
-        </button>
-      </section>
-
-      <section className="w-full bg-greenDark rounded-4xl mb-4 mt-5 md:px-8 md:py-6 px-3 py-1">
-        {activeTab === 'activities' && (
-          <>
-            <h2 className="font-bold text-xl text-whiteMint text-center pb-4">
-              Riwayat Aksi
-            </h2>
-            <ActivitiesGrid />
-          </>
-        )}
-
-        {activeTab === 'overview' && (
-          <>
-            <h2 className="font-bold text-xl text-whiteMint text-center pb-4">
-              Jumlah Aktivitas
-            </h2>
-            <GroupActivityGrid />
-          </>
-        )}
-      </section>
+        <ProfileActivity/>
     </div>
   );
 }
