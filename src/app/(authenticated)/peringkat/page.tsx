@@ -171,7 +171,7 @@ const PeringkatPage = () => {
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
                 className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
-                onClick={() => router.push(`/profil/${user.id}`)}
+                onClick={() => router.push(`/peringkat/pengguna/${user.id}`)}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">

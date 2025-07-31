@@ -56,7 +56,7 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
         )}
 
     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/70 to-transparent p-4">
-      <h3 className="line-clamp-1 text-sm md:text-lg font-extrabold text-white drop-shadow-md">
+      <h3 className="text-sm md:text-lg font-extrabold text-white drop-shadow-md">
         {activity.title}
       </h3>
       {activity.location_name && (

@@ -4,6 +4,7 @@ import { UserButton } from '@clerk/nextjs';
 import { useProfiles } from '@/hooks/useSupabase';
 import { toast } from 'sonner';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation'
 const provinces = [
   "Aceh", "Sumatera Utara", "Sumatera Barat", "Riau", "Kepulauan Riau", "Jambi", "Bengkulu", "Sumatera Selatan", "Bangka Belitung",
   "Lampung", "DKI Jakarta", "Jawa Barat", "Banten", "Jawa Tengah", "DI Yogyakarta", "Jawa Timur",
@@ -14,12 +15,20 @@ const provinces = [
 ];
 
 export default function EditProfilePage() {
+  const router = useRouter();
   const { profile } = useProfiles();
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [province, setProvince] = useState('');
   const [search, setSearch] = useState('');
   const { isLoaded, isSignedIn, user } = useUser();
+
+  useEffect(() => {
+  if (isLoaded && !isSignedIn) {
+    router.push('/'); // Redirect ke halaman utama
+  }
+} , [isLoaded, isSignedIn, router]);
+
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name ?? '');
