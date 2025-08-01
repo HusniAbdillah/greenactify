@@ -24,14 +24,13 @@ export async function DELETE(req: Request, context: any) {
 
     const { data: activity, error: fetchError } = await supabase
       .from('activities')
-      .select('user_id, image_url, generated_image_url')
+      .select('user_id, image_url, generated_image_url, points, province')
       .eq('id', activityId)
       .single();
 
     if (fetchError || !activity || activity.user_id !== userProfileId) {
       return NextResponse.json({ error: 'Not authorized to delete this activity' }, { status: 403 });
     }
-
 
     const toDelete: { bucket: string; path: string }[] = [];
 
@@ -49,6 +48,62 @@ export async function DELETE(req: Request, context: any) {
       await supabase.storage.from(bucket).remove([path]);
     }
 
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('total_activities, points')
+      .eq('id', userProfileId)
+      .single();
+
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
+    const newTotalActivities = (profile.total_activities || 0) - 1;
+    const newPoints = (profile.points || 0) - activity.points;
+
+    const { error: updateProfileError } = await supabase
+      .from('profiles')
+      .update({
+        total_activities: newTotalActivities,
+        points: newPoints,
+      })
+      .eq('id', userProfileId);
+
+    if (updateProfileError) {
+      return NextResponse.json({ error: 'Failed to update profile data' }, { status: 500 });
+    }
+
+    if (activity.province) {
+      const { data: provinceStat, error: provinceStatError } = await supabase
+        .from('province_stats')
+        .select('total_activities, total_points, total_users')
+        .eq('province', activity.province)
+        .single();
+
+      if (!provinceStatError && provinceStat) {
+        const newTotalActivitiesProvince = provinceStat.total_activities - 1;
+        const newTotalPointsProvince = provinceStat.total_points - activity.points;
+        const avgPointsPerUser =
+          provinceStat.total_users === 0 ? 0 : newTotalPointsProvince / provinceStat.total_users;
+
+        const { error: updateProvinceError } = await supabase
+          .from('province_stats')
+          .update({
+            total_activities: newTotalActivitiesProvince,
+            total_points: newTotalPointsProvince,
+            avg_points_per_user: avgPointsPerUser,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('province', activity.province);
+
+        if (updateProvinceError) {
+          return NextResponse.json({ error: 'Failed to update province stats' }, { status: 500 });
+        }
+      }
+    }
+
+
     const { error: deleteError } = await supabase
       .from('activities')
       .delete()
@@ -58,14 +113,13 @@ export async function DELETE(req: Request, context: any) {
       return NextResponse.json({ error: 'Failed to delete activity' }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Activity and images deleted successfully' }, { status: 200 });
+    return NextResponse.json({ message: 'Activity, images, profile, and province stats updated and deleted successfully' }, { status: 200 });
 
   } catch (error) {
     console.error('API Error deleting activity:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
 
 function extractPathFromUrl(url: string): string | null {
   try {
