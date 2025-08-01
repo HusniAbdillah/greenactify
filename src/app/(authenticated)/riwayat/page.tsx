@@ -110,7 +110,35 @@ export default function RiwayatPage() {
   })
 
   const totalPoints = filteredActivities.reduce((sum, a) => sum + a.points, 0)
-  const totalCO2Saved = filteredActivities.reduce((sum, a) => sum + a.points * 0.1, 0) 
+  const streakDays = (() => {
+  const dates = filteredActivities
+    .map((a) => new Date(a.created_at).toISOString().split('T')[0])
+    .filter((v, i, arr) => arr.indexOf(v) === i)
+    .map((d) => new Date(d))
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  let maxStreak = 0;
+  let currentStreak = 0;
+
+  for (let i = 0; i < dates.length; i++) {
+    if (i === 0) {
+      currentStreak = 1;
+    } else {
+      const diff = (dates[i].getTime() - dates[i - 1].getTime()) / (1000 * 60 * 60 * 24);
+      if (diff === 1) {
+        currentStreak++;
+      } else if (diff > 1) {
+        currentStreak = 1;
+      }
+    }
+    if (currentStreak > maxStreak) {
+      maxStreak = currentStreak;
+    }
+  }
+
+    return maxStreak;
+  })();
+ 
 
 
   return (
@@ -138,9 +166,9 @@ export default function RiwayatPage() {
 
         <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-oliveSoft box col-span-2 sm:col-span-1">
           <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-oliveSoft">
-            {totalCO2Saved.toFixed(1)}
+            {streakDays} Hari
           </div>
-          <div className="text-xs text-oliveSoft">kg CO₂ Diselamatkan</div>
+          <div className="text-xs text-oliveSoft">Streak Terlama</div>
         </div>
       </div>
 

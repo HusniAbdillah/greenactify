@@ -4,7 +4,7 @@ import MobileBottomNav from '@/components/navbar/MobileBottomNav'
 import { checkUser } from '@/lib/check-user'
 import { Toaster } from 'sonner';
 
-// Force dynamic rendering
+
 export const dynamic = 'force-dynamic'
 
 export default async function AuthenticatedLayout({
@@ -17,11 +17,11 @@ export default async function AuthenticatedLayout({
 
   return (
     <div className="min-h-screen bg-mintPastel">
-      {/* Desktop Sidebar */}
+
       <DesktopSidebar />
 
-      {/* Main Content */}
-      <div className="lg:ml-35 h-full"> {/* Sesuaikan dengan width sidebar */}
+ 
+      <div className="lg:ml-35 h-full"> 
         <main className="h-full">
           {children}
           <Toaster /> 
