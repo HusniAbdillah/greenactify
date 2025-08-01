@@ -460,4 +460,14 @@ export function useReassignRank(autoRun = false) {
   return { run, loading, result };
 }
 
-
+export type ProvinceStatItem = {
+  id: string
+  province: string
+  total_users: number
+  total_activities: number
+  total_points: number
+  avg_points_per_user: number
+  coordinates: Record<string, any> | null
+  updated_at: string
+  rank: number | null
+}
