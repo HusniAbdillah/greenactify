@@ -25,7 +25,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
   if (isLoaded && !isSignedIn) {
-    router.push('/'); // Redirect ke halaman utama
+    router.push('/');
   }
 } , [isLoaded, isSignedIn, router]);
 
@@ -46,7 +46,7 @@ const handleUpdate = async () => {
     return;
   }
 
-  // CEK CLERK_ID DULU
+
   if (!clerk_id) {
     alert('ERROR: clerk_id kosong! User belum login?');
     return;
@@ -62,7 +62,7 @@ const handleUpdate = async () => {
   const data = await res.json();
 
   if (!res.ok) {
-    alert(`ERROR: ${data.error}`); // Tampilkan error dengan alert
+    alert(`ERROR: ${data.error}`); 
     toast.error(data.error || 'Gagal memperbarui profil');
   } else {
     toast.success('Profil berhasil diperbarui!');
@@ -76,7 +76,7 @@ const handleUpdate = async () => {
   return (
     <div className="min-h-screen bg-mintPastel text-black flex items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-whiteGreen flex flex-col md:flex-row gap-8">
-        {/* Kolom Kiri: Form */}
+
         <div className="flex-1 space-y-5">
           <h1 className="text-3xl font-extrabold text-greenDark mb-6">Edit Profil</h1>
           <div>
@@ -136,10 +136,10 @@ const handleUpdate = async () => {
           </button>
         </div>
 
-        {/* Kolom Kanan: UserButton & Info Tambahan */}
+
         <div className="md:w-1/3 flex flex-col items-center justify-center p-4 bg-whiteGreen rounded-lg shadow-inner border border-mintPastel">
           <h2 className="text-xl font-bold text-greenDark mb-4 text-center">Pengaturan Akun</h2>
-          {/* Mengubah ukuran UserButton dengan kelas Tailwind CSS */}
+
           <div className="p-2  rounded-full  mb-4 transform scale-200">
             <UserButton />          </div>
           <p className="text-sm text-center text-oliveDark">

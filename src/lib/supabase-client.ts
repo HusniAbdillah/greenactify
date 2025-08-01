@@ -272,18 +272,11 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
       title,
       description,
       image_url,
-      location_name,
       latitude,
       longitude,
       province,
       city,
-      status,
-      verified_by,
-      verified_at,
-      is_shared,
-      share_count,
       like_count,
-      metadata,
       created_at,
       updated_at,
       points,
@@ -291,7 +284,8 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
         name,
         base_points,
         group_category
-      )
+      ),
+      generated_image_url
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -324,19 +318,19 @@ export const recalculateAllUserPoints = async () => {
     .eq('status', 'approved');
 
   if (error) {
-    console.error('❌ Error fetching activities:', error);
+    console.error('Error fetching activities:', error);
     return { success: false, error };
   }
 
-  // 2. Hitung total poin per user
+
   const pointMap: Record<string, number> = {};
   for (const { user_id, points } of activities) {
     pointMap[user_id] = (pointMap[user_id] || 0) + points;
   }
 
-  // 3. Update ke `profiles` dan `leaderboard_users`
+
   const updates = Object.entries(pointMap).map(async ([userId, totalPoints]) => {
-    // Update ke `profiles`
+
   const profileUpdate = await supabase
     .from('profiles')
     .update({ points: totalPoints })
@@ -366,33 +360,32 @@ export const recalculateAllUserPoints = async () => {
 
 
 export const refreshProvinceStats = async () => {
-  // Ambil semua activity yang disetujui
+
   const { data: activities, error: activitiesError } = await supabase
     .from('activities')
     .select('user_id, points, province')
     .eq('status', 'approved');
 
   if (activitiesError) {
-    console.error('❌ Error fetching activities:', activitiesError);
+    console.error(' Error fetching activities:', activitiesError);
     return { success: false, error: activitiesError };
   }
 
-  // Ambil semua user beserta provinsinya
+
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('id, province');
 
   if (profilesError) {
-    console.error('❌ Error fetching profiles:', profilesError);
+    console.error(' Error fetching profiles:', profilesError);
     return { success: false, error: profilesError };
   }
 
-  // Buat map user ke provinsi
   const userProvinceMap = Object.fromEntries(
     profiles.map(p => [p.id, p.province])
   );
 
-  // Grouping data per provinsi
+
   const provinceMap: Record<string, { userIds: Set<string>, totalPoints: number, totalActivities: number }> = {};
 
   for (const activity of activities) {
@@ -429,7 +422,7 @@ export const refreshProvinceStats = async () => {
       },
       { onConflict: 'province' }
     );
-    console.log('📍 Upsert result for province:', province, update);
+    console.log(' Upsert result for province:', province, update);
 
     return update;
   });
@@ -447,11 +440,11 @@ export const recalculateProvinceRanks = async () => {
     .select('*');
 
   if (error) {
-    console.error('❌ Error fetching province_stats:', error);
+    console.error(' Error fetching province_stats:', error);
     return { success: false, error };
   }
 
-  // Urutkan: total_points DESC, province ASC
+
   const sorted = [...provinces].sort((a, b) => {
     if (b.total_points !== a.total_points) {
       return b.total_points - a.total_points;
@@ -459,7 +452,7 @@ export const recalculateProvinceRanks = async () => {
     return a.province.localeCompare(b.province);
   });
 
-  // Buat array update
+
   const updates = sorted.map((province, index) => {
     return supabase
       .from('province_stats')
@@ -483,7 +476,7 @@ export const reassignProfileRanks = async () => {
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('❌ Gagal ambil data:', error);
+    console.error(' Gagal ambil data:', error);
     return { success: false, error: error.message };
   }
 
@@ -602,3 +595,5 @@ export const updateProfile = async ({
 
   return { error };
 };
+
+

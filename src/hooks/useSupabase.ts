@@ -33,7 +33,7 @@ export const useProfile = () => {
     if (!isLoaded) return
     
     if (!user?.id) {
-      console.log('❌ No user ID available')
+      console.log('No user ID available')
       setLoading(false)
       setError('No user ID available')
       return
@@ -44,10 +44,10 @@ export const useProfile = () => {
       const data = await getProfileByUserId(user.id)
       setProfile(data)
       setError(null)
-      console.log('✅ Profile fetched:', data)
+      console.log(' Profile fetched:', data)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error'
-      console.error('❌ Profile fetch error:', errorMsg)
+      console.error(' Profile fetch error:', errorMsg)
       setError(errorMsg)
     } finally {
       setLoading(false)
@@ -56,7 +56,7 @@ export const useProfile = () => {
 
   useEffect(() => {
     fetchProfile()
-  }, [fetchProfile]) // ✅ Fix: Include fetchProfile in dependency
+  }, [fetchProfile])
 
   return { profile, loading, error, refetch: fetchProfile }
 }
@@ -70,9 +70,7 @@ export const useLeaderboard = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        console.log('🏆 Fetching leaderboard data...')
-        
-        // Test connection first
+        console.log(' Fetching leaderboard data...')
         const isConnected = await testSupabaseConnection()
         if (!isConnected) {
           throw new Error('Supabase connection failed')
@@ -83,13 +81,13 @@ export const useLeaderboard = () => {
           getLeaderboardProvinces(10)
         ])
 
-        console.log('📊 Leaderboard data:', { usersData, provincesData })
+        console.log(' Leaderboard data:', { usersData, provincesData })
         setUsers(usersData)
         setProvinces(provincesData)
         setError(null)
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Unknown error'
-        console.error('❌ Leaderboard fetch error:', errorMsg)
+        console.error(' Leaderboard fetch error:', errorMsg)
         setError(errorMsg)
       } finally {
         setLoading(false)
@@ -117,7 +115,7 @@ export const useActivityCategories = () => {
         setError(null)
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Unknown error'
-        console.error('❌ Categories fetch error:', errorMsg)
+        console.error(' Categories fetch error:', errorMsg)
         setError(errorMsg)
       } finally {
         setLoading(false)
@@ -183,20 +181,28 @@ export const useDailyChallenge = () => {
 
 
 
-export type ActivityItem = {
-  id: string
-  title: string
-  location_name?: string
-  created_at: string
-  image_url?: string 
-  points: number
-  activity_categories: {
-    name: string
-    base_points: number
-    group_category: string
-  }
-}
 
+export type ActivityItem = {
+  id: string; 
+  user_id: string; 
+  category_id: string; 
+  title: string;
+  description?: string | null;
+  points: number;
+  image_url?: string | null
+  latitude?: number | null; 
+  longitude?: number | null; 
+  province?: string | null;
+  like_count: number;
+  created_at: string; 
+  updated_at: string; 
+  generated_image_url?: string | null;
+  activity_categories: {
+    name: string;
+    base_points: number;
+    group_category: string;
+  };
+};
 export function useActivities() {
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -224,7 +230,7 @@ export function useActivities() {
 }
 
 interface UserProfile {
-  id: string; // uuid
+  id: string; 
   email: string;
   full_name: string ;
   username: string | null;
@@ -282,7 +288,7 @@ export function useProfiles() {
 
 export const handleDeleteActivity = async (activityId: string): Promise<boolean> => {
   try {
-    // Constructing the URL with the ID as a path segment
+
     const res = await fetch(`/api/activities/delete/${activityId}`, {
       method: 'DELETE',
       headers: {
@@ -345,7 +351,7 @@ export function useRecalculatePoints() {
         const res = await fetch('/api/points', { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Unknown error');
-        console.log('✅ Recalculated:', data);
+        console.log(' Recalculated:', data);
         setError(null);
       } catch (err: any) {
         setError(err.message);
@@ -416,7 +422,7 @@ export const useRecalculateProvinceRanks = () => {
       }
     };
 
-    recalculate(); // langsung jalan saat hook dipakai
+    recalculate();
   }, []);
 
   return { loading, error, updated };

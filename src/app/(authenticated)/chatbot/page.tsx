@@ -5,22 +5,28 @@ import { useRef, useEffect, useState } from 'react';
 import { SendHorizonal, Bot, User, BrainCircuit } from 'lucide-react';
 import { Message } from 'ai';
 
-// Daftar lengkap semua kemungkinan prompt
 const ALL_PROMPT_RECOMMENDATIONS = [
   "Apa itu zero waste?",
-  "Bagaimana cara membuat kompos dari sampah dapur?",
-  "Jelaskan hubungan antara jejak karbon dan perubahan iklim",
-  "Sebutkan 3 contoh aksi ramah lingkungan di kantor",
-  "Apa saja yang termasuk dalam Sustainable Development Goals (SDGs)?",
-  "Bagaimana cara mengurangi penggunaan plastik sekali pakai?",
-  "Apa manfaat menanam pohon bagi lingkungan?",
-  "Jelaskan konsep ekonomi sirkular",
+  "Gimana cara bikin kompos?",
+  "Kenapa jejak karbon penting?",
+  "Plastik itu bahaya nggak sih?",
+  "Cara hemat listrik di rumah?",
+  "Kebiasaan hijau yang simpel?",
+  "Apa itu ekonomi sirkular?",
+  "Kenapa harus bawa tumbler?",
+  "Aksi hijau buat anak muda?",
+  "Manfaat nanam pohon?",
+  "Aksi bareng teman yang hijau?",
+  "Biar kantor jadi ramah lingkungan?",
+  "Apa isi SDGs?",
+  "Ganti plastik pakai apa?",
+  "Kenapa harus peduli iklim?",
 ];
+
 
 export default function ChatbotPage() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
-    // Otomatis scroll ke bawah saat ada pesan baru dari AI
     onFinish() {
       scrollToBottom();
     },
@@ -35,18 +41,15 @@ export default function ChatbotPage() {
     }
   };
 
-  // Efek untuk mengacak dan memilih beberapa prompt saat komponen pertama kali dimuat
   useEffect(() => {
     const shuffled = [...ALL_PROMPT_RECOMMENDATIONS].sort(() => 0.5 - Math.random());
     setRecommendedPrompts(shuffled.slice(0, 5));
   }, []);
 
-  // Efek untuk otomatis scroll ke pesan paling bawah setiap ada perubahan pesan
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Fungsi untuk menangani klik pada saran prompt
   const handlePromptClick = (prompt: string) => {
     const message: Message = {
       id: Date.now().toString(),
@@ -69,8 +72,7 @@ export default function ChatbotPage() {
         </div>
       </header>
 
-      {/* Container untuk history chat yang bisa di-scroll */}
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+      <div ref={chatContainerRef} className="overflow-y-auto p-4 sm:p-6 space-y-6 pb-4 sm:pb-6" style={{height: 'calc(100vh - 120px - 80px)'}}>
         {messages.map((m) => (
           <div key={m.id} className={`flex items-start gap-2 sm:gap-4 max-w-6xl mx-auto ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {m.role !== 'user' && (
@@ -110,8 +112,7 @@ export default function ChatbotPage() {
         )}
       </div>
 
-      {/* Area Input Pengguna yang fixed di bawah */}
-      <div className="sticky bottom-0 w-full z-2 pt-1 pb-4 px-4 bg-mintPastel">
+      <div className="fixed bottom-0 sm:sticky sm:bottom-0 w-full z-10 pt-1 pb-4 sm:pb-4 mb-19 sm:mb-0 px-4 bg-mintPastel">
         <div className="max-w-6xl mx-auto">
           {messages.length === 0 && !isLoading && (
             <div className="relative mb-3">

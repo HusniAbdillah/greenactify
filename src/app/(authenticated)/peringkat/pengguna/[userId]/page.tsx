@@ -1,4 +1,4 @@
-'use client'
+'use client' 
 
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
@@ -125,7 +125,7 @@ const UserProfilePage = () => {
     if (userId) fetchUserActivities();
   }, [userId]);
 
-  // Calculate category statistics
+
   const calculateCategoryStats = (activities: UserActivity[]): CategoryStats => {
     let daur_ulang_count = 0;
     let bersih_bersih_count = 0;
@@ -188,10 +188,10 @@ const UserProfilePage = () => {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'approved': return 'bg-oliveSoft text-greenDark';
+      case 'pending': return 'bg-yellowAmber text-black';
+      case 'rejected': return 'bg-red text-whiteMint';
+      default: return 'bg-oliveSoft text-greenDark';
     }
   };
 
@@ -206,10 +206,10 @@ const UserProfilePage = () => {
 
   if (loading || lActivitiesoading) {
     return (
-      <div className="p-6">
+      <div className="p-6 bg-mintPastel min-h-screen">
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-          <p className="text-gray-500">Loading profile...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-oliveDark mx-auto mb-2"></div>
+          <p className="text-greenDark">Loading profile...</p>
         </div>
       </div>
     )
@@ -217,8 +217,8 @@ const UserProfilePage = () => {
 
   if (error || !profile) {
     return (
-      <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="p-6 bg-mintPastel min-h-screen">
+        <div className="bg-red/20 border border-red text-red px-4 py-3 rounded-xl">
           Profile not found
         </div>
       </div>
@@ -227,8 +227,8 @@ const UserProfilePage = () => {
 
   if (Activitieserror) {
     return (
-      <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="p-6 bg-mintPastel min-h-screen">
+        <div className="bg-red/20 border border-red text-red px-4 py-3 rounded-xl">
           {Activitieserror}
         </div>
       </div>
@@ -237,23 +237,23 @@ const UserProfilePage = () => {
 
   if (!activities || activities.length === 0) {
     return (
-      <div className="p-6 space-y-6 max-w-6xl mx-auto">
-        {/* Header with Back Button */}
+      <div className="p-6 space-y-6 max-w-6xl mx-auto bg-mintPastel min-h-screen">
+
         <div className="flex items-center space-x-4">
           <button
             onClick={() => router.back()}
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="p-3 rounded-full bg-whiteGreen hover:bg-oliveSoft transition-colors shadow-md"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-greenDark" />
           </button>
-          <h1 className="text-2xl font-bold">Profil Pengguna</h1>
+          <h1 className="text-2xl font-bold text-greenDark">Profil Pengguna</h1>
         </div>
 
-        {/* Profile Card */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
+
+        <div className="bg-whiteMint rounded-3xl p-8 shadow-xl border border-whiteGreen">
           <div className="flex items-center space-x-6">
-            {/* Avatar */}
-            <div className="w-20 h-20 bg-gray-300 rounded-full overflow-hidden">
+
+            <div className="w-24 h-24 bg-oliveSoft rounded-full overflow-hidden shadow-lg">
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
@@ -261,82 +261,81 @@ const UserProfilePage = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">
+                <div className="w-full h-full bg-gradient-to-br from-oliveSoft to-greenDark flex items-center justify-center">
+                  <span className="text-whiteMint text-2xl font-bold">
                     {profile.full_name.charAt(0)}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Basic Info */}
             <div className="flex-1">
-              <h2 className="text-xl font-bold">{profile.full_name}</h2>
+              <h2 className="text-2xl font-bold text-greenDark">{profile.full_name}</h2>
               {profile.username && (
-                <p className="text-gray-600">@{profile.username}</p>
+                <p className="text-oliveDark">@{profile.username}</p>
               )}
-              <div className="flex items-center space-x-2 text-gray-500 mt-1">
+              <div className="flex items-center space-x-2 text-oliveDark mt-2">
                 <MapPin className="w-4 h-4" />
                 <span>{profile.city || 'Unknown City'}, {profile.province || 'Unknown Province'}</span>
               </div>
             </div>
 
-            {/* Rank Badge */}
+ 
             {profile.rank && (
-              <div className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full font-bold">
+              <div className="bg-yellowGold text-black px-6 py-3 rounded-full font-bold shadow-md">
                 Peringkat #{profile.rank}
               </div>
             )}
           </div>
 
-          {/* Bio */}
+
           {profile.bio && (
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
-              <p className="text-green-800">{profile.bio}</p>
+            <div className="mt-6 p-4 bg-whiteGreen rounded-xl">
+              <p className="text-greenDark">{profile.bio}</p>
             </div>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
-          <p className="text-gray-500 text-lg">User belum punya aktivitas</p>
+        <div className="bg-whiteMint rounded-3xl p-8 shadow-xl text-center border border-whiteGreen">
+          <p className="text-oliveDark text-lg">User belum punya aktivitas</p>
         </div>
       </div>
     );
   }
 
-  // Calculate statistics and get recent activities
   const categoryStats = calculateCategoryStats(activities);
   const recentActivities = activities.slice(0, 3);
 
   const categoryData = [
-    { name: 'Daur Ulang', count: categoryStats.daur_ulang_count, icon: Recycle, color: 'bg-emerald-500', bgColor: 'bg-green-50' },
-    { name: 'Bersih-bersih', count: categoryStats.bersih_bersih_count, icon: BrushCleaning, color: 'bg-blue-500', bgColor: 'bg-blue-50' },
-    { name: 'Hemat Energi', count: categoryStats.hemat_energi_count, icon: Lightbulb, color: 'bg-amber-500', bgColor: 'bg-yellow-50' },
-    { name: 'Edukasi Lingkungan', count: categoryStats.edukasi_lingkungan_count, icon: Book, color: 'bg-purple-500', bgColor: 'bg-purple-50' },
-    { name: 'Hemat Air', count: categoryStats.hemat_air_count, icon: Droplets, color: 'bg-cyan-500', bgColor: 'bg-cyan-50' },
-    { name: 'Makanan Organik', count: categoryStats.makanan_organik_count, icon: Wheat, color: 'bg-lime-500', bgColor: 'bg-emerald-50' },
-    { name: 'Transportasi Hijau', count: categoryStats.transportasi_hijau_count, icon: Bike, color: 'bg-indigo-500', bgColor: 'bg-indigo-50' },
-    { name: 'Penghijauan', count: categoryStats.penghijauan_count, icon: Trees, color: 'bg-green-500', bgColor: 'bg-teal-50' }
+    { name: 'Daur Ulang', count: categoryStats.daur_ulang_count, icon: Recycle, color: 'bg-oliveSoft', bgColor: 'bg-whiteGreen' },
+    { name: 'Bersih-bersih', count: categoryStats.bersih_bersih_count, icon: BrushCleaning, color: 'bg-tealLight', bgColor: 'bg-mintPastel' },
+    { name: 'Hemat Energi', count: categoryStats.hemat_energi_count, icon: Lightbulb, color: 'bg-yellowAmber', bgColor: 'bg-yellowGold/20' },
+    { name: 'Edukasi Lingkungan', count: categoryStats.edukasi_lingkungan_count, icon: Book, color: 'bg-oliveDark', bgColor: 'bg-whiteGreen' },
+    { name: 'Hemat Air', count: categoryStats.hemat_air_count, icon: Droplets, color: 'bg-tealLight', bgColor: 'bg-mintPastel' },
+    { name: 'Makanan Organik', count: categoryStats.makanan_organik_count, icon: Wheat, color: 'bg-oliveSoft', bgColor: 'bg-whiteGreen' },
+    { name: 'Transportasi Hijau', count: categoryStats.transportasi_hijau_count, icon: Bike, color: 'bg-greenDark', bgColor: 'bg-whiteGreen' },
+    { name: 'Penghijauan', count: categoryStats.penghijauan_count, icon: Trees, color: 'bg-oliveDark', bgColor: 'bg-mintPastel' }
   ];
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      {/* Header with Back Button */}
+    <div className="p-6 space-y-6 max-w-6xl mx-auto bg-mintPastel min-h-screen">
+
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.back()}
-          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          className="p-3 rounded-full bg-whiteGreen hover:bg-oliveSoft transition-colors shadow-md"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 text-greenDark" />
         </button>
-        <h1 className="text-2xl font-bold">Profil Pengguna</h1>
+        <h1 className="text-2xl font-bold text-greenDark">Profil Pengguna</h1>
       </div>
 
-      {/* Profile Card */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center space-x-6">
-          {/* Avatar */}
-          <div className="w-20 h-20 bg-gray-300 rounded-full overflow-hidden">
+      
+
+      <div className="bg-whiteMint rounded-3xl p-4 shadow-xl border border-whiteGreen xs:p-6 md:p-8">
+        <div className="flex flex-col items-center space-y-4 md:flex-row md:items-start md:space-y-0 md:space-x-6">
+
+          <div className="w-20 h-20 bg-oliveSoft rounded-full overflow-hidden shadow-lg md:w-24 md:h-24">
             {profile.avatar_url ? (
               <img
                 src={profile.avatar_url}
@@ -344,81 +343,80 @@ const UserProfilePage = () => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                <span className="text-white text-2xl font-bold">
+              <div className="w-full h-full bg-gradient-to-br from-oliveSoft to-greenDark flex items-center justify-center">
+                <span className="text-whiteMint text-xl font-bold md:text-2xl">
                   {profile.full_name.charAt(0)}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Basic Info */}
-          <div className="flex-1">
-            <h2 className="text-xl font-bold">{profile.full_name}</h2>
+          <div className="flex-1 text-center md:text-left">
+            <h2 className="text-xl font-bold text-greenDark md:text-2xl">
+              {profile.full_name}
+            </h2>
             {profile.username && (
-              <p className="text-gray-600">@{profile.username}</p>
+              <p className="text-oliveDark text-sm md:text-base">@{profile.username}</p>
             )}
-            <div className="flex items-center space-x-2 text-gray-500 mt-1">
-              <MapPin className="w-4 h-4" />
+            <div className="flex items-center justify-center space-x-1 text-oliveDark text-sm mt-2 md:justify-start md:space-x-2 md:text-base">
+              <MapPin className="w-3 h-3 md:w-4 md:h-4" />
               <span> {profile.province || 'Unknown Province'}</span>
             </div>
           </div>
 
-          {/* Rank Badge */}
           {profile.rank && (
-            <div className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full font-bold">
+            <div className="bg-yellowGold text-black px-4 py-2 rounded-full font-bold text-sm shadow-md md:px-6 md:py-3">
               Peringkat #{profile.rank}
             </div>
           )}
         </div>
 
-        {/* Bio */}
         {profile.bio && (
-          <div className="mt-4 p-4 bg-green-50 rounded-lg">
-            <p className="text-green-800">{profile.bio}</p>
+          <div className="mt-4 p-3 bg-whiteGreen rounded-xl md:mt-6 md:p-4">
+            <p className="text-greenDark text-sm md:text-base">{profile.bio}</p>
           </div>
         )}
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="bg-blue-50 p-4 rounded-xl text-center">
-          <Trophy className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-blue-600">{formatPoints(profile.points)}</div>
-          <div className="text-sm text-blue-500">Poin</div>
+
+      
+      <div className="grid grid-cols-3 gap-x-4 gap-y-4 md:gap-y-6 md:gap-x-6 justify-center ">
+        <div className="bg-tealLight/20 py-6  sm:p-6 rounded-2xl text-center shadow-lg border border-tealLight/30">
+          <Trophy className="w-10 h-10 text-tealLight mx-auto mb-3" />
+          <div className="text-xl md:text-2xl lg:text-3xl font-bold text-greenDark">{formatPoints(profile.points)}</div>
+          <div className="text-xs md:text-sm text-oliveDark">Poin</div>
         </div>
 
-        <div className="bg-purple-50 p-4 rounded-xl text-center">
-          <Activity className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-purple-600">{profile.total_activities || 0}</div>
-          <div className="text-sm text-purple-500">Total Aktivitas</div>
+        <div className="bg-oliveSoft/20 py-6  sm:p-6 rounded-2xl text-center shadow-lg border border-oliveSoft/30">
+          <Activity className="w-10 h-10 text-oliveDark mx-auto mb-3" />
+          <div className="text-xl md:text-2xl lg:text-3xl font-bold text-greenDark">{profile.total_activities || 0}</div>
+          <div className="text-xs md:text-sm text-oliveDark">Total Aktivitas</div>
         </div>
 
-        <div className="bg-orange-50 p-4 rounded-xl text-center">
-          <Calendar className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-orange-600">
+        <div className="bg-yellowAmber/20 py-6  sm:p-6 rounded-2xl text-center shadow-lg border border-yellowAmber/30 ">
+          <Calendar className="w-10 h-10 text-yellowAmber mx-auto mb-3" />
+          <div className="text-xl md:text-2xl lg:text-3xl font-bold text-greenDark">
             {new Date(profile.created_at).getFullYear()}
           </div>
-          <div className="text-sm text-orange-500">Bergabung</div>
+          <div className="text-xs md:text-sm text-oliveDark">Bergabung</div>
         </div>
       </div>
 
-      {/* Environmental Impact Statistics */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <h3 className="text-xl font-bold mb-4 flex items-center">
-          <Leaf className="w-6 h-6 text-green-500 mr-2" />
+      <div className="bg-whiteMint rounded-3xl p-8 shadow-xl border border-whiteGreen">
+        <h3 className="text-2xl font-bold mb-6 flex items-center text-greenDark">
+          <Leaf className="w-7 h-7 text-oliveSoft mr-3" />
           Statistik Kontribusi Lingkungan
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categoryData.map((category) => {
             const IconComponent = category.icon;
             return (
-              <div key={category.name} className={`${category.bgColor} p-4 rounded-xl text-center`}>
-                <IconComponent className={`w-6 h-6 ${category.color.replace('bg-', 'text-')} mx-auto mb-2`} />
+              <div key={category.name} className={`${category.bgColor} p-5 rounded-2xl text-center shadow-md border border-${category.color.replace('bg-', '')}/20`}>
+                <IconComponent className={`w-8 h-8 ${category.color.replace('bg-', 'text-')} mx-auto mb-3`} />
                 <div className={`text-2xl font-bold ${category.color.replace('bg-', 'text-')}`}>
                   {category.count}
                 </div>
-                <div className={`text-sm ${category.color.replace('bg-', 'text-').replace('500', '600')}`}>
+                <div className="text-sm text-greenDark font-medium">
                   {category.name}
                 </div>
               </div>
@@ -427,62 +425,59 @@ const UserProfilePage = () => {
         </div>
       </div>
 
-      {/* Recent Activities */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <h3 className="text-xl font-bold mb-4 flex items-center">
-          <Activity className="w-6 h-6 text-green-500 mr-2" />
+      <div className="bg-whiteMint rounded-3xl p-8 shadow-xl border border-whiteGreen">
+        <h3 className="text-2xl font-bold mb-6 flex items-center text-greenDark">
+          <Activity className="w-7 h-7 text-oliveSoft mr-3" />
           Aktivitas Terbaru (3 Terakhir)
         </h3>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           {recentActivities.map((activity) => (
-            <div key={activity.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start space-x-4">
-                {/* Activity Image */}
+            <div key={activity.id} className="border border-whiteGreen rounded-2xl p-6 hover:shadow-lg transition-all bg-whiteGreen/30">
+              <div className="flex flex-col sm:flex-row items-start space-x-4">
+
                 {(activity.image_url || activity.generated_image_url) && (
-                  <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="mb-3 sm:mb-0 w-20 h-20 bg-oliveSoft/20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
                     <img
                       src={activity.image_url || activity.generated_image_url}
                       alt={activity.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover "
                     />
                   </div>
                 )}
                 
-                {/* Activity Details */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-semibold text-gray-900 truncate">{activity.title}</h4>
+                      <h4 className="font-bold text-greenDark  text-sm lg:text-base">{activity.title}</h4>
                       {activity.description && (
-                        <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                        <p className="text-xs lg:text-sm text-oliveDark mt-2">{activity.description}</p>
                       )}
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 mt-3 text-sm text-oliveDark">
                         <span className="flex items-center">
                           <MapPin className="w-4 h-4 mr-1" />
-                          {`${activity.city }, ${activity.province || 'Unknown'}`}
+                          <span className=" text-xs md:text-base"> {`${activity.province || 'Unknown'}`} </span>
                         </span>
-                        <span className="flex items-center">
+                        <span className="flex items-center text:xs md:text-base">
                           <Calendar className="w-4 h-4 mr-1" />
-                          {formatDate(activity.created_at)}
+                           <span className=" text-xs md:text-base"> {formatDate(activity.created_at)} </span>
                         </span>
                       </div>
                     </div>
                     
-                    <div className="flex flex-col justify-center items-end space-y-2  ">
-                      <div className="bg-green-100 text-green-800 px-3 py-1  rounded-full text-sm font-semibold">
+                    <div className="flex flex-col justify-center items-center ">
+                      <div className="bg-oliveSoft text-whiteMint px-2 py-2  md:px-4 rounded-full text-[10px] md:text-sm font-bold shadow-md text-c">
                         +{activity.points} poin
                       </div>
                     </div>
                   </div>
                   
-                  {/* Category Badge */}
-                  <div className="mt-3">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  <div className="mt-4">
+                    <span className="inline-flex items-center px-4 py-1 md:py-2 rounded-full text-xs font-semibold bg-tealLight/20 text-greenDark border border-tealLight/30">
                       {activity.activity_categories.group_category}
                     </span>
                   </div>
-                </div>
+                </div> 
               </div>
             </div>
           ))}
