@@ -19,6 +19,7 @@ interface ResultStepProps {
   totalPoints: number;
   onFinish: () => void;
   onGeneratedImageReady?: (url: string) => void;
+  challengeId?: string;
 }
 
 const wrapText = (
@@ -77,6 +78,7 @@ export default function ResultStep({
   totalPoints,
   onFinish,
   onGeneratedImageReady,
+  challengeId,
 }: ResultStepProps) {
   const [generatedUrl, setGeneratedUrl] = useState<string>("");
   const [hasUploaded, setHasUploaded] = useState(false);
@@ -234,6 +236,16 @@ export default function ResultStep({
         cardWidth - padding,
         footerY
       );
+
+      // Jika ini adalah challenge, tambahkan badge di kartu
+      // const { challengeId } = imageData.challengeId;
+      if (challengeId) {
+        ctx.fillStyle = "#FFD700"; // Gold color
+        ctx.font = "bold 40px 'Poppins', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🎯 DAILY CHALLENGE", cardWidth / 2, currentY - 50);
+        currentY += 50;
+      }
 
       const generatedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setGeneratedUrl(generatedDataUrl);

@@ -25,7 +25,7 @@ function transformChallenge(dbChallenge: DailyChallenge | null) {
   }
 
   return {
-    id: parseInt(dbChallenge.id) || 0,
+    id: dbChallenge.id, // Keep as UUID string, don't convert to integer
     title: dbChallenge.title || 'Tantangan Harian',
     description: dbChallenge.description || 'Selesaikan tantangan ini untuk mendapatkan poin',
     icon: dbChallenge.icon || '🌱',
