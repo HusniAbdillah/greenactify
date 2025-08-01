@@ -31,7 +31,6 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
     setIsUploading(true);
     setUploadStatus("idle");
     try {
-      // Simulasi proses upload di parent
       await onFileSelect(file); 
       setUploadStatus("success");
     } catch (error) {
@@ -39,7 +38,6 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
       setUploadStatus("error");
     } finally {
       setIsUploading(false);
-      // Reset status setelah beberapa saat untuk memberi feedback ke user
       setTimeout(resetStatus, 2000);
     }
   };
@@ -106,7 +104,6 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
           strokeWidth={1.5}
         />
 
-        {/* Status Upload */}
         <div className="flex h-6 items-center justify-center mb-2">
           {isUploading && (
             <div className="flex items-center gap-2">
@@ -133,7 +130,6 @@ export default function UploadStep({ onFileSelect }: UploadStepProps) {
         </p>
         <p className="text-gray-500">atau</p>
 
-        {/* [FIX] Tambahkan e.stopPropagation() untuk mencegah event bubbling */}
         <button
           type="button"
           onClick={(e) => {

@@ -23,7 +23,7 @@ export async function getActivityCategoriesWithGroups() {
   const { data, error } = await supabase
     .from('activity_categories')
     .select(`
-      id, name, base_points,
+      id, name, base_points, description,
       activity_category_group (
         group_id
       )

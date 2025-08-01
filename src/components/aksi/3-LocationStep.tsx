@@ -4,22 +4,21 @@ import { useEffect, useState, useMemo } from 'react';
 import { getProvinces } from '@/lib/get-provinces';
 import { MapPin, Search, Loader2, CheckCircle, Edit3, ArrowLeft } from 'lucide-react';
 
-// Props disederhanakan karena ini bukan lagi pop-up
 export type LocationStepProps = {
-  onConfirm: (location: string) => void;
-  onBack: () => void; // Menambahkan onBack untuk kembali ke step sebelumnya
+  onConfirm: (location: string, latitude?: number, longitude?: number) => void;
+  onBack: () => void;
 };
 
 export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
-  // State untuk mengontrol tampilan: 'confirm' atau 'search'
   const [view, setView] = useState<'confirm' | 'search'>('confirm');
   
   const [detectedLocation, setDetectedLocation] = useState<string>('Mendeteksi lokasi...');
+  const [detectedLatitude, setDetectedLatitude] = useState<number | null>(null);
+  const [detectedLongitude, setDetectedLongitude] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [provinces, setProvinces] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Ambil daftar provinsi dari database saat komponen dimuat
   useEffect(() => {
     getProvinces().then((data) => {
       if (data) {
@@ -28,9 +27,7 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
     });
   }, []);
 
-  // 2. Deteksi lokasi pengguna menggunakan Geotagging
   useEffect(() => {
-    // Hanya jalankan jika daftar provinsi sudah ada
     if (provinces.length === 0) return;
 
     let isMounted = true;
@@ -41,8 +38,10 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
         async (pos) => {
           if (!isMounted) return;
           const { latitude, longitude } = pos.coords;
+          setDetectedLatitude(latitude);
+          setDetectedLongitude(longitude);
           try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const res = await fetch(`/api/reverse-geocode?lat=${latitude}&lon=${longitude}`);
             const json = await res.json();
             const detectedState = json.address?.state || 'Lokasi tidak diketahui';
             setDetectedLocation(detectedState);
@@ -53,7 +52,7 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
             setIsLoading(false);
           }
         },
-        () => { // Error callback
+        () => {
           if (!isMounted) return;
           setDetectedLocation('Izin lokasi ditolak');
           setIsLoading(false);
@@ -67,29 +66,38 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
     return () => { isMounted = false; };
   }, [provinces]);
 
-  // 3. Filter provinsi berdasarkan pencarian
+  useEffect(() => {
+    if (
+      detectedLocation.includes("Gagal") ||
+      detectedLocation.includes("Izin lokasi ditolak") ||
+      detectedLocation.includes("Geolocation tidak didukung")
+    ) {
+      setView("search");
+    }
+  }, [detectedLocation]);
+
   const filteredProvinces = useMemo(
     () => provinces.filter(p => p.toLowerCase().includes(searchTerm.toLowerCase())),
     [searchTerm, provinces]
   );
 
-  // Handler untuk memilih provinsi dari daftar
   const handleSelectProvince = (province: string) => {
     setDetectedLocation(province);
-    setView('confirm'); // Kembali ke tampilan konfirmasi
+    setView('confirm');
   };
 
-  // Tampilan saat mencari provinsi
-  if (view === 'search') {
+  if (view === "search") {
     return (
-      <div className="w-full max-w-4xl mx-auto flex flex-col animate-fadeIn">
-        <button
-          onClick={() => setView('confirm')}
-          className="self-start mb-6 flex items-center gap-2 text-greenDark font-semibold hover:text-tealLight transition-colors"
-        >
-          <ArrowLeft size={20} />
-          <span>Kembali ke Konfirmasi</span>
-        </button>
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center animate-fadeIn">
+        <div className="flex justify-center w-full mb-6">
+          <button
+            onClick={() => setView("confirm")}
+            className="flex items-center gap-2 px-6 py-3 rounded-full bg-whiteMint border border-tealLight text-greenDark font-semibold shadow hover:bg-mintPastel transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span>Kembali ke Konfirmasi</span>
+          </button>
+        </div>
         <div className="relative w-full mb-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
@@ -117,10 +125,9 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
     );
   }
 
-  // Tampilan default untuk konfirmasi
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center text-center animate-fadeIn">
-      <div className="bg-whiteMint p-8 rounded-2xl shadow-md border border-gray-200 w-full">
+    <div className="flex min-h-[60vh] w-full items-center justify-center">
+      <div className="bg-whiteMint p-8 rounded-2xl shadow-md border border-gray-200 w-full max-w-md flex flex-col items-center">
         <MapPin size={48} className="text-tealLight mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-greenDark mb-2">Lokasi Terdeteksi</h3>
         
@@ -128,9 +135,9 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
           {isLoading ? <Loader2 className="animate-spin" /> : detectedLocation}
         </div>
         
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <button
-            onClick={() => onConfirm(detectedLocation)}
+            onClick={() => onConfirm(detectedLocation, detectedLatitude ?? undefined, detectedLongitude ?? undefined)}
             disabled={isLoading || detectedLocation.includes('Mendeteksi') || detectedLocation.includes('Gagal')}
             className="w-full flex items-center justify-center gap-2 bg-greenDark text-whiteMint font-bold py-3 px-4 rounded-full hover:bg-tealLight transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
