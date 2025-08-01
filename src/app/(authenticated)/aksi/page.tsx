@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import UploadStep from "@/components/aksi/1-UploadStep";
 import SelectActivityStep from "@/components/aksi/2-SelectActivityStep";
 import LocationStep from "@/components/aksi/3-LocationStep";
@@ -43,6 +44,11 @@ const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
 
 
 export default function AksiPage() {
+  const searchParams = useSearchParams();
+  const challengeId = searchParams?.get('challenge');
+  const mode = searchParams?.get('mode');
+  const isChallenge = mode === 'challenge' && challengeId;
+
   const [currentStep, setCurrentStep] = useState<FlowStep>("UPLOADING");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
@@ -59,6 +65,8 @@ export default function AksiPage() {
 
   const { user } = useUser();
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [challengeData, setChallengeData] = useState<any>(null);
+  const [challengeMultiplier, setChallengeMultiplier] = useState<number>(1);
 
   useEffect(() => {
     async function fetchProfileId() {
@@ -109,6 +117,21 @@ export default function AksiPage() {
     }
   }, [cooldownRemaining]);
 
+  // Fetch challenge data if in challenge mode
+  useEffect(() => {
+    if (isChallenge && challengeId) {
+      fetch(`/api/daily-challenge/${challengeId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setChallengeData(data.data);
+            setChallengeMultiplier(data.data.double_points || data.data.points || 1);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isChallenge, challengeId]);
+
   const handleFileSelect = async (file: File) => {
     const path = `user-uploads/${Date.now()}-${file.name}`;
     try {
@@ -123,7 +146,13 @@ export default function AksiPage() {
   };
 
   const handleActivitySelect = (activity: ActivityCategory) => {
-    setSelectedActivity(activity);
+    // Calculate points with multiplier if it's a challenge
+    const finalPoints = isChallenge ? activity.base_points * challengeMultiplier : activity.base_points;
+    
+    setSelectedActivity({
+      ...activity,
+      base_points: finalPoints
+    });
     setCurrentStep("CONFIRMING_LOCATION");
   };
 
@@ -166,7 +195,7 @@ export default function AksiPage() {
         category_id: selectedActivity!.id,
         title: selectedActivity!.name,
         description: selectedActivity!.description,
-        points: selectedActivity!.base_points,
+        points: selectedActivity!.base_points, // Already includes multiplier
         latitude: confirmedLatitude ?? 0,
         longitude: confirmedLongitude ?? 0,
         province: confirmedLocation ?? "",
@@ -174,6 +203,7 @@ export default function AksiPage() {
         is_shared: false,
         image_url: uploadedImageUrl ?? "",
         generated_image_url: generatedImageUrl ?? "",
+        challenge_id: isChallenge ? challengeId : undefined, // Add challenge_id
       });
 
       await updateUserPoints(profileId!, selectedActivity!.base_points);
@@ -258,10 +288,38 @@ export default function AksiPage() {
     fetchProfileStats();
   }, [profileId]);
 
+  // Update step titles for challenge mode
+  const getStepTitles = () => {
+    if (isChallenge && challengeData) {
+      return {
+        UPLOADING: {
+          title: "🎯 " + challengeData.title,
+          subtitle: challengeData.description,
+        },
+        SELECTING_ACTIVITY: {
+          title: "Pilih Aktivitas Challenge",
+          subtitle: `Pilih aktivitas yang sesuai dengan challenge: ${challengeData.title}`,
+        },
+        CONFIRMING_LOCATION: {
+          title: "Konfirmasi Lokasi",
+          subtitle: "Kasih tahu kami di mana aksi ini kamu lakukan!",
+        },
+        SHOWING_RESULT: {
+          title: "Bagikan Aksimu",
+          subtitle: "Aksimu siap dibagikan, yuk kasih tahu yang lain!",
+        },
+      };
+    }
+    return stepTitles;
+  };
+
+  const currentStepTitles = getStepTitles();
+
   return (
     <div className="w-full p-4 md:p-8">
       {currentStep !== "SHOWING_RESULT" && (
         <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6 flex items-center">
+          
           <div className="w-1/5">
             {(currentStep === "SELECTING_ACTIVITY" || currentStep === "CONFIRMING_LOCATION") && (
               <button
@@ -275,10 +333,10 @@ export default function AksiPage() {
           </div>
           <div className="w-3/5 text-center">
             <h1 className="text-base md:text-2xl font-bold text-black">
-              {stepTitles[currentStep].title}
+              {currentStepTitles[currentStep].title}
             </h1>
             <p className="text-center text-black text-xs md:text-lg mt-1">
-              {stepTitles[currentStep].subtitle}
+              {currentStepTitles[currentStep].subtitle}
             </p>
           </div>
           <div className="w-1/5"></div>
@@ -296,6 +354,7 @@ export default function AksiPage() {
         <SelectActivityStep
           onActivitySelect={handleActivitySelect}
           onBack={handleBackToUpload}
+          challengeFilter={challengeData?.category_id} // Pass challenge filter
         />
       )}
 
@@ -319,6 +378,7 @@ export default function AksiPage() {
           totalPoints={totalPoints}         
           onFinish={handleFinish}
           onGeneratedImageReady={setGeneratedImageUrl}
+          challengeId={isChallenge ? challengeId : undefined}
         />
       )}
     </div>

@@ -13,7 +13,8 @@ export async function createActivity(payload: {
   longitude: number,
   province: string,
   city?: string,
-  is_shared?: boolean
+  is_shared?: boolean,
+  challenge_id?: string // Add challenge_id
 }) {
   const { data, error } = await supabase
     .from('activities')
