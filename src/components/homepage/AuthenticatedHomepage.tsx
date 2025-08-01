@@ -1,0 +1,278 @@
+"use client";
+
+import React, { useState } from "react";
+import {
+  Target,
+  Trophy,
+  Award,
+  MapPin,
+  TreePine,
+  Clock,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { DailyChallenge, ActivityHistory } from "@/lib/types/homepage";
+import DesktopSidebar from "@/components/navbar/DesktopSidebar";
+import MobileBottomNav from "@/components/navbar/MobileBottomNav";
+
+interface AuthenticatedHomepageProps {
+  dailyChallenges: DailyChallenge[];
+  activityHistory: ActivityHistory[];
+  activityLoading: boolean;
+  userName?: string;
+}
+
+const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
+  dailyChallenges,
+  activityHistory,
+  activityLoading,
+  userName,
+}) => {
+  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+
+  const nextChallenge = () => {
+    setCurrentChallengeIndex((prev) =>
+      prev === dailyChallenges.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevChallenge = () => {
+    setCurrentChallengeIndex((prev) =>
+      prev === 0 ? dailyChallenges.length - 1 : prev - 1
+    );
+  };
+
+  const currentChallenge = dailyChallenges[currentChallengeIndex];
+  return (
+    <div className="min-h-screen bg-mintPastel">
+      {/* Navigation Components */}
+      <DesktopSidebar />
+      <MobileBottomNav />
+
+      {/* Main Content - This will work with the existing layout */}
+      <main className="container mx-auto px-6 pb-24 pt-0 lg:ml-40 lg:pb-8 lg:pt-20">
+        {/* Welcome Section */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-10 md:mb-8">
+            <img
+              src="/logo-greenactify.svg"
+              alt="GreenActify Logo"
+              className="h-14 md:h-16 w-auto"
+            />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-greenDark mb-0 md:mb-2 px-4">
+            {userName ? `Selamat Datang Kembali, ${userName}!` : 'Selamat Datang Kembali!'}
+            <span className="text-tealLight block text-lg md:text-xl mt-2">Mari lanjutkan misi hijau Anda</span>
+          </h1>
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:gap-8 lg:items-start">
+          {/* Today's Challenge Carousel */}
+          <div className="lg:flex-1 mb-12 lg:mb-0">
+            <div className="relative bg-gradient-to-br from-tealLight via-greenDark to-oliveDark rounded-3xl py-6 text-white overflow-hidden shadow-xl">
+              {dailyChallenges.length > 0 && currentChallenge ? (
+                <>
+                  {/* Challenge Content */}
+                  <div className="relative z-10">
+                    {/* Header with indicators */}
+                    <div className="flex items-center justify-between mb-4 px-6">
+                      <div>
+                        <h2 className="text-xl font-bold mb-1">Tantangan Hari Ini</h2>
+                      </div>
+                      {dailyChallenges.length > 1 && (
+                        <div className="flex items-center space-x-2">
+                          {dailyChallenges.map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentChallengeIndex(index)}
+                              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                                index === currentChallengeIndex
+                                  ? 'bg-white scale-110'
+                                  : 'bg-white/40 hover:bg-white/60'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Challenge Card and Arrows Container */}
+                    <div className="flex items-center justify-center gap-2 px-2">
+                      {/* Left Arrow */}
+                      {dailyChallenges.length > 1 && (
+                        <button
+                          onClick={prevChallenge}
+                          className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 z-20 backdrop-blur-sm border border-white/30 hover:scale-110"
+                        >
+                          <ChevronLeft className="w-4 h-4 text-white" />
+                        </button>
+                      )}
+
+                      {/* Challenge Card */}
+                      <div
+                        className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-h-[140px] flex items-start justify-center mx-auto max-w-2xl flex-1 h-60 cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-[1.02] hover:border-white/30"
+                        onClick={() => window.location.href = '/aksi'}
+                      >
+                        <div className="flex items-start justify-between flex-wrap gap-4 w-full">
+                          <div className="flex-1 min-w-0">
+                            {/* Challenge Icon & Title */}
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-xl">
+                                {currentChallenge.icon}
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-bold">{currentChallenge.title}</h3>
+                              </div>
+                            </div>
+
+                            {/* Description */}
+                            <p className="text-white/90 mb-3 leading-relaxed text-sm">{currentChallenge.description}</p>
+
+                            {/* Challenge Stats */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <div className="bg-[#FFEC86]/40 border border-[#FFEC86]/60 px-2 py-1 rounded-full flex items-center gap-1">
+                                <span className="text-xs font-medium text-red">x{currentChallenge.double_points} poin</span>
+                              </div>
+                              <div className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                                currentChallenge.difficulty === 'easy'
+                                  ? 'bg-green-500/20 border-green-400/30 text-green-100' :
+                                currentChallenge.difficulty === 'medium'
+                                  ? 'bg-yellow-500/20 border-yellow-400/30 text-yellow-100' :
+                                  'bg-red-500/20 border-red-400/30 text-red-100'
+                              }`}>
+                                {currentChallenge.difficulty === 'easy' ? '🟢 Mudah' :
+                                 currentChallenge.difficulty === 'medium' ? '🟡 Sedang' : '🔴 Sulit'}
+                              </div>
+                              {currentChallenge.hoursRemaining !== undefined && (
+                                <div className="bg-white/20 border border-white/30 px-2 py-1 rounded-full flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-white" />
+                                  <span className="text-xs font-medium">{currentChallenge.hoursRemaining}h tersisa</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Arrow */}
+                      {dailyChallenges.length > 1 && (
+                        <button
+                          onClick={nextChallenge}
+                          className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 z-20 backdrop-blur-sm border border-white/30 hover:scale-110"
+                        >
+                          <ChevronRight className="w-4 h-4 text-white" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Enhanced Background decoration */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                  <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-yellowGold/10 rounded-full -translate-y-8"></div>
+
+                  {/* Floating particles effect */}
+                  <div className="absolute top-3 left-1/4 w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse"></div>
+                  <div className="absolute bottom-4 right-1/3 w-1 h-1 bg-yellowGold/50 rounded-full animate-pulse delay-300"></div>
+                  <div className="absolute top-1/3 left-1/6 w-0.5 h-0.5 bg-white/40 rounded-full animate-pulse delay-700"></div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Clock className="w-6 h-6 animate-spin" />
+                    </div>
+                    <h2 className="text-xl font-bold mb-1">Memuat Tantangan...</h2>
+                    <p className="text-white/80 text-sm">Sedang mempersiapkan tantangan menarik untuk Anda</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Activities */}
+          <div className="lg:flex-1">
+            <div className="bg-oliveSoft rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl text-center italic md:text-2xl lg:text-xl font-bold text-greenDark mb-6">Aktivitas Terbaru Anda</h2>
+              <div className="space-y-4">
+                {activityLoading ? (
+                  // Loading state
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="bg-gray-50 rounded-xl p-4 animate-pulse">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                            <div className="space-y-2">
+                              <div className="h-4 bg-gray-300 rounded w-32"></div>
+                              <div className="h-3 bg-gray-300 rounded w-24"></div>
+                            </div>
+                          </div>
+                          <div className="h-6 bg-gray-300 rounded w-16"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : activityHistory.length > 0 ? (
+                  activityHistory.map((activity) => (
+                    <div key={activity.id} className="flex items-center justify-between p-4 bg-whiteGreen rounded-xl md:text-3xl transition-colors duration-200 border border-gray-100">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
+                          {activity.verified && <CheckCircle className="w-5 h-5 text-green-500" />}
+                          <div>
+                            <h3 className="font-semibold text-greenDark text-base">{activity.type}</h3>
+                            <p className="text-sm text-gray-600">{activity.relativeTime}</p>
+                            {activity.location && (
+                              <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                <MapPin className="w-3 h-3" />
+                                {activity.location}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-yellowGold font-bold text-lg">+{activity.points}</span>
+                        <p className="font-bold text-yellowGold text-base md:text-sm">Poin</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <div className="bg-gray-50 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                      <Target className="w-10 h-10 text-gray-300" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Belum ada aktivitas</h3>
+                    <p className="text-sm mb-4">Mulai buat aksi lingkungan pertama Anda!</p>
+                    <button
+                      onClick={() => window.location.href = '/aksi'}
+                      className="bg-tealLight hover:bg-greenDark text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                    >
+                      Mulai Aksi Sekarang
+                    </button>
+                  </div>
+                )}
+              </div>
+              {activityHistory.length > 0 && (
+                <div className="mt-8 text-center">
+                  <a
+                    href="/profil"
+                    className="inline-flex items-center gap-2 text-whiteMint hover:text-greenDark font-semibold text-lg transition-colors duration-200 hover:underline"
+                  >
+                    Lihat semua aktivitas
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default AuthenticatedHomepage;
