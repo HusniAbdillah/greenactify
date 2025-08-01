@@ -5,13 +5,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
-import { 
-  Home, 
-  AreaChart, 
-  Trophy, 
+import {
+  Home,
+  AreaChart,
+  Trophy,
   HandHeart,
   Bot,
-  History, 
+  History,
   UserRound,
 } from 'lucide-react'
 import { useUser } from "@clerk/nextjs";
@@ -21,7 +21,7 @@ const DesktopSidebar = () => {
   const { user } = useUser();
 
   const navItems = [
-    { href: '/beranda', icon: Home, label: 'Beranda' },
+    { href: '/', icon: Home, label: 'Beranda' },
     { href: '/persebaran', icon: AreaChart, label: 'Persebaran' },
     { href: '/peringkat', icon: Trophy, label: 'Peringkat' },
     { href: '/aksi', icon: HandHeart, label: 'Aksi' },
@@ -42,7 +42,7 @@ const DesktopSidebar = () => {
           {navItems.map((item) => {
             const Icon = item.icon
             const active = isActive(item.href)
-            
+
             return (
               <Link
                 key={item.href}
@@ -67,7 +67,7 @@ const DesktopSidebar = () => {
           {/* User Profile */}
           <div className="flex-shrink-0 p-4 pb-6 -mt-8">
             <div className="flex flex-col items-center">
-              <UserButton 
+              <UserButton
                 appearance={{
                   elements: {
                     avatarBox: "w-12 h-12 rounded-2xl shadow-lg border-2 border-white"

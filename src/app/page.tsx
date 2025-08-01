@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { Trophy, Medal, Award } from "lucide-react";
 import { fetchStats, type StatsData } from "@/lib/calculate-stats";
+import { DailyChallenge, ActivityHistory } from "@/lib/types/homepage";
 import "./globals.css";
-import AuthenticatedHomepage from "@/components/homepage/AuthenticatedHomepage";
 import UnauthenticatedHomepage from "@/components/homepage/UnauthenticatedHomepage";
+import AuthenticatedHomepage from "@/components/homepage/AuthenticatedHomepage";
 
 interface UserLeaderboard {
   id: string;
@@ -65,6 +66,7 @@ const getRankIcon = (rank: number) => {
 
 export default function HomePage() {
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState<"users" | "provinces">("users");
   const [userLeaderboard, setUserLeaderboard] = useState<UserLeaderboard[]>([]);
   const [provinceLeaderboard, setProvinceLeaderboard] = useState<
@@ -77,16 +79,24 @@ export default function HomePage() {
     activeProvinces: 0,
   });
 
+  // Authenticated user state
+  const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
+  const [activityHistory, setActivityHistory] = useState<ActivityHistory[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+
   useEffect(() => {
     const fetchLeaderboardData = async () => {
       try {
         setLoading(true);
+        if (isSignedIn) {
+          setActivityLoading(true);
+        }
 
         // Fetch stats data
         const statsData = await fetchStats();
         setStats(statsData);
 
-        const userResponse = await fetch("/api/leaderboard?type=users");
+        const userResponse = await fetch("/api/users");
         if (userResponse.ok) {
           const userResult = await userResponse.json();
           const userData = userResult.data || userResult;
@@ -117,24 +127,48 @@ export default function HomePage() {
             }));
           setProvinceLeaderboard(sortedProvinces);
         }
+
+        // Fetch authenticated user data if signed in
+        if (isSignedIn) {
+          // Fetch daily challenge
+          const challengeResponse = await fetch("/api/daily-challenge");
+          if (challengeResponse.ok) {
+            const challengeResult = await challengeResponse.json();
+            if (challengeResult.success) {
+              setDailyChallenge(challengeResult.data);
+            }
+          }
+
+          // Fetch activity history (last 3 activities for homepage)
+          const activityResponse = await fetch("/api/activity-history?limit=3");
+          if (activityResponse.ok) {
+            const activityResult = await activityResponse.json();
+            if (activityResult.success) {
+              setActivityHistory(activityResult.data.activities);
+            }
+          }
+        }
       } catch (error) {
-        console.error("Error fetching leaderboard data:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
+        if (isSignedIn) {
+          setActivityLoading(false);
+        }
       }
     };
 
     fetchLeaderboardData();
-  }, []);
+  }, [isSignedIn]);
 
-  // Render authenticated homepage for signed-in users
+  // Show authenticated homepage for signed in users
   if (isSignedIn) {
     return (
       <AuthenticatedHomepage
-        userLeaderboard={userLeaderboard}
-        loading={loading}
-        formatPoints={formatPoints}
-        getRankIcon={getRankIcon}
+        dailyChallenge={dailyChallenge}
+        activityHistory={activityHistory}
+        activityLoading={activityLoading}
+        userName={user?.firstName || user?.fullName || undefined}
       />
     );
   }
