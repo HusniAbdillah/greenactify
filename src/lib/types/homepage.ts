@@ -5,6 +5,7 @@ export interface DailyChallenge {
   description: string;
   icon: string;
   points: number;
+  double_points: number;
   category: string;
   difficulty: 'easy' | 'medium' | 'hard';
   expires_at: Date;

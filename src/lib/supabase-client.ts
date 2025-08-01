@@ -56,7 +56,7 @@ export const testSupabaseConnection = async () => {
 // Client-side functions (tanpa server auth)
 export const getProfileByUserId = async (userId: string): Promise<Profile | null> => {
   console.log('🔍 Fetching profile for userId:', userId)
-  
+
   if (!userId) {
     console.warn(' No userId provided')
     return null
@@ -69,10 +69,10 @@ export const getProfileByUserId = async (userId: string): Promise<Profile | null
       .eq('id', userId)
       .single()
 
-    console.log('📊 Profile query result:', { 
-      data, 
-      error, 
-      status, 
+    console.log('📊 Profile query result:', {
+      data,
+      error,
+      status,
       statusText,
       hasData: !!data,
       errorType: typeof error,
@@ -114,7 +114,7 @@ export const getActivitiesByUserId = async (userId: string): Promise<Activity[]>
 
 export const getLeaderboardUsers = async (limit: number = 10): Promise<LeaderboardUser[]> => {
   console.log('Fetching leaderboard users with limit:', limit)
-  
+
   const { data, error } = await supabase
     .from('leaderboard_users')
     .select('*')
@@ -136,7 +136,7 @@ export const getLeaderboardUsers = async (limit: number = 10): Promise<Leaderboa
 
 export const getLeaderboardProvinces = async (limit: number = 10): Promise<LeaderboardProvince[]> => {
   console.log('Fetching leaderboard provinces with limit:', limit)
-  
+
   const { data, error } = await supabase
     .from('leaderboard_provinces')
     .select('*')
@@ -172,7 +172,7 @@ export const getActivityCategories = async (): Promise<ActivityCategory[]> => {
 
 export const getTodayChallenge = async (): Promise<DailyChallenge | null> => {
   const today = new Date().toISOString().split('T')[0]
-  
+
   const { data, error } = await supabase
     .from('daily_challenges')
     .select('*')
@@ -199,6 +199,67 @@ export const getUserChallengeProgress = async (userId: string, challengeId: stri
     return null
   }
   return data
+}
+
+export const getRandomChallenges = async (limit: number = 3): Promise<DailyChallenge[]> => {
+  // Get challenges that haven't been used in the last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
+
+  // First, get the total count of available challenges
+  const { count, error: countError } = await supabase
+    .from('daily_challenges')
+    .select('*', { count: 'exact', head: true })
+    .or(`date.is.null,date.lt.${sevenDaysAgoStr}`)
+    .neq('date', today)
+
+  if (countError || !count || count === 0) {
+    console.log('No challenges available or error counting:', countError)
+    // Fallback: get any challenges that aren't for today
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('daily_challenges')
+      .select('*')
+      .neq('date', today)
+      .limit(limit)
+
+    if (fallbackError) {
+      console.error('Error fetching fallback challenges:', fallbackError)
+      return []
+    }
+    return fallbackData || []
+  }
+
+  // Generate random offset
+  const randomOffset = Math.floor(Math.random() * Math.max(1, count - limit + 1))
+
+  const { data, error } = await supabase
+    .from('daily_challenges')
+    .select('*')
+    .or(`date.is.null,date.lt.${sevenDaysAgoStr}`)
+    .neq('date', today)
+    .range(randomOffset, randomOffset + limit - 1)
+    .order('id', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching random challenges:', error)
+    return []
+  }
+  return data || []
+}
+
+export const updateChallengeDate = async (challengeId: string, newDate: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('daily_challenges')
+    .update({ date: newDate })
+    .eq('id', challengeId)
+
+  if (error) {
+    console.error('Error updating challenge date:', error)
+    return false
+  }
+  return true
 }
 
 export const getDetailedActivitiesByUserId = async (userId: string): Promise<any[]> => {
@@ -244,9 +305,9 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
 
 export const getProfileByProfileId = async (profileId: string): Promise<any | null> => {
   const { data, error } = await supabase
-    .from('profiles') 
+    .from('profiles')
     .select('*')
-    .eq('id', profileId); 
+    .eq('id', profileId);
 
   if (error) {
     console.error('Error fetching profile:', error);
@@ -280,7 +341,7 @@ export const recalculateAllUserPoints = async () => {
     .from('profiles')
     .update({ points: totalPoints })
     .eq('id', userId);
-    
+
   console.log('📝 Updated profile:', userId, profileUpdate);
 
   const leaderboardUpdate = await supabase
@@ -457,7 +518,7 @@ export const getActivityDetailsForDeletion = async (activityId: string): Promise
     console.error('Error fetching activity details for deletion:', error);
     return null;
   }
-  
+
   if (!data) {
     return null;
   }
@@ -513,7 +574,7 @@ export const deleteActivityAndDecrementPoints = async (activityId: string): Prom
   }
 
   const successDecrement = await decrementUserPoints(activityDetails.user_id, activityDetails.points);
-  
+
   if (!successDecrement) {
     console.error('Failed to decrement user points after activity deletion.');
   }
@@ -537,7 +598,7 @@ export const updateProfile = async ({
     .from('profiles')
     .update({ full_name, username, province })
     .eq('clerk_id', clerk_id);
-    
+
 
   return { error };
 };

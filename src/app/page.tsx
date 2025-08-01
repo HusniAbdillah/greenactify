@@ -47,6 +47,33 @@ const formatPoints = (points: number) => {
   return points.toString();
 };
 
+// Function to format relative time
+const getRelativeTime = (date: Date): string => {
+  const now = new Date();
+  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+
+  if (diffInHours < 1) {
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    if (diffInMinutes < 1) {
+      return 'Baru saja';
+    }
+    return `${diffInMinutes} menit lalu`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} jam lalu`;
+  } else if (diffInHours < 48) {
+    return '1 hari lalu';
+  } else if (diffInHours < 168) { // 7 days
+    const days = Math.floor(diffInHours / 24);
+    return `${days} hari lalu`;
+  } else if (diffInHours < 720) { // 30 days
+    const weeks = Math.floor(diffInHours / 168);
+    return `${weeks} minggu lalu`;
+  } else {
+    const months = Math.floor(diffInHours / 720);
+    return `${months} bulan lalu`;
+  }
+};
+
 const getRankIcon = (rank: number) => {
   switch (rank) {
     case 1:
@@ -80,7 +107,7 @@ export default function HomePage() {
   });
 
   // Authenticated user state
-  const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
+  const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([]);
   const [activityHistory, setActivityHistory] = useState<ActivityHistory[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
 
@@ -135,21 +162,47 @@ export default function HomePage() {
           if (challengeResponse.ok) {
             const challengeResult = await challengeResponse.json();
             if (challengeResult.success) {
-              setDailyChallenge(challengeResult.data);
+              setDailyChallenges(Array.isArray(challengeResult.data) ? challengeResult.data : [challengeResult.data]);
             }
           }
 
-          // Fetch activity history (last 3 activities for homepage)
-          const activityResponse = await fetch("/api/activity-history?limit=3");
+          // Fetch activity history (real data from activities API)
+          const activityResponse = await fetch("/api/activities");
           if (activityResponse.ok) {
             const activityResult = await activityResponse.json();
-            if (activityResult.success) {
-              setActivityHistory(activityResult.data.activities);
+            if (Array.isArray(activityResult) && activityResult.length > 0) {
+              // Transform the real API data to match the expected format
+              const transformedActivities = activityResult.slice(0, 3).map((activity: any) => ({
+                id: activity.id,
+                userId: activity.user_id,
+                type: activity.activity_categories?.name || activity.title,
+                description: activity.description || 'Tidak ada deskripsi',
+                points: activity.points || 0,
+                date: new Date(activity.created_at),
+                status: activity.status || 'completed',
+                category: activity.activity_categories?.group_category || 'other',
+                location: activity.location_name || activity.city || activity.province || 'Lokasi tidak diketahui',
+                image_url: activity.image_url || '',
+                verified: !!activity.verified_at,
+                challenge_id: null, // Real API doesn't have challenge_id in this format
+                relativeTime: getRelativeTime(new Date(activity.created_at))
+              }));
+              setActivityHistory(transformedActivities);
+            } else {
+              setActivityHistory([]);
             }
+          } else {
+            console.error('Failed to fetch activities:', activityResponse.statusText);
+            setActivityHistory([]);
           }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        // Set empty arrays for activity history if there's an error
+        if (isSignedIn) {
+          setActivityHistory([]);
+          setDailyChallenges([]);
+        }
       } finally {
         setLoading(false);
         if (isSignedIn) {
@@ -165,7 +218,7 @@ export default function HomePage() {
   if (isSignedIn) {
     return (
       <AuthenticatedHomepage
-        dailyChallenge={dailyChallenge}
+        dailyChallenges={dailyChallenges}
         activityHistory={activityHistory}
         activityLoading={activityLoading}
         userName={user?.firstName || user?.fullName || undefined}

@@ -17,56 +17,33 @@ import DesktopSidebar from "@/components/navbar/DesktopSidebar";
 import MobileBottomNav from "@/components/navbar/MobileBottomNav";
 
 interface AuthenticatedHomepageProps {
-  dailyChallenge: DailyChallenge | null;
+  dailyChallenges: DailyChallenge[];
   activityHistory: ActivityHistory[];
   activityLoading: boolean;
   userName?: string;
 }
 
 const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
-  dailyChallenge,
+  dailyChallenges,
   activityHistory,
   activityLoading,
   userName,
 }) => {
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
-  // Mock additional challenges for carousel demo
-  const mockChallenges = dailyChallenge ? [
-    dailyChallenge,
-    {
-      ...dailyChallenge,
-      id: 'challenge-2',
-      title: 'Hemat Air 30 Liter',
-      description: 'Gunakan air secukupnya saat mandi dan cuci piring hari ini',
-      icon: '💧',
-      points: 30,
-      difficulty: 'easy' as const,
-    },
-    {
-      ...dailyChallenge,
-      id: 'challenge-3',
-      title: 'Gunakan Transportasi Umum',
-      description: 'Pilih transportasi umum atau sepeda untuk perjalanan hari ini',
-      icon: '🚌',
-      points: 40,
-      difficulty: 'medium' as const,
-    }
-  ] : [];
-
   const nextChallenge = () => {
     setCurrentChallengeIndex((prev) =>
-      prev === mockChallenges.length - 1 ? 0 : prev + 1
+      prev === dailyChallenges.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevChallenge = () => {
     setCurrentChallengeIndex((prev) =>
-      prev === 0 ? mockChallenges.length - 1 : prev - 1
+      prev === 0 ? dailyChallenges.length - 1 : prev - 1
     );
   };
 
-  const currentChallenge = mockChallenges[currentChallengeIndex];
+  const currentChallenge = dailyChallenges[currentChallengeIndex];
   return (
     <div className="min-h-screen bg-mintPastel">
       {/* Navigation Components */}
@@ -94,7 +71,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
           {/* Today's Challenge Carousel */}
           <div className="lg:flex-1 mb-12 lg:mb-0">
             <div className="relative bg-gradient-to-br from-tealLight via-greenDark to-oliveDark rounded-3xl py-6 text-white overflow-hidden shadow-xl">
-              {mockChallenges.length > 0 ? (
+              {dailyChallenges.length > 0 && currentChallenge ? (
                 <>
                   {/* Challenge Content */}
                   <div className="relative z-10">
@@ -103,25 +80,27 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                       <div>
                         <h2 className="text-xl font-bold mb-1">Tantangan Hari Ini</h2>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {mockChallenges.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setCurrentChallengeIndex(index)}
-                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                              index === currentChallengeIndex
-                                ? 'bg-white scale-110'
-                                : 'bg-white/40 hover:bg-white/60'
-                            }`}
-                          />
-                        ))}
-                      </div>
+                      {dailyChallenges.length > 1 && (
+                        <div className="flex items-center space-x-2">
+                          {dailyChallenges.map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentChallengeIndex(index)}
+                              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                                index === currentChallengeIndex
+                                  ? 'bg-white scale-110'
+                                  : 'bg-white/40 hover:bg-white/60'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Challenge Card and Arrows Container */}
                     <div className="flex items-center justify-center gap-2 px-2">
                       {/* Left Arrow */}
-                      {mockChallenges.length > 1 && (
+                      {dailyChallenges.length > 1 && (
                         <button
                           onClick={prevChallenge}
                           className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 z-20 backdrop-blur-sm border border-white/30 hover:scale-110"
@@ -152,9 +131,8 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
 
                             {/* Challenge Stats */}
                             <div className="flex items-center gap-2 flex-wrap">
-                              <div className="bg-yellowGold/20 border border-yellowGold/30 px-2 py-1 rounded-full flex items-center gap-1">
-                                <Trophy className="w-3 h-3 text-yellowGold" />
-                                <span className="text-xs font-medium">+{currentChallenge.points} poin</span>
+                              <div className="bg-[#FFEC86]/40 border border-[#FFEC86]/60 px-2 py-1 rounded-full flex items-center gap-1">
+                                <span className="text-xs font-medium text-red">x{currentChallenge.double_points} poin</span>
                               </div>
                               <div className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                 currentChallenge.difficulty === 'easy'
@@ -166,13 +144,19 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                                 {currentChallenge.difficulty === 'easy' ? '🟢 Mudah' :
                                  currentChallenge.difficulty === 'medium' ? '🟡 Sedang' : '🔴 Sulit'}
                               </div>
+                              {currentChallenge.hoursRemaining !== undefined && (
+                                <div className="bg-white/20 border border-white/30 px-2 py-1 rounded-full flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-white" />
+                                  <span className="text-xs font-medium">{currentChallenge.hoursRemaining}h tersisa</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
                       </div>
 
                       {/* Right Arrow */}
-                      {mockChallenges.length > 1 && (
+                      {dailyChallenges.length > 1 && (
                         <button
                           onClick={nextChallenge}
                           className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 z-20 backdrop-blur-sm border border-white/30 hover:scale-110"
