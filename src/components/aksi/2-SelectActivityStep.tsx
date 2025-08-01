@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { getActivityCategoriesWithGroups, getActivityGroups } from '@/lib/get-activities';
 import { 
-  Search, Leaf, Recycle, TreeDeciduous, BookOpen, BrushCleaning, Bike, Droplet, Zap, Layers, ArrowLeft, Sparkles
+  Search, Leaf, Recycle, TreeDeciduous, BookOpen, BrushCleaning, Bike, Droplet, Zap, Layers, ArrowLeft, Sparkles, X
 } from 'lucide-react';
 
 export type ActivityCategory = {
@@ -11,7 +11,7 @@ export type ActivityCategory = {
   name: string;
   base_points: number;
   description: string;
-  activity_category_group?: { group_id: string }[];
+  group_category?: string; // Langsung string dari kolom group_category
 };
 
 interface ActivityGroup {
@@ -49,19 +49,40 @@ export default function SelectActivityStep({ onActivitySelect, onBack }: SelectA
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    getActivityGroups().then(setGroups);
-    getActivityCategoriesWithGroups().then(setCategories);
+    getActivityGroups().then((groupsData) => {
+      console.log('Groups data:', groupsData);
+      setGroups(groupsData);
+    });
+    getActivityCategoriesWithGroups().then((categoriesData) => {
+      console.log('Categories data:', categoriesData);
+      setCategories(categoriesData);
+    });
   }, []);
 
   const filteredCategories = useMemo(() => {
+    console.log('Filtering - selectedGroup:', selectedGroup);
+    console.log('Available categories:', categories.map(c => ({ name: c.name, group_category: c.group_category })));
+    
     const filtered = categories.filter((cat) => {
-      const matchSearch = cat.name.toLowerCase().includes(search.toLowerCase());
-      if (selectedGroup === 'all') {
-        return matchSearch;
+      // Search dalam nama dan deskripsi
+      const searchLower = search.toLowerCase();
+      const matchSearch = cat.name.toLowerCase().includes(searchLower) ||
+                         (cat.description && cat.description.toLowerCase().includes(searchLower));
+      
+      // Filter berdasarkan grup
+      let matchGroup = true;
+      if (selectedGroup !== 'all') {
+        // Coba match dengan ID atau nama grup
+        const group = groups.find(g => g.id === selectedGroup);
+        matchGroup = cat.group_category === selectedGroup || 
+                    cat.group_category === group?.name;
+        console.log(`Category ${cat.name}: group_category=${cat.group_category}, selectedGroup=${selectedGroup}, groupName=${group?.name}, match=${matchGroup}`);
       }
-      const hasGroup = cat.activity_category_group?.some((rel) => rel.group_id === selectedGroup);
-      return hasGroup && matchSearch;
+      
+      return matchSearch && matchGroup;
     });
+
+    console.log('Filtered results:', filtered.length);
 
     if (selectedGroup === 'all') {
       const shuffled = [...filtered];
@@ -73,7 +94,14 @@ export default function SelectActivityStep({ onActivitySelect, onBack }: SelectA
     }
 
     return filtered;
-  }, [categories, selectedGroup, search]);
+  }, [categories, selectedGroup, search, groups]);
+
+  const clearAllFilters = () => {
+    setSelectedGroup('all');
+    setSearch('');
+  };
+
+  const hasActiveFilters = selectedGroup !== 'all' || search;
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col">
@@ -82,11 +110,20 @@ export default function SelectActivityStep({ onActivitySelect, onBack }: SelectA
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
         <input
           type="text"
-          placeholder="Aksi hijau apa yang kamu cari?"
+          placeholder="Cari nama atau deskripsi aktivitas..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-2 text-sm md:py-3 md:text-base md:pl-12 border border-gray-200 rounded-full bg-whiteMint focus:ring-2 focus:ring-tealLight focus:border-tealLight outline-none transition"
         />
+        {hasActiveFilters && (
+          <button
+            onClick={clearAllFilters}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            title="Clear all filters"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       <div className="flex gap-3 mb-4 overflow-x-auto pb-2 md:flex-wrap md:overflow-x-visible">
@@ -122,6 +159,11 @@ export default function SelectActivityStep({ onActivitySelect, onBack }: SelectA
           <div className="text-center text-gray-500 py-10 flex flex-col items-center gap-4">
             <Sparkles size={40} className="text-gray-400"/>
             <p>Oops! Aktivitas tidak ditemukan.</p>
+            {(selectedGroup !== 'all' || search) && (
+              <p className="text-sm">
+                Coba ubah filter atau kata kunci pencarian
+              </p>
+            )}
           </div>
         )}
         {filteredCategories.map((activity) => (
@@ -135,12 +177,25 @@ export default function SelectActivityStep({ onActivitySelect, onBack }: SelectA
               flex justify-between items-center group
             `}
           >
-            <span className="font-medium text-whiteMint text-sm md:text-base mr-4">{activity.name}</span>
+            <div className="flex flex-col">
+              <span className="font-medium text-whiteMint text-sm md:text-base mr-4">{activity.name}</span>
+              {activity.description && (
+                <span className="text-xs text-mintPastel opacity-80 mt-1">{activity.description}</span>
+              )}
+            </div>
             <span className="font-bold text-yellowGold text-sm md:text-base whitespace-nowrap">
               +{activity.base_points} Poin
             </span>
           </button>
         ))}
+        
+        {/* Info jumlah aktivitas */}
+        {filteredCategories.length > 0 && (
+          <div className="text-center text-gray-500 text-sm mt-4">
+            Menampilkan {filteredCategories.length} aktivitas
+            {selectedGroup !== 'all' && ` dari grup yang dipilih`}
+          </div>
+        )}
       </div>
     </div>
   );
