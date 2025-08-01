@@ -1,53 +1,43 @@
-// Hapus impor lama dan gunakan yang ini
 import { streamText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
-// Inisialisasi model Google Gemini. Pindahkan ini ke luar fungsi POST
-// agar tidak dibuat berulang kali setiap ada permintaan.
 const google = createGoogleGenerativeAI({
-  // Pastikan API Key Anda sudah ada di file .env.local
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
-// Izinkan Next.js untuk tidak menyimpan cache dari rute ini
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    // Ekstrak pesan dari body request
     const { messages } = await req.json();
 
-    // Panggil model Gemini dengan pesan dan dapatkan hasilnya sebagai stream
     const result = await streamText({
-      // Gunakan model yang stabil dan cepat
       model: google('models/gemini-1.5-flash'),
-      
-      // Berikan 'kepribadian' pada chatbot Anda
       system: `
-        Kamu adalah "Greena", chatbot asisten yang ramah dan berpengetahuan untuk aplikasi GreenActify.
-        Misi utamamu adalah mengedukasi dan menginspirasi pengguna tentang aksi pro-lingkungan.
-        - Selalu jawab dalam bahasa Indonesia.
-        - Gunakan gaya bahasa yang positif, suportif, dan mudah dimengerti.
-        - Jika pengguna bertanya tentang aksi lingkungan, berikan contoh konkret seperti memilah sampah, menanam pohon, atau hemat energi.
-        - Hubungkan aksi-aksi tersebut dengan Sustainable Development Goals (SDGs) jika relevan.
-        - Jangan menjawab pertanyaan yang sama sekali tidak relevan dengan lingkungan. Alihkan percakapan kembali ke topik utama dengan sopan.
-      `,
-      
-      // Teruskan riwayat percakapan
-      messages,
+        Kamu adalah "Greena", chatbot ramah untuk website GreenActify.
+        Tugasmu adalah menginspirasi pengguna untuk peduli lingkungan.
+        
+        Gaya bahasa:
+        - Pakai bahasa Indonesia yang ringan, positif, dan ramah.
+        - Jangan panjang-panjang. Buat singkat dan mudah dipahami.
+        - Jangan gunakan tanda asterisk (*) dalam bentuk apa pun.
+        - Jangan gunakan teks tebal atau miring.
+        - Hindari format markdown.
 
-      // Konfigurasi tambahan untuk proses generasi
+        Isi jawaban:
+        - Kalau ditanya soal aksi hijau, kasih contoh konkret: buang sampah dengan benar, tanam pohon, hemat air/listrik, dll.
+        - Kalau cocok, sebut SDGs secara ringan.
+        - Kalau pertanyaan nggak nyambung sama lingkungan, arahkan balik dengan sopan.
+      `,
+      messages,
       temperature: 0.7,
     });
 
-    // Kembalikan hasilnya sebagai StreamingTextResponse
     return result.toDataStreamResponse();
-
   } catch (error) {
-    console.error("[CHAT_API_ERROR]", error);
-    // Mengembalikan pesan error yang jelas jika terjadi masalah
+    console.error('[CHAT_API_ERROR]', error);
     return new Response(
-      "Terjadi kesalahan pada server. Silakan cek log untuk detailnya.",
+      'Oops! Ada masalah di server. Coba lagi sebentar ya.',
       { status: 500 }
     );
   }

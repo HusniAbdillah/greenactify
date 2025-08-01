@@ -104,7 +104,7 @@ export type DailyChallenge = {
   title: string
   description: string
   instructions?: string
-  points: number
+  double_points?: number
   date: string
   category_id?: string
   difficulty?: 'easy' | 'medium' | 'hard'

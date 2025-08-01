@@ -3,6 +3,10 @@ import DesktopSidebar from '@/components/navbar/DesktopSidebar'
 import MobileBottomNav from '@/components/navbar/MobileBottomNav'
 import { checkUser } from '@/lib/check-user'
 import { Toaster } from 'sonner';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export default async function AuthenticatedLayout({
   children,
 }: {

@@ -9,7 +9,7 @@ const MobileBottomNav = () => {
   const pathname = usePathname()
 
   const navItems = [
-    { href: '/beranda', icon: Home, label: 'Beranda' },
+    { href: '/', icon: Home, label: 'Beranda' },
     { href: '/peringkat', icon: Trophy, label: 'Peringkat' },
     { href: '/aksi', icon: HandHeart, label: 'Aksi' },
     { href: '/chatbot', icon: Bot, label: 'Chatbot' },
@@ -28,7 +28,7 @@ const MobileBottomNav = () => {
           {navItems.map((item) => {
             const Icon = item.icon
             const active = isActive(item.href)
-            
+
             return (
               <Link
                 key={item.href}
