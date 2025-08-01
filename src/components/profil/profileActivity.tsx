@@ -88,7 +88,7 @@ export default function ProfileActivity({
   }
   const activitiesData = [
     { name: 'daur_ulang', count: countMap['Daur Ulang'], icon: <Recycle className="h-8 w-8 md:h-10 md:w-10 text-emerald-500" />, label: 'Daur Ulang', description: 'Mengubah sampah menjadi sesuatu yang baru dan bermanfaat, mengurangi limbah.' },
-    { name: 'bersih_bersih', count: countMap['Bersih-bersih'], icon: <BrushCleaning className="h-8 w-8 md:h-10 md:w-10 text-blue-500" />, label: 'Bersih-Bersih', description: 'Menjaga lingkungan agar tetap bersih dan rapi.' },
+    { name: 'bersih_bersih', count: countMap['Bersih-bersih'], icon: <BrushCleaning className="h-8 w-8 md:h-10 md:w-10 text-blue-500" />, label: 'Bersih-Bersih', description: 'Menjaga lingkungan agar tetap bersih, rapi, dan mengurangi sumber penyakit.' },
     { name: 'hemat_energi', count: countMap['Hemat Energi'], icon: <Lightbulb className="h-8 w-8 md:h-10 md:w-10 text-amber-500" />, label: 'Hemat Energi', description: 'Mengurangi konsumsi energi untuk melestarikan sumber daya dan biaya.' },
     { name: 'edukasi_lingkungan', count: countMap['Edukasi Lingkungan'], icon: <Book className="h-10 w-10 text-purple-500" />, label: 'Edukasi Lingkungan', description: 'Meningkatkan kesadaran tentang isu lingkungan.' },
     { name: 'hemat_air', count: countMap['Hemat Air'], icon: <Droplet className="h-8 w-8 md:h-10 md:w-10 text-cyan-500" />, label: 'Hemat Air', description: 'Mengelola penggunaan air secara bijak untuk keberlanjutan pasokan air bersih.' },
@@ -162,7 +162,7 @@ export default function ProfileActivity({
 
         {activeTab === 'overview' && (
           <>
-            <h2 className="font-bold text-xl text-whiteMint text-center pb-4">
+            <h2 className="font-bold text-md sm:text-lg md:text-xl text-whiteMint text-center pb-4">
               Jumlah Aktivitas
             </h2>
 
@@ -176,17 +176,17 @@ export default function ProfileActivity({
                   <div className="mb-3 p-3 bg-whiteGreen rounded-full shadow-md flex items-center justify-center">
                     {activity.icon}
                   </div>
-                  <h3 className="mb-1 text-base font-bold text-greenDark text-center">
+                  <h3 className="mb-1 text-sm sm:text-lg font-bold text-greenDark text-center">
                     {activity.label}
                   </h3>
-                  <p className="mb-4 text-sm text-oliveDark text-center leading-relaxed flex-grow overflow-y-auto">
+                  <p className="mb-4 text-[9.2px] sm:text-sm md:text-md  text-oliveDark text-center leading-relaxed flex-grow overflow-y-auto">
                     {activity.description}
                   </p>
                   <div className="mt-auto flex flex-col items-center">
-                    <span className="text-3xl font-extrabold text-greenDark leading-none">
+                    <span className="text-xl sm:text-3xl  font-extrabold text-greenDark leading-none">
                       {activity.count}
                     </span>
-                    <span className="block text-sm font-medium text-oliveDark mt-1">Aktivitas</span>
+                    <span className="block text-xs sm:text-sm font-medium text-oliveDark mt-1">Aktivitas</span>
                   </div>
                 </div>
               ))}

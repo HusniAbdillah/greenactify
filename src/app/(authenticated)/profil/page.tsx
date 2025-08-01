@@ -19,6 +19,7 @@ export default function ProfileContent() {
       router.push('/');
     }
   }, [user, router]);
+
   function getRankInfo(rank: number | null) {
     if (rank === 1) {
       return {
@@ -65,6 +66,7 @@ export default function ProfileContent() {
   if (!profile || loading) {
     return <div className="text-center py-10">Memuat profil...</div>;
   }
+  
   return (
     <div className="min-h-screen bg-mintPastel min-w-full pb-2 px-4 md:px-8">
       <h1 className="py-5 text-center xl:pl-4 font-bold text-2xl">
@@ -73,9 +75,9 @@ export default function ProfileContent() {
 
       <section className="flex flex-col md:flex-row justify-center gap-y-7 gap-x-6 md:gap-x-16 lg:gap-x-5 items-center mx-auto">
         <div className="flex flex-row gap-x-3 items-center">
-          {user?.imageUrl ? (
+          {profile?.avatar_url ? (
             <img
-              src={user.imageUrl}
+              src={profile.avatar_url}
               alt={`${profile?.full_name}'s profile`}
               className="w-30 h-30 md:w-40 md:h-40 rounded-full"
             />
@@ -137,7 +139,7 @@ export default function ProfileContent() {
               {profile?.points} poin
             </p>
           </div>
-          <div className="font-bold text-center text-[14px]  md:text-[14px] lg:text-[24px] pl-12 max-w-65 lg:max-w-100">
+          <div className="font-bold text-center text-[14px]  sm:text-[18px] lg:text-[24px] pl-12 max-w-65 lg:max-w-100">
             {profile && profile.rank !== null && profile.rank <= 1000 && (
               <p className="font-extrabold text-yellowGold text-[20px] md:text-[28px]">
                 Selamat!

@@ -110,7 +110,7 @@ const UserProfilePage = () => {
     const fetchUserActivities = async () => {
       try {
         setLoadingActivities(true);
-        const res = await fetch(`/api/activities/getAll/${userId}`);
+        const res = await fetch(`/api/activities/getById/${userId}`);
         if (!res.ok) throw new Error('Gagal mengambil aktivitas user');
 
         const data = await res.json();
