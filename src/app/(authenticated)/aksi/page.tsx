@@ -25,21 +25,22 @@ type FlowStep =
 const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
   UPLOADING: {
     title: "Unggah Aksi Hijaumu",
-    subtitle: "Aksi hijaumu mana? Unggah fotonya!",
+    subtitle: "Yuk, unggah foto aksi hijaumu biar makin banyak yang terinspirasi!",
   },
   SELECTING_ACTIVITY: {
     title: "Pilih Jenis Aksimu",
-    subtitle: "Lagi ngapain? Pilih jenis aksinya, ya!",
+    subtitle: "Kamu lagi ngapain? Pilih jenis aksinya dulu, ya!",
   },
   CONFIRMING_LOCATION: {
     title: "Konfirmasi Lokasi",
-    subtitle: "Di mana kamu melakukan aksi ini?",
+    subtitle: "Kasih tahu kami di mana aksi ini kamu lakukan!",
   },
   SHOWING_RESULT: {
     title: "Bagikan Aksimu",
-    subtitle: "Yuk, bagikan biar makin menginspirasi!",
+    subtitle: "Aksimu siap dibagikan, yuk kasih tahu yang lain!",
   },
 };
+
 
 export default function AksiPage() {
   const [currentStep, setCurrentStep] = useState<FlowStep>("UPLOADING");
@@ -53,6 +54,8 @@ export default function AksiPage() {
   const [isActivityInserted, setIsActivityInserted] = useState(false);
   const [totalActivities, setTotalActivities] = useState<number>(0);
   const [totalPoints, setTotalPoints] = useState<number>(0);
+  const [lastUploadTime, setLastUploadTime] = useState<number | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
 
   const { user } = useUser();
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -73,6 +76,38 @@ export default function AksiPage() {
     }
     fetchProfileId();
   }, [user]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('lastActivityUpload');
+    if (saved) {
+      const timestamp = parseInt(saved);
+      setLastUploadTime(timestamp);
+      
+      const now = Date.now();
+      const timeDiff = now - timestamp;
+      const cooldownMs = 45 * 1000;
+      
+      if (timeDiff < cooldownMs) {
+        setCooldownRemaining(Math.ceil((cooldownMs - timeDiff) / 1000));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cooldownRemaining > 0) {
+      const timer = setInterval(() => {
+        setCooldownRemaining(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      return () => clearInterval(timer);
+    }
+  }, [cooldownRemaining]);
 
   const handleFileSelect = async (file: File) => {
     const path = `user-uploads/${Date.now()}-${file.name}`;
@@ -144,12 +179,18 @@ export default function AksiPage() {
       await updateUserPoints(profileId!, selectedActivity!.base_points);
       await updateProvinceStats(confirmedLocation, selectedActivity!.base_points);
 
+      const now = Date.now();
+      setLastUploadTime(now);
+      localStorage.setItem('lastActivityUpload', now.toString());
+      setCooldownRemaining(45);
+
       setCurrentStep("UPLOADING");
       setUploadedFile(null);
       setUploadedImageUrl(null);
       setSelectedActivity(null);
       setConfirmedLocation("");
       setGeneratedImageUrl("");
+      setIsActivityInserted(false);
     } catch (err: any) {
       alert(err.message || JSON.stringify(err));
     }
@@ -219,7 +260,6 @@ export default function AksiPage() {
 
   return (
     <div className="w-full p-4 md:p-8">
-      {/* Judul hanya tampil jika bukan step 4 */}
       {currentStep !== "SHOWING_RESULT" && (
         <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6 flex items-center">
           <div className="w-1/5">
@@ -246,7 +286,10 @@ export default function AksiPage() {
       )}
 
       {currentStep === "UPLOADING" && (
-        <UploadStep onFileSelect={handleFileSelect} />
+        <UploadStep 
+          onFileSelect={handleFileSelect} 
+          cooldownRemaining={cooldownRemaining}
+        />
       )}
 
       {currentStep === "SELECTING_ACTIVITY" && uploadedFile && (
