@@ -45,7 +45,7 @@ const BerandaPage = () => {
   const [loading, setLoading] = useState(true);
 
   // New state for authenticated user data
-  const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
+  const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([]);
   const [activityHistory, setActivityHistory] = useState<ActivityHistory[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
 
@@ -75,17 +75,17 @@ const BerandaPage = () => {
         const challengeResponse = await fetch("/api/daily-challenge");
         if (challengeResponse.ok) {
           const challengeResult = await challengeResponse.json();
-          if (challengeResult.success) {
-            setDailyChallenge(challengeResult.data);
+          if (challengeResult.success && challengeResult.data) {
+            setDailyChallenges(Array.isArray(challengeResult.data) ? challengeResult.data : [challengeResult.data]);
           }
         }
 
         // Fetch activity history (last 3 activities for homepage)
-        const activityResponse = await fetch("/api/activity-history?limit=3");
+        const activityResponse = await fetch("/api/activities?limit=3");
         if (activityResponse.ok) {
           const activityResult = await activityResponse.json();
-          if (activityResult.success) {
-            setActivityHistory(activityResult.data.activities);
+          if (activityResult.success && activityResult.data) {
+            setActivityHistory(activityResult.data.activities || activityResult.data || []);
           }
         }
       } catch (error) {
@@ -101,7 +101,7 @@ const BerandaPage = () => {
 
   return (
     <AuthenticatedHomepage
-      dailyChallenge={dailyChallenge}
+      dailyChallenges={dailyChallenges}
       activityHistory={activityHistory}
       activityLoading={activityLoading}
       userName={user?.firstName || user?.fullName || undefined}
