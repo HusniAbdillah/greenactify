@@ -1,12 +1,12 @@
 'use client'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
-import React, { useState, useEffect } from 'react' // Baris ini yang diperbaiki
+import React, { useState, useEffect } from 'react' 
 import { useActivities } from '@/hooks/useSupabase'
-import { Calendar, Filter, Search, MapPin, Share2, Download, TrendingUp } from 'lucide-react'
-
+import { Calendar, Filter, Search, MapPin, Share2, Download, TrendingUp, Trash2,  } from 'lucide-react'
+import { handleDeleteActivity } from '@/hooks/useSupabase'
 import { useRouter } from 'next/navigation';
 import { useUser, useClerk } from '@clerk/nextjs';
+import { ActivityItem } from '@/hooks/useSupabase'
+
 
 export default function RiwayatPage() {
   const { activities, loading, error } = useActivities()
@@ -20,7 +20,58 @@ export default function RiwayatPage() {
       router.push('/');
     }
   }, [user, router]);
-  
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [customModal, setCustomModal] = useState<{ title: string, message: string } | null>(null)
+  const [activityToDelete, setActivityToDelete] = useState<ActivityItem | null>(null)
+
+  const showModal = (title: string, message: string) => {
+    setCustomModal({ title, message })
+  }
+
+  const handleDeleteConfirmed = async () => {
+    if (!activityToDelete) return
+    const success = await handleDeleteActivity(activityToDelete.id)
+    if (success) {
+      setShowDeleteConfirm(false)
+      setActivityToDelete(null)
+      router.refresh()
+    }
+  }
+
+  const handleShareActivity = async (activity: ActivityItem) => {
+    console.log("Sharing activity:", activity)
+    try {
+      const url = activity.generated_image_url
+      if (!url) {
+        showModal("Gagal Membagikan", "Gambar belum tersedia untuk dibagikan.")
+        return
+      }
+
+      const res = await fetch(url)
+      const blob = await res.blob()
+      const file = new File([blob], "grenactify-card.png", { type: "image/png" })
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: "Aksi Hijauku!",
+          text: `Saya baru saja melakukan ${activity.title} bersama GrenActify! 🌱`,
+          files: [file],
+        })
+      } else {
+        showModal("Fitur Tidak Didukung", "Perangkat kamu tidak mendukung fitur share gambar. Gambar akan diunduh otomatis.")
+        const a = document.createElement("a")
+        a.href = url
+        a.download = "grenactify-card.png"
+        a.click()
+      }
+    } catch (err) {
+      console.error("Gagal share:", err)
+      showModal("Kesalahan", "Terjadi kesalahan saat membagikan aktivitas.")
+    }
+  }
+
+
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
     { value: 'Penghijauan', label: 'Penghijauan' },
@@ -48,7 +99,7 @@ export default function RiwayatPage() {
   const filteredActivities = activities.filter((activity) => {
     const matchesSearch =
       activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (activity.location_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+      (activity.province?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
 
     const matchesCategory =
       selectedCategory === 'all' || activity.activity_categories.group_category === selectedCategory
@@ -59,71 +110,40 @@ export default function RiwayatPage() {
   })
 
   const totalPoints = filteredActivities.reduce((sum, a) => sum + a.points, 0)
-  const totalCO2Saved = filteredActivities.reduce((sum, a) => sum + a.points * 0.1, 0) // asumsi simulasi
-
-  const handleShare = (activity: any) => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'GreenActify',
-        text: `Saya menyelesaikan aktivitas ${activity.title} dan dapat ${activity.points} poin!`,
-        url: window.location.href,
-      })
-    }
-  }
-
-const handleDownloadPDF = async () => {
-  const report = document.getElementById('report-content')
-  if (!report) return
-
-  // Tambahkan padding & background putih untuk rendering yang lebih rapi
-  report.style.backgroundColor = 'white'
-  report.style.padding = '20px'
-
-  const canvas = await html2canvas(report, {
-    scale: 2,               // Kualitas tinggi
-    useCORS: true,          // Untuk gambar dari luar (jika ada)
-    backgroundColor: '#fff' // Pastikan latar belakang putih
-  })
-
-  const imgData = canvas.toDataURL('image/png')
-  const pdf = new jsPDF('p', 'mm', 'a4')
-
-  const pdfWidth = pdf.internal.pageSize.getWidth()
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-
-  // Jika konten lebih tinggi dari 1 halaman A4
-  if (pdfHeight > 297) {
-    const totalPages = Math.ceil(pdfHeight / 297)
-    for (let i = 0; i < totalPages; i++) {
-      const position = -i * 297
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight)
-      if (i < totalPages - 1) pdf.addPage()
-    }
-  } else {
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-  }
-
-  pdf.save('laporan-aktivitas.pdf')
-}
-
+  const totalCO2Saved = filteredActivities.reduce((sum, a) => sum + a.points * 0.1, 0) 
 
 
   return (
-    <div className="p-6 space-y-6 bg-mintPastel min-h-screen"> {/* Latar Belakang Mint Pastel */}
-      {/* Header Banner */}
+    <div className="p-6 space-y-6 bg-mintPastel min-h-screen"> 
       <div className="bg-gradient-to-r from-greenDark to-oliveSoft text-white rounded-lg p-6 shadow-md">
         <h1 className="text-2xl font-bold mb-2">Riwayat Aktivitas</h1>
         <p className="text-lg">Lihat kembali perjalanan hijau Anda</p>
       </div>
       <div id="report-content" className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatBox label="Total Aktivitas" value={filteredActivities.length} color="greenDark" />
-        <StatBox label="Total Poin" value={totalPoints} color="pinkSoft" />
-        <StatBox label="kg CO₂ Diselamatkan" value={totalCO2Saved.toFixed(1)} color="oliveSoft" />
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-greenDark">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-greenDark">
+            {filteredActivities.length}
+          </div>
+          <div className="text-xs text-oliveSoft">Total Aktivitas</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-pinkSoft">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-pinkSoft">
+            {totalPoints}
+          </div>
+          <div className="text-xs text-oliveSoft">Total Poin</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-oliveSoft box col-span-2 sm:col-span-1">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-oliveSoft">
+            {totalCO2Saved.toFixed(1)}
+          </div>
+          <div className="text-xs text-oliveSoft">kg CO₂ Diselamatkan</div>
+        </div>
       </div>
 
-      {/* Filter */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
@@ -160,18 +180,9 @@ const handleDownloadPDF = async () => {
             <option value="year">Tahun Ini</option>
           </select>
 
-          <button
-            onClick={handleDownloadPDF}
-            className="px-4 py-3 bg-greenDark text-white rounded-lg flex items-center hover:bg-oliveDark transition-colors"
-          >
-            <Download className="w-5 h-5 mr-2" />
-            Unduh PDF
-          </button>
-
         </div>
       </div>
 
-      {/* Activity List */}
       <div className="space-y-4">
         {filteredActivities.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
@@ -181,28 +192,49 @@ const handleDownloadPDF = async () => {
         ) : (
           filteredActivities.map((a) => (
             <div key={a.id} className="bg-white rounded-lg shadow p-4 md:p-6 flex gap-4 items-center">
-              <div className="w-20 h-20 rounded-lg overflow-hidden bg-whiteGreen flex items-center justify-center text-greenDark font-bold flex-shrink-0">
-                {a.image_url ? (
-                  <img src={a.image_url} alt={a.title} className="w-full h-full object-cover" />
-                ) : (
-                  'IMG'
-                )}
-              </div>
+              <div className='flex flex-col gap-y-2 item'>
+                <div className="w-20 h-20 rounded-lg overflow-hidden bg-whiteGreen flex items-center justify-center text-greenDark font-bold flex-shrink-0">
+                  {a.image_url ? (
+                    <img src={a.image_url} alt={a.title} className="w-full h-full object-cover" />
+                  ) : (
+                    'IMG'
+                  )}
+                </div>
+                <div className=" flex ">
+                  <button
+                    onClick={() => handleShareActivity(a)}
+                    className="bg-amber-500/80 text-white p-2 rounded hover:bg-amber-600"
+                    title="Bagikan"
+                  >
+                    <Share2 className="w-3 h-3 sm:w-5 sm:h-5" />
+                  </button>
 
+                  <button
+                    onClick={() => {
+                      setActivityToDelete(a)
+                      setShowDeleteConfirm(true)
+                    }}
+                    className="bg-red-500/80 text-white p-2 rounded hover:bg-red-600"
+                    title="Hapus"
+                  >
+                      <Trash2 className="w-3 h-3 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
                   <div className="pr-4">
-                    <h3 className="text-lg font-semibold text-greenDark truncate">{a.title}</h3>
-                    <p className="text-sm text-oliveSoft">{a.activity_categories.name}</p>
+                    <h3 className="text-base md:text-md font-semibold text-greenDark ">{a.title}</h3>
+                    <p className="text-xs md:text-bse text-oliveSoft">{a.activity_categories.name}</p>
                     <div className="text-sm text-oliveSoft flex flex-wrap gap-x-4 gap-y-1 mt-1">
                       <span className="flex items-center">
                         <Calendar className="w-4 h-4 mr-1 text-pinkSoft" />
-                        {new Date(a.created_at).toLocaleDateString('id-ID')}
+                        <span className='text-[10px] md:text-sm '> {new Date(a.created_at).toLocaleDateString('id-ID')} </span>
                       </span>
-                      {a.location_name && (
+                      {a.province && (
                         <span className="flex items-center truncate">
                           <MapPin className="w-4 h-4 mr-1 text-pinkSoft" />
-                          {a.location_name}
+                          <span className='text-[10px] md:text-sm '> {a.province}</span>
                         </span>
                       )}
                     </div>
@@ -216,26 +248,44 @@ const handleDownloadPDF = async () => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleShare(a)}
-                    className="text-oliveSoft hover:text-greenDark transition-colors flex-shrink-0"
-                  >
-                    <Share2 className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
             </div>
           ))
         )}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+            <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-sm shadow-xl border border-zinc-700 text-white">
+              <h2 className="text-lg font-bold mb-4">Hapus Aktivitas?</h2>
+              <p className="text-sm text-zinc-300">Apakah kamu yakin ingin menghapus aktivitas ini? Tindakan ini tidak bisa dibatalkan.</p>
+              <div className="flex justify-end space-x-2 mt-6">
+                <button onClick={() => setShowDeleteConfirm(false)} className="px-4 py-2 text-sm rounded bg-zinc-700 hover:bg-zinc-600">Batal</button>
+                <button onClick={handleDeleteConfirmed} className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 font-semibold">Hapus</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {customModal && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm text-center space-y-4">
+              <h3 className="text-xl font-bold text-zinc-800">{customModal.title}</h3>
+              <p className="text-zinc-600">{customModal.message}</p>
+              <button
+                onClick={() => setCustomModal(null)}
+                className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 font-semibold"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        )}
+
+
       </div>
       </div>
     </div>
   )
 }
 
-const StatBox = ({ label, value, color }: { label: string; value: string | number; color: string }) => (
-  <div className={`bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-${color}`}>
-    <div className={`text-3xl font-bold text-${color}`}>{value}</div>
-    <div className="text-oliveSoft">{label}</div>
-  </div>
-)
+

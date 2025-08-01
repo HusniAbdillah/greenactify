@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProfiles, useActivities } from '@/hooks/useSupabase';
 import { useUser, useClerk } from '@clerk/nextjs';
-import ProfileActivity from './profileActivity';
+import ProfileActivity from '../../../components/profil/profileActivity';
+import Image from 'next/image';
 
 export default function ProfileContent() {
   const { profile } = useProfiles();
@@ -61,14 +62,16 @@ export default function ProfileContent() {
   }
 
   const { message, image } = getRankInfo(profile?.rank ?? null);
-
+  if (!profile || loading) {
+    return <div className="text-center py-10">Memuat profil...</div>;
+  }
   return (
     <div className="min-h-screen bg-mintPastel min-w-full pb-2 px-4 md:px-8">
       <h1 className="py-5 text-center xl:pl-4 font-bold text-2xl">
         Profil
       </h1>
 
-      <section className="flex flex-col md:flex-row justify-center gap-y-5 gap-x-6 md:gap-x-16 lg:gap-x-5 items-center mx-auto">
+      <section className="flex flex-col md:flex-row justify-center gap-y-7 gap-x-6 md:gap-x-16 lg:gap-x-5 items-center mx-auto">
         <div className="flex flex-row gap-x-3 items-center">
           {user?.imageUrl ? (
             <img
@@ -93,7 +96,7 @@ export default function ProfileContent() {
 
             <div className="flex flex-col items-center gap-2">
               <Link href="/profil/pengaturan" passHref>
-                <button className="bg-oliveSoft px-3 py-1 text-xs md:text-base rounded-3xl font-bold text-black">
+                <button className="bg-oliveSoft px-3 py-1 text-xs cursor-pointer hover:bg-oliveSoft/60 active:bg-oliveSoft/20   lg:text-base rounded-3xl font-bold text-black">
                   Ubah Profil
                 </button>
               </Link>
@@ -118,20 +121,25 @@ export default function ProfileContent() {
           </div>
         </div>
 
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center mx-6 mb-2">
           <div className="flex flex-col gap-3">
-            <img
-              src={`/${image}`}
-              alt="Trophy"
-              className="w-30 h-40 md:h-50 md:w-40"
-            />
-            <p className="block font-bold text-center md:text-3xl text-xl">
+            <div className="w-20 h-30 md:w-40 md:h-50 relative">
+              <Image
+                src={`/${image}`}
+                alt="Trophy"
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 80px, 160px"
+                priority 
+              />
+            </div>
+            <p className="block sm:font-bold text-center md:text-3xl  sm:text-2xl text-xl font-semibold">
               {profile?.points} poin
             </p>
           </div>
-          <div className="font-bold text-center text-[17px] lg:text-[24px] pl-12 max-w-65 lg:max-w-100">
+          <div className="font-bold text-center text-[14px]  md:text-[14px] lg:text-[24px] pl-12 max-w-65 lg:max-w-100">
             {profile && profile.rank !== null && profile.rank <= 1000 && (
-              <p className="font-extrabold text-yellowGold text-[23px] md:text-[28px]">
+              <p className="font-extrabold text-yellowGold text-[20px] md:text-[28px]">
                 Selamat!
               </p>
             )}
