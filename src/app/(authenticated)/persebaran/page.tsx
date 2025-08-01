@@ -20,10 +20,12 @@ const SimpleLeafletMap = memo(({ isClient, mapRef, provinceCount, totalActivitie
           width: 100%;
           height: 100%;
           border-radius: 8px;
+          z-index: 1 !important;
         }
         .leaflet-control-zoom {
           border: none !important;
           box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+          z-index: 2 !important;
         }
         .leaflet-control-zoom a {
           background-color: white !important;
@@ -56,9 +58,17 @@ const SimpleLeafletMap = memo(({ isClient, mapRef, provinceCount, totalActivitie
           box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
           padding: 8px 12px !important;
           font-family: system-ui, -apple-system, sans-serif !important;
+          z-index: 1000 !important;
         }
         .custom-tooltip::before {
           border-top-color: white !important;
+        }
+        /* Ensure map container has lower z-index than navbar */
+        .leaflet-map-pane {
+          z-index: 1 !important;
+        }
+        .leaflet-tile-pane {
+          z-index: 1 !important;
         }
       `}</style>
 
@@ -90,7 +100,6 @@ const PersebaranPage = () => {
   const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'year'>('month')
   const [isMapFullscreen, setIsMapFullscreen] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<string>('')
-  const [viewMode, setViewMode] = useState<'heatmap' | 'markers'>('heatmap')
   const [isClient, setIsClient] = useState(false)
   const mapRef = useRef<any>(null)
   const mapInstanceRef = useRef<any>(null)
@@ -795,73 +804,9 @@ const PersebaranPage = () => {
       />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg p-6">
+      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-4 sm:p-6">
         <h1 className="text-2xl font-bold mb-2">Peta Persebaran Aktivitas</h1>
         <p>Visualisasi real-time aktivitas hijau di seluruh Indonesia dengan data saturation heatmap</p>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-4">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <select
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value as any)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-            >
-              <option value="week">7 Hari Terakhir</option>
-              <option value="month">30 Hari Terakhir</option>
-              <option value="year">Tahun Ini</option>
-            </select>
-
-            {/* View Mode Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('heatmap')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'heatmap'
-                    ? 'bg-green-600 text-white'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Heatmap
-              </button>
-              <button
-                onClick={() => setViewMode('markers')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'markers'
-                    ? 'bg-green-600 text-white'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                Markers
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4" />
-              <span>Update terakhir: {isClient ? lastUpdate : 'Memuat...'}</span>
-            </div>
-          </div>
-
-          <div className="flex space-x-3">
-            <button
-              onClick={() => setIsMapFullscreen(!isMapFullscreen)}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {isMapFullscreen ? <Eye className="w-5 h-5 mr-2" /> : <ZoomIn className="w-5 h-5 mr-2" />}
-              {isMapFullscreen ? 'Normal View' : 'Fullscreen'}
-            </button>
-            <button
-              onClick={handleDownloadData}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              <Download className="w-5 h-5 mr-2" />
-              Unduh Data
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Main Content */}
@@ -869,16 +814,16 @@ const PersebaranPage = () => {
         {/* Enhanced Map */}
         <div className={`${isMapFullscreen ? 'col-span-1' : 'lg:col-span-2'}`}>
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">
-                {viewMode === 'heatmap' ? 'Data Saturation Heatmap Indonesia' : 'Peta Aktivitas Indonesia'}
+            <div className="flex flex-col items-start justify-between mb-4">
+              <h2 className="text-xl font-bold text-greenDark mb-2">
+                Peta Persebaran Kegiatan Hijau Indonesia
               </h2>
-              <div className="text-sm text-gray-600">
+              <p className="text-left text-xs text-gray-600 italic">
                 Klik provinsi untuk melihat detail
-              </div>
+              </p>
             </div>
 
-            <div className={`relative rounded-lg overflow-hidden ${isMapFullscreen ? 'h-[80vh]' : 'h-96'}`}>
+            <div className={`relative rounded-lg overflow-hidden ${isMapFullscreen ? 'h-[80vh]' : 'h-96'}`} style={{ zIndex: 1 }}>
               <SimpleLeafletMap
                 isClient={isClient}
                 mapRef={mapRef}
@@ -921,20 +866,20 @@ const PersebaranPage = () => {
           <div className="space-y-4">
             {/* Selected Province Details */}
             {selectedProvinceData ? (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-bold mb-4 flex items-center">
+              <div className="bg-whiteMint rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-bold mb-4 flex items-center text-greenDark">
                   <MapPin className="w-5 h-5 mr-2 text-green-600" />
                   {selectedProvinceData.name}
                 </h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-green-50 rounded">
+                    <div className="text-center p-3 bg-yellowGold/40 rounded">
                       <div className="text-2xl font-bold text-green-600">
                         {formatNumber(selectedProvinceData.totalPoints)}
                       </div>
                       <div className="text-sm text-gray-600">Total Poin</div>
                     </div>
-                    <div className="text-center p-3 bg-blue-50 rounded">
+                    <div className="text-center p-3 bg-tealLight/40 rounded">
                       <div className="text-2xl font-bold text-blue-600">
                         {formatNumber(selectedProvinceData.participants)}
                       </div>
@@ -943,7 +888,7 @@ const PersebaranPage = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-purple-50 rounded">
+                    <div className="text-center p-3 bg-pinkSoft/80 rounded">
                       <div className="text-2xl font-bold text-purple-600">
                         {formatNumber(selectedProvinceData.totalActivities)}
                       </div>
@@ -957,14 +902,9 @@ const PersebaranPage = () => {
                     </div>
                   </div>
 
-                  <div className="p-3 bg-gray-50 rounded">
-                    <div className="text-sm text-gray-600">Aktivitas Terpopuler</div>
-                    <div className="font-semibold">{selectedProvinceData.topActivity}</div>
-                  </div>
-
-                  <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded">
-                    <div className="text-sm text-gray-600">Pertumbuhan {timeFilter === 'week' ? 'Minggu' : timeFilter === 'month' ? 'Bulan' : 'Tahun'} Ini</div>
-                    <div className="font-bold text-green-600 text-lg">{selectedProvinceData.growth}</div>
+                  <div className="p-3 bg-oliveSoft rounded">
+                    <div className="text-sm text-black italic">Aktivitas Terpopuler</div>
+                    <div className="font-semibold text-white">{selectedProvinceData.topActivity}</div>
                   </div>
                 </div>
               </div>
@@ -981,7 +921,7 @@ const PersebaranPage = () => {
             )}
 
             {/* Top Activities */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-whiteMint rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-bold mb-4">Aktivitas Terpopuler</h3>
               <div className="space-y-3">
                 {activityTypes.map((activity, index) => (
@@ -1001,69 +941,87 @@ const PersebaranPage = () => {
                 ))}
               </div>
             </div>
-
-            {/* Quick Stats */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-bold mb-4">Statistik Cepat</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Provinsi Teraktif</span>
-                  <span className="font-bold">DKI Jakarta</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total CO₂ Diselamatkan</span>
-                  <span className="font-bold text-green-600">1,250 kg</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Pertumbuhan Rata-rata</span>
-                  <span className="font-bold text-blue-600">+13.8%</span>
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </div>
 
       {/* Statistics Summary */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-whiteMint rounded-lg shadow-lg p-6">
         <h2 className="text-xl font-bold mb-6">Ringkasan Nasional</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">
+            <div className="text-3xl font-bold text-green-600">
               {formatNumber(provinceData.reduce((sum, p) => sum + p.totalActivities, 0))}
             </div>
             <div className="text-gray-600">Total Aktivitas</div>
-            <div className="text-sm text-green-500 font-medium">+12% minggu ini</div>
           </div>
 
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">
+            <div className="text-3xl font-bold text-blue-600">
               {formatNumber(provinceData.reduce((sum, p) => sum + p.participants, 0))}
             </div>
             <div className="text-gray-600">Total Peserta</div>
-            <div className="text-sm text-blue-500 font-medium">+8% minggu ini</div>
           </div>
 
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">
+            <div className="text-3xl font-bold text-purple-600">
               {formatNumber(provinceData.reduce((sum, p) => sum + p.totalPoints, 0))}
             </div>
             <div className="text-gray-600">Total Poin</div>
-            <div className="text-sm text-purple-500 font-medium">+15% minggu ini</div>
           </div>
 
           <div className="text-center">
-            <div className="text-3xl font-bold text-yellow-600 mb-2">
+            <div className="text-3xl font-bold text-yellowGold">
               {provinceData.length}
             </div>
             <div className="text-gray-600">Region Aktif</div>
-            <div className="text-sm text-yellow-500 font-medium">100% coverage</div>
           </div>
         </div>
       </div>
 
-      {/* Mobile bottom padding */}
-      <div className="md:hidden h-20"></div>
+      {/* PDF Report Download Section */}
+      <div className="bg-whiteMint rounded-lg shadow-lg p-6">
+        <div className="flex flex-col space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Aktivitas Hijau Indonesia</h2>
+              <p className="text-sm text-gray-600 mt-1">Generate laporan komprehensif dalam format PDF</p>
+            </div>
+          </div>
+
+          {/* Report Options */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Time Period Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Periode Laporan</label>
+              <select
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="week">7 Hari Terakhir</option>
+                <option value="month">30 Hari Terakhir</option>
+                <option value="year">Tahun Ini</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 justify-end">
+            <button
+              onClick={() => {
+                // TODO: Implement PDF generation
+                alert('Fitur generate PDF akan segera tersedia! Saat ini menggunakan download JSON sebagai alternatif.')
+              }}
+              className="flex items-center justify-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+            >
+              <Download className="w-5 h-5 mr-2" />
+              Unduh Laporan PDF
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
