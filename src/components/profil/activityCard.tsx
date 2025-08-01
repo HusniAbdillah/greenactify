@@ -35,8 +35,9 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
       onUpdated?.()
     }
   }
-
+  
   const handleShareActivity = async () => {
+    console.log("Sharing activity:", activity)
     try {
       const url = activity.generated_image_url
       if (!url) {
@@ -56,7 +57,6 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
         })
       } else {
         showModal("Fitur Tidak Didukung", "Perangkat kamu tidak mendukung fitur share gambar. Gambar akan diunduh otomatis.")
-
         const a = document.createElement("a")
         a.href = url
         a.download = "grenactify-card.png"
@@ -67,6 +67,7 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
       showModal("Kesalahan", "Terjadi kesalahan saat membagikan aktivitas.")
     }
   }
+
 
   return (
     <>

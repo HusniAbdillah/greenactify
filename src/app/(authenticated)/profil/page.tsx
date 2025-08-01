@@ -62,7 +62,9 @@ export default function ProfileContent() {
   }
 
   const { message, image } = getRankInfo(profile?.rank ?? null);
-
+  if (!profile || loading) {
+    return <div className="text-center py-10">Memuat profil...</div>;
+  }
   return (
     <div className="min-h-screen bg-mintPastel min-w-full pb-2 px-4 md:px-8">
       <h1 className="py-5 text-center xl:pl-4 font-bold text-2xl">
@@ -119,7 +121,7 @@ export default function ProfileContent() {
           </div>
         </div>
 
-        <div className="flex justify-center items-center mx-6">
+        <div className="flex justify-center items-center mx-6 mb-2">
           <div className="flex flex-col gap-3">
             <div className="w-20 h-30 md:w-40 md:h-50 relative">
               <Image
@@ -131,7 +133,7 @@ export default function ProfileContent() {
                 priority 
               />
             </div>
-            <p className="block font-bold text-center md:text-3xl text-xl">
+            <p className="block sm:font-bold text-center md:text-3xl  sm:text-2xl text-xl font-semibold">
               {profile?.points} poin
             </p>
           </div>

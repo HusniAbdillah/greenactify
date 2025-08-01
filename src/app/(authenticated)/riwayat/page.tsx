@@ -180,7 +180,6 @@ export default function RiwayatPage() {
             <option value="year">Tahun Ini</option>
           </select>
 
-
         </div>
       </div>
 

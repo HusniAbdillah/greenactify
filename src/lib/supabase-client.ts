@@ -534,3 +534,4 @@ export const updateProfile = async ({
 
   return { error };
 };
+
