@@ -110,6 +110,12 @@ export default function HomePage() {
   const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([]);
   const [activityHistory, setActivityHistory] = useState<ActivityHistory[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Set client flag after mount to prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const fetchLeaderboardData = async () => {
@@ -185,7 +191,7 @@ export default function HomePage() {
                 image_url: activity.image_url || '',
                 verified: !!activity.verified_at,
                 challenge_id: null, // Real API doesn't have challenge_id in this format
-                relativeTime: getRelativeTime(new Date(activity.created_at))
+                relativeTime: isClient ? getRelativeTime(new Date(activity.created_at)) : 'Memuat...'
               }));
               setActivityHistory(transformedActivities);
             } else {
@@ -213,6 +219,16 @@ export default function HomePage() {
 
     fetchLeaderboardData();
   }, [isSignedIn]);
+
+  // Update relative times after client mount to prevent hydration mismatch
+  useEffect(() => {
+    if (isClient && activityHistory.length > 0) {
+      setActivityHistory(prev => prev.map(activity => ({
+        ...activity,
+        relativeTime: getRelativeTime(activity.date)
+      })));
+    }
+  }, [isClient, activityHistory.length]);
 
   // Show authenticated homepage for signed in users
   if (isSignedIn) {
