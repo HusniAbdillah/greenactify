@@ -73,7 +73,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
         <div className="flex flex-col lg:flex-row lg:gap-8 lg:items-start">
           {/* Today's Challenge Carousel */}
           <div className="lg:flex-1 mb-12 lg:mb-0">
-            <div className="relative bg-gradient-to-br from-tealLight via-greenDark to-oliveDark rounded-3xl py-6 text-white overflow-hidden shadow-xl">
+            <div className="relative bg-gradient-to-br from-tealLight via-greenDark to-oliveDark rounded-3xl py-6 px-2 md:px-6 text-white overflow-visible md:overflow-hidden shadow-xl">
               {dailyChallenges.length > 0 && currentChallenge ? (
                 <>
                   {/* Challenge Content */}
@@ -101,7 +101,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                     </div>
 
                     {/* Challenge Card and Arrows Container */}
-                    <div className="flex items-center justify-center gap-2 px-2">
+                    <div className="flex items-center justify-center gap-1 md:gap-2 px-1 md:px-2">
                       {/* Left Arrow */}
                       {dailyChallenges.length > 1 && (
                         <button
@@ -114,7 +114,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
 
                       {/* Challenge Card */}
                       <div
-                        className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-h-[140px] flex items-start justify-center mx-auto max-w-2xl flex-1 h-60 cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-[1.02] hover:border-white/30"
+                        className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-h-[200px] md:min-h-[140px] flex items-start justify-center mx-auto max-w-2xl flex-1 h-auto cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-[1.02] hover:border-white/30"
                         onClick={() => window.location.href = `/aksi?challenge=${currentChallenge.id}&mode=challenge`}
                       >
                         <div className="flex items-start justify-between flex-wrap gap-4 w-full">
@@ -131,6 +131,14 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
 
                             {/* Description */}
                             <p className="text-white/90 mb-3 leading-relaxed text-sm">{currentChallenge.description}</p>
+
+                            {/* Instructions */}
+                            {currentChallenge.instructions && (
+                              <div className="mb-3 p-3 bg-white/10 rounded-lg border border-white/20">
+                                <h4 className="text-sm font-semibold text-white mb-2">📋 Instruksi:</h4>
+                                <p className="text-white/90 text-xs leading-relaxed">{currentChallenge.instructions}</p>
+                              </div>
+                            )}
 
                             {/* Challenge Stats */}
                             <div className="flex items-center gap-2 flex-wrap">
