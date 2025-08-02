@@ -19,9 +19,12 @@ import {
   Download,
   FileText,
   TreePine,
+  Map,
+  ExternalLink,
 } from "lucide-react";
 import { StatsData } from "@/lib/calculate-stats";
 import Image from "next/image";
+import { HeatmapWidget, useProvinceData } from "@/components/heatmap";
 
 interface UserLeaderboard {
   id: string;
@@ -69,7 +72,14 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
       {/* Header */}
       <header className="flex justify-between items-center p-6 pt-8">
         <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Logo" width={120} height={40} priority />
+          <Image
+            src="/logo-greenactify.svg"
+            alt="Logo"
+            width={240}
+            height={80}
+            priority
+            className="h-6 w-auto md:h-10 lg:h-12"
+          />
         </div>
         <div className="flex items-center gap-4">
           <SignedOut>
@@ -320,6 +330,34 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
           </div>
         </div>
 
+        {/* Heatmap Section */}
+        <div className="max-w-4xl mx-auto mt-16">
+          <div className="bg-whiteMint rounded-2xl shadow-lg p-6">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-greenDark mb-4">
+                Persebaran Aktivitas Lingkungan
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Lihat distribusi aksi lingkungan di seluruh Indonesia. Setiap provinsi berkontribusi untuk masa depan yang lebih hijau.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl">
+              <UnauthenticatedHeatmap />
+            </div>
+
+            <div className="text-center mt-6">
+              <SignInButton>
+                <button className="inline-flex items-center gap-2 bg-tealLight hover:bg-greenDark text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-base shadow-md hover:shadow-lg">
+                  <Map className="w-5 h-5" />
+                  Masuk untuk Lihat Detail
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+              </SignInButton>
+            </div>
+          </div>
+        </div>
+
         {/* PDF Report Download Section */}
         <div className="max-w-4xl mx-auto mt-16">
           <div className="bg-whiteMint rounded-2xl shadow-lg p-8">
@@ -393,6 +431,59 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
         </div>
       </footer>
     </div>
+  );
+};
+
+// Heatmap component for unauthenticated homepage
+const UnauthenticatedHeatmap: React.FC = () => {
+  const { provinceData, loading, error } = useProvinceData();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-tealLight/20 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
+            <Map className="w-6 h-6 text-tealLight" />
+          </div>
+          <p className="text-gray-600">Memuat peta persebaran...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Map className="w-6 h-6 text-red-500" />
+          </div>
+          <p className="text-red-600 mb-2">Gagal memuat peta</p>
+          <p className="text-gray-500 text-sm">Silakan coba lagi nanti</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <HeatmapWidget
+      provinceData={provinceData}
+      config={{
+        height: '400px',
+        dataField: 'totalActivities',
+        colorScheme: 'green',
+        showLegend: true,
+        showSummary: false
+      }}
+      mapControls={{
+        showZoom: true,
+        showAttribution: false,
+        showScale: false
+      }}
+      title="Aktivitas Lingkungan per Provinsi"
+      description="Distribusi aktivitas lingkungan di seluruh Indonesia"
+      className="w-full"
+    />
   );
 };
 
