@@ -313,7 +313,7 @@ const UserProfilePage = () => {
     { name: 'Edukasi Lingkungan', count: categoryStats.edukasi_lingkungan_count, icon: Book, color: 'bg-oliveDark', bgColor: 'bg-whiteGreen' },
     { name: 'Hemat Air', count: categoryStats.hemat_air_count, icon: Droplets, color: 'bg-tealLight', bgColor: 'bg-mintPastel' },
     { name: 'Makanan Organik', count: categoryStats.makanan_organik_count, icon: Wheat, color: 'bg-oliveSoft', bgColor: 'bg-whiteGreen' },
-    { name: 'Transportasi Hijau', count: categoryStats.transportasi_hijau_count, icon: Bike, color: 'bg-greenDark', bgColor: 'bg-whiteGreen' },
+    { name: 'Transportasi Hijau', count: categoryStats.transportasi_hijau_count, icon: Bike, color: 'bg-darkGreen', bgColor: 'bg-whiteGreen' },
     { name: 'Penghijauan', count: categoryStats.penghijauan_count, icon: Trees, color: 'bg-oliveDark', bgColor: 'bg-mintPastel' }
   ];
 
