@@ -72,8 +72,7 @@ interface CategoryStats {
 const UserProfilePage = () => {
   const params = useParams()
   const router = useRouter()
-  
-  const userId = params?.userId as string | undefined
+  const userId = params.userId as string
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -81,13 +80,6 @@ const UserProfilePage = () => {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-
-      if (!userId) {
-        setError('User ID not found')
-        setLoading(false)
-        return
-      }
-
       try {
         setLoading(true)
         const response = await fetch(`/api/users/${userId}`)
@@ -98,19 +90,17 @@ const UserProfilePage = () => {
 
         const data = await response.json()
         setProfile(data.data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'Failed to load profile')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchUserProfile()
+    if (userId) {
+      fetchUserProfile()
+    }
   }, [userId])
-
-  if (!userId) {
-    return <div>Invalid user ID</div>
-  }
 
   const [activities, setActivities] = useState<UserActivity[] | null>(null);
   const [lActivitiesoading, setLoadingActivities] = useState(true);
