@@ -122,7 +122,7 @@ export default function ProfileActivity({
             e.stopPropagation();
             router.push('/riwayat');
           }}
-          className="px-4 py-2 rounded-xl bg-oliveSoft text-whiteMint hover:bg-greenDark transition-colors duration-200 text-xs sm:text-sm sm:text-base shadow-md"
+          className="px-4 py-2 rounded-xl bg-oliveSoft text-whiteMint hover:bg-greenDark transition-colors duration-200 text-xs sm:text-sm md:text-base shadow-md"
         >
           Lihat semua
         </button>

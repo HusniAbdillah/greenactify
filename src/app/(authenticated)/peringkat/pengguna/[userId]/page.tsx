@@ -407,16 +407,16 @@ const UserProfilePage = () => {
           <Leaf className="w-7 h-7 text-oliveSoft mr-3" />
           Statistik Kontribusi Lingkungan
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-6">
           {categoryData.map((category) => {
             const IconComponent = category.icon;
             return (
-              <div key={category.name} className={`${category.bgColor} p-5 rounded-2xl text-center shadow-md border border-${category.color.replace('bg-', '')}/20`}>
+              <div key={category.name} className={`${category.bgColor} p-3 sm:p-5 rounded-2xl text-center shadow-md border border-${category.color.replace('bg-', '')}/20`}>
                 <IconComponent className={`w-8 h-8 ${category.color.replace('bg-', 'text-')} mx-auto mb-3`} />
                 <div className={`text-2xl font-bold ${category.color.replace('bg-', 'text-')}`}>
                   {category.count}
                 </div>
-                <div className="text-sm text-greenDark font-medium">
+                <div className="text-xs text-center sm:text-sm text-greenDark font-medium">
                   {category.name}
                 </div>
               </div>
