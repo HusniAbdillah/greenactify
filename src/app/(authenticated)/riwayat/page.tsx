@@ -253,7 +253,7 @@ export default function RiwayatPage() {
                 <div className="flex justify-between items-start">
                   <div className="pr-4">
                     <h3 className="text-base md:text-md font-semibold text-greenDark ">{a.title}</h3>
-                    <p className="text-xs md:text-bse text-oliveSoft">{a.activity_categories.name}</p>
+                    <p className="text-xs md:text-bse text-oliveSoft">{a.activity_categories.group_category}</p>
                     <div className="text-sm text-oliveSoft flex flex-wrap gap-x-4 gap-y-1 mt-1">
                       <span className="flex items-center">
                         <Calendar className="w-4 h-4 mr-1 text-pinkSoft" />
@@ -269,9 +269,6 @@ export default function RiwayatPage() {
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-2">
                       <span className="flex items-center text-greenDark font-medium">
                         <TrendingUp className="w-4 h-4 mr-1" />+{a.points} poin
-                      </span>
-                      <span className="flex items-center text-pinkSoft font-medium">
-                        🌱 {(a.points * 0.1).toFixed(1)} kg CO₂
                       </span>
                     </div>
                   </div>
