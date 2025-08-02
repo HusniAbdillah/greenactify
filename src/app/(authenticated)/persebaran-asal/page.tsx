@@ -1,8 +1,11 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { MapPin, Users, TrendingUp, Filter, Calendar, Download, Eye, Activity, BarChart3 } from 'lucide-react'
+import { MapPin, Users, TrendingUp, Filter, Calendar, Download, Eye, Activity, BarChart3, ExternalLink } from 'lucide-react'
 import { HeatmapWidget, useProvinceData, ProvinceData } from '@/components/heatmap'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import { useRouter } from 'next/navigation'
 
 // Types
 export type ActivityItem = {
@@ -31,6 +34,8 @@ export type ProvinceStats = {
 }
 
 const UnifiedActivitiesPage = () => {
+  const router = useRouter()
+  
   // Main state
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
@@ -191,7 +196,7 @@ const UnifiedActivitiesPage = () => {
       const data = await response.json()
 
       if (data.success && data.popularActivities) {
-        const colors = ['#16a34a', '#2563eb', '#9333ea', '#ea580c', '#dc2626']
+        const colors = ['#16a34a', '#2563eb', '#9333ea', '#ea580c', '#dc2626', '#059669', '#7c3aed', '#db2777', '#c2410c', '#1d4ed8']
         const activitiesWithColors = data.popularActivities.map((activity: any, index: number) => ({
           ...activity,
           color: colors[index] || '#6b7280'
@@ -357,23 +362,28 @@ const UnifiedActivitiesPage = () => {
   // Get province extra stats
   const getProvinceExtraStats = (provinceName: string) => {
     const provinceActivities = activities.filter(act => act.province === provinceName)
-    const activitiesWithoutCoords = provinceActivities.filter(act => act.latitude === null || act.longitude === null).length
+
+    const highPointCount = provinceActivities.filter(act => act.points >= 50).length
+    const highPointPercentage = provinceActivities.length > 0
+      ? ((highPointCount / provinceActivities.length) * 100).toFixed(1) + '%'
+      : '0%'
+
     const latestActivity = provinceActivities.length > 0
       ? new Date(provinceActivities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at).toLocaleDateString('id-ID')
       : 'N/A'
 
-    const activityCount: { [key: string]: number } = {};
+    const activityCount: { [key: string]: number } = {}
     provinceActivities.forEach(act => {
-      const categoryName = act.activity_categories.name;
-      activityCount[categoryName] = (activityCount[categoryName] || 0) + 1;
-    });
-    
-    let mostFrequentActivity = 'N/A';
-    let maxCount = 0;
+      const categoryName = act.activity_categories.name
+      activityCount[categoryName] = (activityCount[categoryName] || 0) + 1
+    })
+
+    let mostFrequentActivity = 'N/A'
+    let maxCount = 0
     for (const category in activityCount) {
       if (activityCount[category] > maxCount) {
-        maxCount = activityCount[category];
-        mostFrequentActivity = category;
+        maxCount = activityCount[category]
+        mostFrequentActivity = category
       }
     }
 
@@ -381,10 +391,167 @@ const UnifiedActivitiesPage = () => {
     const avgPointsPerActivity = provinceActivities.length > 0 ? (totalPoints / provinceActivities.length).toFixed(2) : '0.00'
 
     return {
-      activitiesWithoutCoords,
+      highPointPercentage,
       mostFrequentActivity,
       avgPointsPerActivity,
       latestActivity
+    }
+  }
+
+  // Export functions from the heatmap page
+  const exportToCSV = () => {
+    const headers = [
+      "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+      "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+      "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+    ]
+
+    const rows = provinces.map(prov => {
+      const extra = getProvinceExtraStats(prov.province)
+      return [
+        prov.province,
+        prov.total_users,
+        prov.total_activities,
+        prov.total_points,
+        prov.avg_points_per_user,
+        extra.highPointPercentage,
+        extra.mostFrequentActivity,
+        extra.avgPointsPerActivity,
+        extra.latestActivity
+      ]
+    })
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.setAttribute("download", "Laporan Dampak GreenActivy.csv")
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const exportToPDF = () => {
+    const doc = new jsPDF()
+
+    const logoUrl = '/images/logo-fiks.png'
+    const img = new window.Image()
+    img.src = logoUrl
+    img.crossOrigin = 'anonymous'
+
+    img.onload = () => {
+      const pageWidth = doc.internal.pageSize.getWidth()
+      
+      const logoWidth = 60
+      const logoX = (pageWidth - logoWidth) / 2
+      doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
+
+
+      doc.setFontSize(16)
+      doc.setTextColor(5, 46, 22) 
+      doc.setFont('helvetica', 'bold')
+      doc.text('Laporan Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
+        align: 'center'
+      })
+
+      const tableData = provinces.map(prov => {
+        const extra = getProvinceExtraStats(prov.province)
+        return [
+          prov.province,
+          prov.total_users,
+          prov.total_activities,
+          prov.total_points,
+          prov.avg_points_per_user,
+          extra.highPointPercentage,
+          extra.mostFrequentActivity,
+          extra.avgPointsPerActivity,
+          extra.latestActivity
+        ]
+      })
+
+      autoTable(doc, {
+        startY: 45,
+        head: [[
+          "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+          "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+          "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+        ]],
+        body: tableData,
+        styles: {
+          fontSize: 9,
+          halign: 'center',
+          valign: 'middle',
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [34, 197, 94], 
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [240, 253, 244] 
+        },
+        tableLineColor: [200, 250, 200],
+        tableLineWidth: 0.2
+      })
+
+      doc.save('Laporan Dampak GreenActivy.pdf')
+    }
+
+    img.onerror = () => {
+      // Fallback tanpa logo jika gagal load
+      const pageWidth = doc.internal.pageSize.getWidth()
+      
+      doc.setFontSize(16)
+      doc.setTextColor(34, 197, 94)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
+        align: 'center'
+      })
+
+      const tableData = provinces.map(prov => {
+        const extra = getProvinceExtraStats(prov.province)
+        return [
+          prov.province,
+          prov.total_users,
+          prov.total_activities,
+          prov.total_points,
+          prov.avg_points_per_user,
+          extra.highPointPercentage,
+          extra.mostFrequentActivity,
+          extra.avgPointsPerActivity,
+          extra.latestActivity
+        ]
+      })
+
+      autoTable(doc, {
+        startY: 30,
+        head: [[
+          "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+          "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+          "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+        ]],
+        body: tableData,
+        styles: {
+          fontSize: 9,
+          halign: 'center',
+          valign: 'middle',
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [34, 197, 94], 
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [240, 253, 244] 
+        },
+        tableLineColor: [200, 250, 200],
+        tableLineWidth: 0.2
+      })
+
+      doc.save('Dampak GreenActivy.pdf')
     }
   }
 
@@ -442,7 +609,7 @@ const UnifiedActivitiesPage = () => {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Statistics Summary */}
+        {/* Statistics Summary - Made more responsive */}
         <div className="bg-whiteMint rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Ringkasan Nasional</h2>
@@ -454,42 +621,43 @@ const UnifiedActivitiesPage = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Made responsive: min 2 cols on mobile, 4 cols on medium+ */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-2xl md:text-3xl font-bold text-green-600">
                 {statisticsData.loading ? '...' : formatNumber(statisticsData.totalActivities)}
               </div>
-              <div className="text-gray-600">Total Aktivitas</div>
+              <div className="text-xs md:text-sm text-gray-600">Total Aktivitas</div>
             </div>
 
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600">
                 {statisticsData.loading ? '...' : formatNumber(statisticsData.totalParticipants)}
               </div>
-              <div className="text-gray-600">Total Peserta</div>
+              <div className="text-xs md:text-sm text-gray-600">Total Peserta</div>
             </div>
 
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
+              <div className="text-2xl md:text-3xl font-bold text-purple-600">
                 {statisticsData.loading ? '...' : formatNumber(statisticsData.totalPoints)}
               </div>
-              <div className="text-gray-600">Total Poin</div>
+              <div className="text-xs md:text-sm text-gray-600">Total Poin</div>
             </div>
 
             <div className="text-center">
-              <div className="text-3xl font-bold text-yellowGold">
+              <div className="text-2xl md:text-3xl font-bold text-yellowGold">
                 {statisticsData.loading ? '...' : statisticsData.activeRegions}
               </div>
-              <div className="text-gray-600">Region Aktif</div>
+              <div className="text-xs md:text-sm text-gray-600">Region Aktif</div>
             </div>
           </div>
         </div>
 
         {/* Main Content - Province View */}
         {viewMode === 'province' && (
-          <div className={`grid gap-6 ${isMapFullscreen ? 'grid-cols-1' : 'lg:grid-cols-3'}`}>
-            {/* Province Heatmap */}
-            <div className={`${isMapFullscreen ? 'col-span-1' : 'lg:col-span-2'}`}>
+          <div className={`grid gap-6 ${isMapFullscreen ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-5'}`}>
+            {/* Province Heatmap - Made bigger */}
+            <div className={`${isMapFullscreen ? 'col-span-1' : 'col-span-1 lg:col-span-4'}`}>
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex flex-col items-start justify-between mb-4">
                   <h2 className="text-xl font-bold text-greenDark mb-2">
@@ -516,113 +684,109 @@ const UnifiedActivitiesPage = () => {
                   enableFullscreen={false}
                   enableDownload={false}
                   className="w-full"
-                  key="province-heatmap" // Add key to force re-render
+                  key="province-heatmap"
                 />
               </div>
             </div>
 
-            {/* Province Details & Statistics */}
+            {/* Top 5 Provinces - Made smaller */}
             {!isMapFullscreen && (
-              <div className="space-y-4">
-                {/* Selected Province Details */}
-                {selectedProvinceData ? (
-                  <div className="bg-whiteMint rounded-lg shadow-lg p-6">
-                    <h3 className="text-lg font-bold mb-4 flex items-center text-greenDark">
-                      <MapPin className="w-5 h-5 mr-2 text-green-600" />
-                      {selectedProvinceData.name}
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 bg-yellowGold/40 rounded">
-                          <div className="text-2xl font-bold text-green-600">
-                            {formatNumber(selectedProvinceData.totalPoints)}
-                          </div>
-                          <div className="text-sm text-gray-600">Total Poin</div>
-                        </div>
-                        <div className="text-center p-3 bg-tealLight/40 rounded">
-                          <div className="text-2xl font-bold text-blue-600">
-                            {formatNumber(selectedProvinceData.participants)}
-                          </div>
-                          <div className="text-sm text-gray-600">Peserta</div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 bg-pinkSoft/80 rounded">
-                          <div className="text-2xl font-bold text-purple-600">
-                            {formatNumber(selectedProvinceData.totalActivities)}
-                          </div>
-                          <div className="text-sm text-gray-600">Aktivitas</div>
-                        </div>
-                        <div className="text-center p-3 bg-yellow-50 rounded">
-                          <div className="text-2xl font-bold text-yellow-600">
-                            {selectedProvinceData.averagePerUser}
-                          </div>
-                          <div className="text-sm text-gray-600">Avg/User</div>
-                        </div>
-                      </div>
-                    </div>
+              <div className="col-span-1 lg:col-span-1">
+                <div className="bg-whiteMint rounded-lg shadow-lg h-full">
+                  <div className="p-4 border-b border-whiteGreen">
+                    <h3 className="text-lg font-bold text-oliveDark">Top 5 Provinsi</h3>
                   </div>
-                ) : (
-                  <div className="bg-whiteMint rounded-lg shadow-lg p-6">
-                    <h3 className="text-lg font-bold mb-4">Pilih Provinsi</h3>
-                    <p className="text-gray-600 text-center">
-                      Klik pada provinsi di peta untuk melihat detail aktivitas
-                    </p>
-                    <div className="mt-4 text-center">
-                      <MapPin className="w-12 h-12 text-gray-300 mx-auto" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Top 5 Provinces - Only show in province mode */}
-                {viewMode === 'province' && (
-                  <div className="bg-whiteMint rounded-lg shadow-lg">
-                    <div className="p-6 border-b border-whiteGreen">
-                      <h3 className="text-xl font-bold text-oliveDark">Top 5 Peringkat Provinsi</h3>
-                    </div>
-                    <div className="p-6 space-y-4">
-                      {loadingProvinces ? (
-                        <div className="text-center py-4">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tealLight mx-auto mb-2"></div>
-                          <p className="text-sm text-oliveSoft">Loading...</p>
-                        </div>
-                      ) : errorProvinces ? (
-                        <p className="text-red-500 text-sm">Error: {errorProvinces}</p>
-                      ) : provinces.length === 0 ? (
-                        <p className="text-oliveSoft text-sm">Tidak ada data provinsi</p>
-                      ) : (
-                        <div className="space-y-3">
-                          {provinces.slice(0, 5).map((province) => (
-                            <div
-                              key={province.id}
-                              className="flex items-center justify-between p-4 rounded-xl bg-whiteGreen hover:shadow-md"
-                            >
-                              <div className="flex items-center space-x-4">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-md
-                                  ${province.rank === 1 ? 'bg-yellowGold text-white' :
-                                    province.rank === 2 ? 'bg-oliveSoft text-white' :
-                                    province.rank === 3 ? 'bg-tealLight text-white' :
-                                    'bg-mintPastel text-oliveDark'}
-                                `}>
-                                  {province.rank || '-'}
-                                </div>
-                                <div>
-                                  <p className="font-semibold text-lg text-greenDark">{province.province}</p>
-                                  <p className="text-xs text-oliveSoft mt-0.5">{province.total_activities} aktivitas</p>
-                                </div>
+                  <div className="p-4 space-y-3">
+                    {loadingProvinces ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tealLight mx-auto mb-2"></div>
+                        <p className="text-xs text-oliveSoft">Loading...</p>
+                      </div>
+                    ) : errorProvinces ? (
+                      <p className="text-red-500 text-xs">Error: {errorProvinces}</p>
+                    ) : provinces.length === 0 ? (
+                      <p className="text-oliveSoft text-xs">Tidak ada data provinsi</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {provinces.slice(0, 5).map((province) => (
+                          <div
+                            key={province.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-whiteGreen hover:shadow-md"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md
+                                ${province.rank === 1 ? 'bg-yellowGold text-white' :
+                                  province.rank === 2 ? 'bg-oliveSoft text-white' :
+                                  province.rank === 3 ? 'bg-tealLight text-white' :
+                                  'bg-mintPastel text-oliveDark'}
+                              `}>
+                                {province.rank || '-'}
                               </div>
-                              <div className="text-right">
-                                <p className="font-bold text-lg text-yellowGold">{province.total_points}</p>
-                                <p className="text-xs text-oliveSoft">poin</p>
+                              <div>
+                                <p className="font-semibold text-sm text-greenDark">{province.province}</p>
+                                <p className="text-xs text-oliveSoft mt-0.5">{province.total_activities} aktivitas</p>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                            <div className="text-right">
+                              <p className="font-bold text-sm text-yellowGold">{province.total_points}</p>
+                              <p className="text-xs text-oliveSoft">poin</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Province Details - Moved Below Map */}
+        {viewMode === 'province' && (
+          <div className="grid grid-cols-1">
+            {selectedProvinceData ? (
+              <div className="bg-whiteMint rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-bold mb-4 flex items-center text-greenDark">
+                  <MapPin className="w-5 h-5 mr-2 text-green-600" />
+                  Detail Provinsi: {selectedProvinceData.name}
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-yellowGold/40 rounded">
+                    <div className="text-2xl font-bold text-green-600">
+                      {formatNumber(selectedProvinceData.totalPoints)}
+                    </div>
+                    <div className="text-sm text-gray-600">Total Poin</div>
+                  </div>
+                  <div className="text-center p-3 bg-tealLight/40 rounded">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {formatNumber(selectedProvinceData.participants)}
+                    </div>
+                    <div className="text-sm text-gray-600">Peserta</div>
+                  </div>
+                  <div className="text-center p-3 bg-pinkSoft/80 rounded">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {formatNumber(selectedProvinceData.totalActivities)}
+                    </div>
+                    <div className="text-sm text-gray-600">Aktivitas</div>
+                  </div>
+                  <div className="text-center p-3 bg-yellow-50 rounded">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {selectedProvinceData.averagePerUser}
+                    </div>
+                    <div className="text-sm text-gray-600">Avg/User</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-whiteMint rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-bold mb-4">Pilih Provinsi</h3>
+                <p className="text-gray-600 text-center">
+                  Klik pada provinsi di peta untuk melihat detail aktivitas
+                </p>
+                <div className="mt-4 text-center">
+                  <MapPin className="w-12 h-12 text-gray-300 mx-auto" />
+                </div>
               </div>
             )}
           </div>
@@ -684,7 +848,7 @@ const UnifiedActivitiesPage = () => {
                         id="activity-map"
                         className="h-96 w-full rounded-xl border border-whiteGreen"
                         style={{ minHeight: '400px' }}
-                        key={`activity-map-${mapType}-${viewMode}`} // Add key to force re-render
+                        key={`activity-map-${mapType}-${viewMode}`}
                       ></div>
                       {!mapReady && (
                         <div className="absolute inset-0 flex items-center justify-center bg-whiteMint bg-opacity-75 rounded-xl">
@@ -764,11 +928,11 @@ const UnifiedActivitiesPage = () => {
                 </div>
               )}
 
-              {/* Top Activities - Only show in activities mode */}
+              {/* Top 5 Activities */}
               {viewMode === 'activities' && (
                 <div className="bg-whiteMint rounded-lg shadow-lg p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold">Aktivitas Terpopuler</h3>
+                    <h3 className="text-lg font-bold">Top 5 Aktivitas Terpopuler</h3>
                     {popularActivitiesData.loading && (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
                     )}
@@ -779,14 +943,17 @@ const UnifiedActivitiesPage = () => {
                         Memuat data aktivitas...
                       </div>
                     ) : popularActivitiesData.activities.length > 0 ? (
-                      popularActivitiesData.activities.slice(0, 10).map((activity) => (
+                      popularActivitiesData.activities.slice(0, 5).map((activity, index) => (
                         <div key={activity.name} className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
+                              {index + 1}
+                            </div>
                             <div
                               className="w-4 h-4 rounded"
                               style={{ backgroundColor: activity.color }}
                             ></div>
-                            <span className="font-medium">{activity.name}</span>
+                            <span className="font-medium text-sm">{activity.name}</span>
                           </div>
                           <div className="text-right">
                             <div className="font-bold text-gray-800">{formatNumber(activity.count)}</div>
@@ -901,8 +1068,8 @@ const UnifiedActivitiesPage = () => {
                               <td colSpan={5} className="p-4 border-t border-whiteGreen text-oliveDark">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm font-medium pl-6">
                                   <div>
-                                    <span className="font-bold">Aktivitas Tanpa Koordinat:</span>
-                                    <p>{extraStats.activitiesWithoutCoords}</p>
+                                    <span className="font-bold">Aktivitas Berpoin Tinggi (%):</span>
+                                    <p>{extraStats.highPointPercentage}</p>
                                   </div>
                                   <div>
                                     <span className="font-bold">Aktivitas Terbanyak:</span>
@@ -930,45 +1097,46 @@ const UnifiedActivitiesPage = () => {
           )}
         </div>
 
-        {/* PDF Report Download Section */}
+        {/* Updated Report Section with 3 options */}
         <div className="bg-whiteMint rounded-lg shadow-lg p-6">
           <div className="flex flex-col space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Aktivitas Hijau Indonesia</h2>
-                <p className="text-sm text-gray-600 mt-1">Generate laporan komprehensif dalam format PDF</p>
+                <p className="text-sm text-gray-600 mt-1">Unduh laporan atau lihat detail analisis per provinsi</p>
               </div>
             </div>
 
-            {/* Report Options */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Time Period Selection */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Periode Laporan</label>
-                <select
-                  value={timeFilter}
-                  onChange={(e) => setTimeFilter(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                >
-                  <option value="week">7 Hari Terakhir</option>
-                  <option value="month">30 Hari Terakhir</option>
-                  <option value="year">Tahun Ini</option>
-                </select>
-              </div>
-            </div>
 
-            {/* Action Buttons */}
+
+            {/* Action Buttons - 3 Options */}
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 justify-end">
+              {/* Download PDF */}
               <button
-                onClick={() => {
-                  // TODO: Implement PDF generation
-                  alert('Fitur generate PDF akan segera tersedia! Saat ini menggunakan download JSON sebagai alternatif.')
-                }}
+                onClick={exportToPDF}
+                className="flex items-center justify-center px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Unduh PDF
+              </button>
+
+              {/* Download CSV */}
+              <button
+                onClick={exportToCSV}
                 className="flex items-center justify-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
               >
                 <Download className="w-5 h-5 mr-2" />
-                Unduh Laporan PDF
+                Unduh CSV
+              </button>
+
+              {/* View Detail per Province */}
+              <button
+                onClick={() => router.push('/unduh-dampak')}
+                className="flex items-center justify-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              >
+                <ExternalLink className="w-5 h-5 mr-2" />
+                Lihat Detail per Provinsi
               </button>
             </div>
           </div>
