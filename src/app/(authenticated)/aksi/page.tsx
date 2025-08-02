@@ -324,7 +324,7 @@ export default function AksiPage() {
             {(currentStep === "SELECTING_ACTIVITY" || currentStep === "CONFIRMING_LOCATION") && (
               <button
                 onClick={currentStep === "SELECTING_ACTIVITY" ? handleBackToUpload : handleBackToSelectActivity}
-                className="flex items-center gap-2 text-black font-semibold hover:bg-black/10 p-2 rounded-lg transition-colors -ml-2"
+                className="flex items-center gap-2 text-white font-semibold hover:bg-white/10 p-2 rounded-lg transition-colors -ml-2"
               >
                 <ArrowLeft size={22} />
                 <span className="hidden md:inline">Kembali</span>
@@ -332,10 +332,10 @@ export default function AksiPage() {
             )}
           </div>
           <div className="w-3/5 text-center">
-            <h1 className="text-base md:text-2xl font-bold text-black">
+            <h1 className="text-base md:text-2xl font-bold text-white">
               {currentStepTitles[currentStep].title}
             </h1>
-            <p className="text-center text-black text-xs md:text-lg mt-1">
+            <p className="text-center text-white text-xs md:text-lg mt-1">
               {currentStepTitles[currentStep].subtitle}
             </p>
           </div>
@@ -354,7 +354,7 @@ export default function AksiPage() {
         <SelectActivityStep
           onActivitySelect={handleActivitySelect}
           onBack={handleBackToUpload}
-          challengeFilter={challengeData?.category_id} // Pass challenge filter
+          challengeFilter={challengeData?.category_id}
         />
       )}
 

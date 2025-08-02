@@ -63,10 +63,10 @@ export default function ChatbotPage() {
   return (
     <div className="flex flex-col h-screen bg-mintPastel font-poppins">
       <header className="flex-shrink-0 px-2 pt-4 sm:px-20 w-full bg-mintPastel z-30">
-        <div className="bg-tealLight text-black rounded-lg p-2 sm:p-3 w-full text-center">
+        <div className="bg-tealLight text-white rounded-lg p-2 sm:p-3 w-full text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <BrainCircuit size={32} />
-            <h1 className="text-2xl sm:text-3xl font-bold">Greena</h1>
+            <BrainCircuit size={32} className="text-white" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Greena</h1>
           </div>
         </div>
       </header>
