@@ -499,7 +499,7 @@ const UnifiedActivitiesPage = () => {
   ).length
 
   return (
-    <div className="min-h-screen bg-mintPastel font-poppins">
+    <div className="min-h-screen bg-mintPastel font-poppins pt-6">
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -507,9 +507,10 @@ const UnifiedActivitiesPage = () => {
         crossOrigin=""
       />
 
-      <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-4 sm:p-6 mx-6  mb-0 sm:mb-4 md:mb-6">
+      <div className="bg-tealLight text-white rounded-lg p-4 sm:p-6 mx-6 mb-0 sm:mb-4 md:mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Peta Persebaran Aktivitas Hijau Indonesia</h1>
         <p  className=' text-sm sm:text-base '>Visualisasi komprehensif aktivitas hijau di seluruh Indonesia dengan data real-time</p>
+        
         <div className=" mt-4 flex space-x-2">
           <button
             onClick={() => setViewMode('province')}
@@ -715,8 +716,8 @@ const UnifiedActivitiesPage = () => {
         )}
 
         {viewMode === 'activities' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
+            <div className="lg:col-span-2 space-y-8 min-w-265">
               <div className="bg-whiteMint rounded-xl shadow-lg overflow-hidden">
                 <div className="p-6 border-b border-whiteGreen">
 
@@ -747,7 +748,8 @@ const UnifiedActivitiesPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="p-4 sm:p-6 overflow-hidden ">
+
+                <div className="p-4 sm:p-6 overflow-hidden  ">
                   {loadingActivities ? (
                     <div className="h-96 flex items-center justify-center bg-whiteGreen rounded-xl">
                       <div className="text-center">
@@ -766,7 +768,7 @@ const UnifiedActivitiesPage = () => {
                       <p className="text-oliveSoft">Tidak ada aktivitas ditemukan</p>
                     </div>
                   ) : (
-                    <div className="overflow-hidden relative pb-[100px] ">
+                    <div className="overflow-hidden relative pb-[100px] w-full">
                       <div
                         id="activity-map"
                         className="h-96 w-full rounded-xl border border-whiteGreen z-0 "
@@ -852,9 +854,10 @@ const UnifiedActivitiesPage = () => {
               )}
 
               {viewMode === 'activities' && (
-                <div className="bg-whiteMint rounded-lg shadow-lg p-6">
+                <div className='flex justify-end'>
+                <div className="bg-whiteMint rounded-lg shadow-lg p-6 max-w-60">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold">Top 5 Aktivitas Terpopuler</h3>
+                    <h3 className=" text-lg font-bold">Top 5 Aktivitas Terpopuler</h3>
                     {popularActivitiesData.loading && (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
                     )}
@@ -889,6 +892,7 @@ const UnifiedActivitiesPage = () => {
                       </div>
                     )}
                   </div>
+                </div>
                 </div>
               )}
             </div>

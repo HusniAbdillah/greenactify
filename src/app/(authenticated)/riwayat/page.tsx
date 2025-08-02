@@ -142,13 +142,13 @@ export default function RiwayatPage() {
   })()
 
   return (
-    <div className="p-6 space-y-6 bg-mintPastel min-h-screen">
-      <div className="bg-gradient-to-r from-greenDark to-oliveSoft text-white rounded-lg p-6 shadow-md">
-        <h1 className="text-2xl font-bold mb-2">Riwayat Aktivitas</h1>
-        <p className="text-lg">Lihat kembali perjalanan hijau Anda</p>
+    <div className="p-2 sm:p-6 space-y-4 bg-mintPastel min-h-screen ">
+      <div className="bg-tealLight text-white rounded-lg p-4 sm:p-6 shadow-md ">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Riwayat Aktivitas</h1>
+        <p className="text-sm sm:text-base">Lihat kembali perjalanan hijau Anda</p>
       </div>
 
-      <div className="space-y-6">
+      <div className=" space-y-3 sm:space-y-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-greenDark">
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-greenDark">
@@ -172,14 +172,14 @@ export default function RiwayatPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="bg-white rounded-lg shadow-lg p-2 sm:p-6">
+          <div className="flex flex-col md:flex-row gap-2 sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 text-oliveSoft w-5 h-5" />
               <input
                 type="text"
                 placeholder="Cari aktivitas atau lokasi..."
-                className="w-full pl-10 pr-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
+                className="text-sm sm:text-base w-full pl-10 pr-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -188,7 +188,7 @@ export default function RiwayatPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
+              className=" text-sm sm:text-base px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
             >
               {categories.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -200,7 +200,7 @@ export default function RiwayatPage() {
             <select
               value={selectedFilter}
               onChange={(e) => setSelectedFilter(e.target.value as any)}
-              className="px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
+              className="text-sm sm:text-base px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
             >
               <option value="all">Semua Waktu</option>
               <option value="week">7 Hari Terakhir</option>
