@@ -1,5 +1,5 @@
 "use client";
-
+import React, { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { uploadGeneratedImage } from "@/lib/upload-generated-image";
 import Image from "next/image";
@@ -7,19 +7,26 @@ import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { Share2, Download, CheckCircle2, LoaderCircle } from "lucide-react";
 
+interface ActivityCategory {
+  id: string;
+  name: string;
+  base_points: number;
+}
+
 interface ResultStepProps {
   imageData: {
     file: File;
-    activity: { id: string; name: string; base_points: number };
+    activity: ActivityCategory;
     location: string;
     points: number;
-    username?: string;
+    username: string;
   };
   totalActivities: number;
   totalPoints: number;
-  onFinish: () => void;
-  onGeneratedImageReady?: (url: string) => void;
+  onFinish: () => Promise<void>; // or whatever the return type should be
+  onGeneratedImageReady: Dispatch<SetStateAction<string>>;
   challengeId?: string;
+  challengeMultiplier: number; // 🆕 Add this line
 }
 
 const wrapText = (
@@ -86,8 +93,8 @@ export default function ResultStep({
   const [fileId] = useState(() => uuidv4());
   const uploadRef = useRef(false);
   const router = useRouter();
-  const newTotalActivities = totalActivities + 1;
-  const newTotalPoints = totalPoints + imageData.points;
+  const newTotalActivities = totalActivities;
+  const newTotalPoints = totalPoints;
 
   const now = new Date();
   const formattedDate = now.toLocaleDateString("id-ID", {
