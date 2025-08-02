@@ -20,7 +20,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+      }}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/beranda"
+      afterSignUpUrl="/beranda"
+    >
       <html lang="en" className={poppins.variable}>
         <body className="font-sans antialiased">{children}</body>
       </html>

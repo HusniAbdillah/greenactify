@@ -1,8 +1,9 @@
 import React from 'react'
+import { redirect } from 'next/navigation'
+import { auth } from '@clerk/nextjs/server'
 import DesktopSidebar from '@/components/navbar/DesktopSidebar'
 import MobileBottomNav from '@/components/navbar/MobileBottomNav'
-import { checkUser } from '@/lib/check-user'
-import { Toaster } from 'sonner';
+import { Toaster } from 'sonner'
 
 
 export const dynamic = 'force-dynamic'
@@ -12,8 +13,11 @@ export default async function AuthenticatedLayout({
 }: {
   children: React.ReactNode
 }) {
-  const user = await checkUser();
-  console.log("user : ", user );
+  const { userId } = await auth()
+  
+  if (!userId) {
+    redirect('/sign-in')
+  }
 
   return (
     <div className="min-h-screen bg-mintPastel">
@@ -28,7 +32,6 @@ export default async function AuthenticatedLayout({
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
     </div>
   )

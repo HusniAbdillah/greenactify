@@ -6,12 +6,12 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)"
 ]);
 
-const isIgnoredRoute = createRouteMatcher([
-  "/no-auth-in-this-route"
+const isAuthenticatedRoute = createRouteMatcher([
+  "/(authenticated)(.*)"
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isIgnoredRoute(req)) {
+  if (isAuthenticatedRoute(req)) {
     return;
   }
 
