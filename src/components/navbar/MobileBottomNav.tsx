@@ -22,8 +22,7 @@ const MobileBottomNav = () => {
 
   return (
     <>
-      {/* Mobile Bottom Navigation - Only visible on mobile */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 bg-mintPastel border-t-2 border-oliveDark shadow-lg z-50 rounded-t-[20px] py-2 ">
+      <div className="lg:hidden fixed inset-x-0 bottom-0 bg-mintPastel border-t-2 border-oliveDark shadow-lg z-50 rounded-t-[20px] py-2">
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -43,9 +42,7 @@ const MobileBottomNav = () => {
                 {active && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-tealLight rounded-b-lg"></div>
                 )}
-                <Icon
-                  className="h-8 w-8 mb-1 text-black"
-                />
+                <Icon className="h-8 w-8 mb-1 text-black" />
                 <span className="font-medium text-black truncate">
                   {item.label}
                 </span>
@@ -55,8 +52,8 @@ const MobileBottomNav = () => {
         </div>
       </div>
 
-      {/* Mobile bottom padding to prevent content overlap */}
-      <div className="lg:hidden h-20"></div>
+      {/* Mobile bottom padding - Hanya untuk non-chatbot pages */}
+      {!pathname.includes('/chatbot') && <div className="lg:hidden h-20"></div>}
     </>
   )
 }
