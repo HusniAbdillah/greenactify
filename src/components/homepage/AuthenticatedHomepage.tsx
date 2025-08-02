@@ -112,7 +112,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                       {/* Challenge Card */}
                       <div
                         className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-h-[140px] flex items-start justify-center mx-auto max-w-2xl flex-1 h-60 cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-[1.02] hover:border-white/30"
-                        onClick={() => window.location.href = '/aksi'}
+                        onClick={() => window.location.href = `/aksi?challenge=${currentChallenge.id}&mode=challenge`}
                       >
                         <div className="flex items-start justify-between flex-wrap gap-4 w-full">
                           <div className="flex-1 min-w-0">
