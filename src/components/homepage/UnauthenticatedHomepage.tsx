@@ -103,38 +103,38 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
       {/* Hero Section */}
       <main className="container mx-auto px-6 py-8">
         <div className="text-center mb-20 md:mb-24">
-          <h1 className="text-3xl md:text-6xl font-bold text-greenDark mb-6">
+          <h1 className="text-2xl md:text-6xl font-bold text-greenDark mb-4 md:mb-6">
             Aksi Hijau Hari Ini,
             <span className="text-tealLight block">Nafas Segar Esok Hari</span>
           </h1>
-          <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
+          <p className="text-xs md:text-lg text-gray-700 mb-6 md:mb-8 max-w-2xl mx-auto">
             Bergabunglah dengan ribuan pejuang lingkungan di Indonesia. Lakukan
             aksi nyata, kumpulkan poin, dan jadilah bagian dari perubahan
             positif untuk planet ini.
           </p>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-8 md:mb-12">
-            <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
-              <Users className="w-12 h-12 text-tealLight mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 max-w-4xl mx-auto mb-8 md:mb-12">
+            <div className="bg-whiteMint rounded-2xl p-4 md:p-6 shadow-lg">
+              <Users className="w-8 h-8 md:w-12 md:h-12 text-tealLight mx-auto mb-2 md:mb-4" />
+              <h3 className="text-xl md:text-3xl font-bold text-greenDark">
                 {loading ? "..." : formatNumber(stats.totalUsers)}
               </h3>
-              <p className="text-gray-600">Pejuang Lingkungan</p>
+              <p className="text-sm md:text-base text-gray-600">Pejuang Lingkungan</p>
             </div>
-            <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
-              <Target className="w-12 h-12 text-yellowGold mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">
+            <div className="bg-whiteMint rounded-2xl p-4 md:p-6 shadow-lg">
+              <Target className="w-8 h-8 md:w-12 md:h-12 text-yellowGold mx-auto mb-2 md:mb-4" />
+              <h3 className="text-xl md:text-3xl font-bold text-greenDark">
                 {loading ? "..." : formatNumber(stats.totalActivities)}
               </h3>
-              <p className="text-gray-600">Aksi Lingkungan</p>
+              <p className="text-sm md:text-base text-gray-600">Aksi Lingkungan</p>
             </div>
-            <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
-              <Heart className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">
+            <div className="bg-whiteMint rounded-2xl p-4 md:p-6 shadow-lg col-span-2 md:col-span-1">
+              <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-500 mx-auto mb-2 md:mb-4" />
+              <h3 className="text-xl md:text-3xl font-bold text-greenDark">
                 {loading ? "..." : stats.activeProvinces}
               </h3>
-              <p className="text-gray-600">Provinsi Aktif</p>
+              <p className="text-sm md:text-base text-gray-600">Provinsi Aktif</p>
             </div>
           </div>
 
