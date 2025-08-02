@@ -6,6 +6,7 @@ import { HeatmapWidget, useProvinceData, ProvinceData } from '@/components/heatm
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 
 export type ActivityItem = {
   id: string
@@ -34,6 +35,7 @@ export type ProvinceStats = {
 
 const UnifiedActivitiesPage = () => {
   const router = useRouter()
+  const { isLoaded, isSignedIn } = useUser()
 
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
@@ -71,6 +73,13 @@ const UnifiedActivitiesPage = () => {
     activities: [] as Array<{ name: string; count: number; percentage: number; color: string }>,
     loading: true
   })
+
+  // Check authentication
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/')
+    }
+  }, [isLoaded, isSignedIn, router])
 
   useEffect(() => {
     setIsClient(true)
