@@ -5,7 +5,7 @@ import "./globals.css";
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"], // Include weights you need
+  weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
 });
 
@@ -20,7 +20,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+      }}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
+    >
       <html lang="en" className={poppins.variable}>
         <body className="font-sans antialiased">{children}</body>
       </html>

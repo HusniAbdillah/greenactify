@@ -31,7 +31,7 @@ const DesktopSidebar = () => {
   ]
 
   const isActive = (href: string) => {
-    return pathname === href || pathname.startsWith(href + '/')
+    return pathname === href || (pathname && pathname.startsWith(href + '/'))
   }
 
   return (

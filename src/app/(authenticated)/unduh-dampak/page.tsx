@@ -148,7 +148,7 @@ const ActivitiesMapPage = () => {
 const exportToPDF = () => {
   const doc = new jsPDF()
 
-  const logoUrl = '/images/logo-fiks.png'
+  const logoUrl = '/logo-greenactify.png'
   const img = new window.Image()
   img.src = logoUrl
   img.crossOrigin = 'anonymous'
@@ -220,7 +220,7 @@ const exportToPDF = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-4">
         <div className="flex justify-center md:justify-start">
           <Image
-            src="/images/logo-fiks.png"
+            src="/logo-greenactify.png"
             alt="Logo GreenActify"
             width={200}
             height={65}

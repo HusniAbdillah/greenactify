@@ -4,7 +4,7 @@ import AuthPageWithImage from '@/components/auth/AuthPage'
 export default function Page() {
   return (
     <AuthPageWithImage 
-      imageUrl="/images/background.png"
+      imageUrl="/background.png"
     >
       <SignUp />
     </AuthPageWithImage>
