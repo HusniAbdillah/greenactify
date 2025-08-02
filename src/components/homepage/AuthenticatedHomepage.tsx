@@ -13,6 +13,8 @@ import {
   ChevronRight,
   Map,
   ExternalLink,
+  FileText,
+  Download,
 } from "lucide-react";
 import { DailyChallenge, ActivityHistory } from "@/lib/types/homepage";
 import DesktopSidebar from "@/components/navbar/DesktopSidebar";
@@ -282,34 +284,88 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
           </div>
         </div>
 
-        {/* Heatmap Section */}
+        {/* Heatmap and PDF Report Section */}
         <div className="mt-12 lg:mt-16">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-greenDark mb-2">
-                  Persebaran Aktivitas Lingkungan
-                </h2>
-                <p className="text-gray-600 text-sm md:text-base">
-                  Lihat aktivitas lingkungan di seluruh Indonesia
-                </p>
+          <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            {/* Heatmap Section - 70% width on desktop */}
+            <div className="lg:col-span-7">
+              <div className="bg-whiteMint rounded-2xl shadow-lg p-6 h-full">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-bold text-greenDark mb-2">
+                      Persebaran Aktivitas Lingkungan
+                    </h2>
+                    <p className="text-gray-600 text-sm md:text-base">
+                      Lihat aktivitas lingkungan di seluruh Indonesia
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-0">
+                  <HomepageHeatmap />
+                </div>
+
+                {/* Bottom button for map detail */}
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => window.location.href = '/persebaran'}
+                    className="inline-flex items-center gap-2 bg-greenDark hover:bg-tealLight text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-base shadow-md hover:shadow-lg"
+                  >
+                    <Map className="w-5 h-5" />
+                    Lihat Detail Lengkap
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-0">
-              <HomepageHeatmap />
-            </div>
+            {/* PDF Report Download Section - 30% width on desktop */}
+            <div className="lg:col-span-3">
+              <div className="bg-whiteMint rounded-2xl shadow-lg p-6 h-full flex flex-col justify-center">
+                <div className="text-center mb-6">
+                  <FileText className="w-12 h-12 lg:w-16 lg:h-16 text-tealLight mx-auto mb-4" />
+                  <h2 className="text-lg lg:text-xl font-bold text-greenDark mb-4">
+                    Laporan Dampak Lingkungan
+                  </h2>
+                  <p className="text-gray-600 mb-4 text-sm lg:text-base">
+                    Unduh laporan lengkap tentang dampak aksi lingkungan di
+                    Indonesia. Dapatkan insight mendalam tentang kontribusi setiap
+                    provinsi dan pencapaian komunitas.
+                  </p>
+                </div>
 
-            {/* Bottom button for map detail */}
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => window.location.href = '/persebaran'}
-                className="inline-flex items-center gap-2 bg-greenDark hover:bg-tealLight text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-base shadow-md hover:shadow-lg"
-              >
-                <Map className="w-5 h-5" />
-                Lihat Detail Lengkap
-                <ExternalLink className="w-4 h-4" />
-              </button>
+                <div className="flex justify-center mb-6">
+                  <a
+                    href="/unduh-dampak"
+                    className="w-full bg-tealLight text-white py-2 px-4 rounded-lg font-semibold hover:bg-greenDark transition-colors flex items-center justify-center gap-2 text-center text-sm lg:text-base"
+                  >
+                    <Download className="w-4 h-4" />
+                    Unduh PDF
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 mb-4">
+                    Laporan ini berisi data real-time dari aktivitas pengguna dan
+                    dampak lingkungan yang terukur
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Target className="w-3 h-3" />
+                      Data Statistik
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Trophy className="w-3 h-3" />
+                      Trend Analisis
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Award className="w-3 h-3" />
+                      Pencapaian Komunitas
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
