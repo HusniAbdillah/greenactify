@@ -409,9 +409,18 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
                 dampak lingkungan yang terukur
               </p>
               <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400">
-                <span>📊 Data Statistik</span>
-                <span>📈 Trend Analisis</span>
-                <span>🏆 Pencapaian Komunitas</span>
+                <span className="flex items-center gap-1">
+                  <Target className="w-3 h-3" />
+                  Data Statistik
+                </span>
+                <span className="flex items-center gap-1">
+                  <Trophy className="w-3 h-3" />
+                  Trend Analisis
+                </span>
+                <span className="flex items-center gap-1">
+                  <Award className="w-3 h-3" />
+                  Pencapaian Komunitas
+                </span>
               </div>
             </div>
           </div>
