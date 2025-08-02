@@ -8,7 +8,6 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // Optimasi: Select hanya field yang dibutuhkan
     const { data: challenge, error } = await supabase
       .from('daily_challenges')
       .select(`
@@ -41,7 +40,6 @@ export async function GET(
       );
     }
 
-    // Minimal transformation - langsung return format yang sesuai
     return NextResponse.json({
       success: true,
       data: {
