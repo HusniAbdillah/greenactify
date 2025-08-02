@@ -322,7 +322,6 @@ Yuk ikutan juga 😎🌱`,
   };
 
   const handleFinish = () => {
-    onFinish();
     router.push("/");
   };
 
