@@ -58,14 +58,10 @@ export default function ChatbotPage() {
     append(message);
   };
 
-  // Calculate dynamic input area height
   const hasPrompts = messages.length === 0 && !isLoading;
-  const inputAreaHeight = hasPrompts ? '180px' : '140px'; // Kurangi tinggi saat tidak ada prompts
-  const mobilePadding = hasPrompts ? '16' : '16'; // Konsisten mobile padding
 
   return (
     <div className="flex flex-col h-screen bg-mintPastel font-poppins">
-      {/* Header - Fixed di atas */}
       <header className="flex-shrink-0 px-2 pt-4 sm:px-20 w-full bg-mintPastel z-30">
         <div className="bg-tealLight text-black rounded-lg p-2 sm:p-3 w-full text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -75,12 +71,10 @@ export default function ChatbotPage() {
         </div>
       </header>
 
-      {/* Chat Container - Flexible height with dynamic bottom padding */}
       <div 
         ref={chatContainerRef} 
-        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 chat-container"
+        className={`flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 chat-container ${!hasPrompts ? 'no-prompts' : ''}`}
         style={{
-          paddingBottom: inputAreaHeight, // Dynamic padding berdasarkan ada/tidaknya prompts
           minHeight: 0
         }}
       >
@@ -108,7 +102,6 @@ export default function ChatbotPage() {
           </div>
         ))}
         
-        {/* Loading indicator */}
         {isLoading && messages[messages.length - 1]?.role === 'user' && (
           <div className="flex items-start gap-3 max-w-6xl mx-auto justify-start">
             <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-tealLight text-white flex items-center justify-center">
@@ -124,18 +117,12 @@ export default function ChatbotPage() {
           </div>
         )}
       </div>
-
-      {/* Input Area - Fixed di bawah dengan tinggi dinamis */}
-      <div 
-        className="fixed bottom-0 left-0 right-0 bg-mintPastel z-40 border-t border-gray-200"
-        style={{ height: inputAreaHeight }}
-      >
-        {/* Container dengan positioning yang lebih tinggi */}
+      
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-mintPastel z-40 border-t border-gray-200"
+           style={{ height: hasPrompts ? '180px' : '140px' }}>
         <div className="h-full relative">
-          <div className={`absolute bottom-22 lg:bottom-4 left-4 right-4`}>
-            {/* absolute bottom-16 akan menempatkan input 16*4px = 64px dari bawah */}
+          <div className="absolute bottom-22 left-4 right-4">
             <div className="max-w-6xl mx-auto w-full">
-              {/* Recommended prompts - Hanya tampil jika belum ada chat */}
               {hasPrompts && (
                 <div className="mb-3">
                   <div className="flex w-full gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -143,7 +130,7 @@ export default function ChatbotPage() {
                       <button
                         key={prompt}
                         onClick={() => handlePromptClick(prompt)}
-                        className="px-4 py-2 text-xs sm:text-sm font-medium bg-whiteGreen text-oliveSoft rounded-full hover:bg-opacity-80 transition-colors duration-200 whitespace-nowrap flex-shrink-0"
+                        className="px-4 py-2 text-xs font-medium bg-whiteGreen text-oliveSoft rounded-full hover:bg-opacity-80 transition-colors duration-200 whitespace-nowrap flex-shrink-0"
                       >
                         {prompt}
                       </button>
@@ -152,14 +139,13 @@ export default function ChatbotPage() {
                 </div>
               )}
               
-              {/* Input form */}
               <form onSubmit={handleSubmit} className="flex items-center gap-3">
                 <input
                   value={input}
                   onChange={handleInputChange}
                   placeholder="Tanyakan sesuatu pada Greena..."
                   disabled={isLoading}
-                  className="flex-1 w-full px-5 py-3 text-sm sm:text-base text-greenDark bg-whiteGreen border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-tealLight transition-shadow duration-200"
+                  className="flex-1 w-full px-5 py-3 text-sm text-greenDark bg-whiteGreen border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-tealLight transition-shadow duration-200"
                 />
                 <button
                   type="submit"
@@ -172,6 +158,44 @@ export default function ChatbotPage() {
               </form>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="hidden lg:block flex-shrink-0 w-full bg-mintPastel border-t border-gray-200 p-4">
+        <div className="max-w-6xl mx-auto">
+          {hasPrompts && (
+            <div className="mb-3">
+              <div className="flex gap-2 flex-wrap justify-center">
+                {recommendedPrompts.slice(0, 3).map((prompt) => (
+                  <button
+                    key={prompt}
+                    onClick={() => handlePromptClick(prompt)}
+                    className="px-4 py-2 text-sm font-medium bg-whiteGreen text-oliveSoft rounded-full hover:bg-opacity-80 transition-colors duration-200 whitespace-nowrap"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="flex items-center gap-3">
+            <input
+              value={input}
+              onChange={handleInputChange}
+              placeholder="Tanyakan sesuatu pada Greena..."
+              disabled={isLoading}
+              className="flex-1 px-5 py-3 text-base text-greenDark bg-whiteGreen border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-tealLight transition-shadow duration-200"
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="p-3 bg-greenDark text-white rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-greenDark transform enabled:hover:scale-110"
+              aria-label="Kirim pesan"
+            >
+              <SendHorizonal size={24} />
+            </button>
+          </form>
         </div>
       </div>
     </div>
