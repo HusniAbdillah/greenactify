@@ -373,34 +373,15 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-whiteGreen rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Target className="w-6 h-6 text-tealLight" />
-                  <h3 className="font-bold text-greenDark">Laporan Bulanan</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Ringkasan aktivitas dan pencapaian bulan ini
-                </p>
-                <button className="w-full bg-tealLight text-white py-2 px-4 rounded-lg font-semibold hover:bg-greenDark transition-colors flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Unduh PDF (2.3 MB)
-                </button>
-              </div>
-
-              <div className="bg-whiteGreen rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Trophy className="w-6 h-6 text-yellowGold" />
-                  <h3 className="font-bold text-greenDark">Laporan Tahunan</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Analisis komprehensif dampak lingkungan sepanjang tahun
-                </p>
-                <button className="w-full bg-yellowGold text-greenDark py-2 px-4 rounded-lg font-semibold hover:bg-oliveSoft transition-colors flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Unduh PDF (8.7 MB)
-                </button>
-              </div>
+            <div className="flex justify-center">
+              <a
+                href="/sign-in"
+                className="w-full md:w-auto bg-tealLight text-white py-2 px-4 rounded-lg font-semibold hover:bg-greenDark transition-colors flex items-center justify-center gap-2 mb-6 text-center"
+              >
+                <Download className="w-4 h-4" />
+                Masuk untuk Unduh PDF
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
 
             <div className="text-center">
