@@ -66,6 +66,7 @@ const handleUpdate = async () => {
     toast.error(data.error || 'Gagal memperbarui profil');
   } else {
     toast.success('Profil berhasil diperbarui!');
+    router.back();
   }
 };
 

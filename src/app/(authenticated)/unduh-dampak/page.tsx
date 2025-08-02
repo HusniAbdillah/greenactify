@@ -166,14 +166,15 @@ const exportToPDF = () => {
   img.onload = () => {
     const pageWidth = doc.internal.pageSize.getWidth()
     
-    // === LOGO DI TENGAH ===
-    const logoWidth = 50
+
+    const logoWidth = 60
     const logoX = (pageWidth - logoWidth) / 2
     doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
 
-    // === JUDUL DI TENGAH & LEBIH BAGUS ===
+
     doc.setFontSize(16)
-    doc.setTextColor(34, 197, 94) // Menggunakan warna green-500 sebagai referensi
+    doc.setTextColor(34, 78, 64)
+
     doc.setFont('helvetica', 'bold')
     doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
       align: 'center'
@@ -203,15 +204,18 @@ const exportToPDF = () => {
       ]],
       body: tableData,
       styles: {
-        fontSize: 9,
+        fontSize: 7,
         halign: 'center',
         valign: 'middle',
         cellPadding: 3
       },
       headStyles: {
-        fillColor: [34, 197, 94], 
+        fillColor: [12, 59, 46], 
         textColor: [255, 255, 255],
         fontStyle: 'bold'
+      },
+       bodyStyles: {
+        textColor: [0,0,0] 
       },
       alternateRowStyles: {
         fillColor: [240, 253, 244] 
@@ -239,17 +243,19 @@ const exportToPDF = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 justify-center md:justify-end">
           <button
-            onClick={exportToCSV}
-            className="bg-greenDark text-white px-4 py-2 rounded hover:bg-oliveSoft w-full sm:w-auto transition-colors"
-          >
-            Download CSV
-          </button>
-          <button
             onClick={exportToPDF}
-            className="bg-oliveSoft text-white px-4 py-2 rounded hover:bg-greenDark w-full sm:w-auto transition-colors"
+            className="bg-red/60 text-white px-4 py-2 rounded-md hover:bg-red w-full sm:w-auto transition-colors"
           >
-            Download PDF
+            Unduh PDF
           </button>
+
+          <button
+            onClick={exportToCSV}
+            className="bg-oliveSoft/80 text-white px-4 py-2 rounded-md hover:bg-oliveSoft w-full sm:w-auto transition-colors"
+          >
+            Unduh CSV
+          </button>
+
         </div>
       </div>
 

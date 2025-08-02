@@ -13,7 +13,12 @@ export default function ProfileContent() {
   const clerk = useClerk();
   const router = useRouter();
   const { activities, loading, error, refetch } = useActivities();
-  
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = async () => {
+    await clerk.signOut();
+  };
+
   useEffect(() => {
     if (user === null) {
       router.push('/');
@@ -64,8 +69,16 @@ export default function ProfileContent() {
 
   const { message, image } = getRankInfo(profile?.rank ?? null);
   if (!profile || loading) {
-    return <div className="text-center py-10">Memuat profil...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-mintPastel">
+        <div className="flex flex-col items-center gap-4 animate-fade-in">
+          <div className="w-16 h-16 border-4 border-t-transparent border-greenDark rounded-full animate-spin" />
+          <p className="text-lg text-greenDark font-medium">Memuat profil kamu...</p>
+        </div>
+      </div>
+    );
   }
+
   
   return (
     <div className="min-h-screen bg-mintPastel min-w-full pb-2 px-4 md:px-8">
@@ -108,17 +121,13 @@ export default function ProfileContent() {
                 </p>
               )}
 
-              <button
-                onClick={async () => {
-                  const confirmed = window.confirm("Apakah kamu yakin ingin keluar?");
-                  if (confirmed) {
-                    await clerk.signOut();
-                  }
-                }}
-                className="bg-red-500 text-white px-3 py-1 text-xs md:text-base rounded-3xl font-bold hover:bg-red-600 mt-1"
-              >
-                Keluar
-              </button>
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="bg-red-500 text-white px-3 py-1 text-xs md:text-base rounded-3xl font-bold hover:bg-red-600 mt-1"
+          >
+            Keluar
+          </button>
+
             </div>
           </div>
         </div>
@@ -156,6 +165,33 @@ export default function ProfileContent() {
         error={error}
         refetch={refetch}
       />
+
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 shadow-lg w-80 max-w-full text-center space-y-4">
+            <h2 className="text-lg font-semibold text-gray-800">Yakin mau keluar?</h2>
+            <p className="text-sm text-gray-600">Kamu akan keluar dari akunmu sekarang.</p>
+            <div className="flex justify-center gap-4 pt-2">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+    
+
+    
   );
 }
