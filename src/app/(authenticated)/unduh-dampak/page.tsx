@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import Image from 'next/image'
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 export type ActivityItem = {
   id: string
@@ -35,6 +37,14 @@ const ActivitiesMapPage = () => {
   const [provinces, setProvinces] = useState<ProvinceStats[]>([])
   const [loadingActivities, setLoadingActivities] = useState(true)
   const [loadingProvinces, setLoadingProvinces] = useState(true)
+  const { user } = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    if (user === null) {
+      router.push('/');
+    }
+  }, [user, router]);
+
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -139,7 +149,7 @@ const ActivitiesMapPage = () => {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.setAttribute("download", "Dampak GreenActivy.csv")
+    link.setAttribute("download", "Dampak GreenActify.csv")
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -165,7 +175,7 @@ const exportToPDF = () => {
     doc.setFontSize(16)
     doc.setTextColor(34, 197, 94) // Menggunakan warna green-500 sebagai referensi
     doc.setFont('helvetica', 'bold')
-    doc.text('Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
+    doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
       align: 'center'
     })
 
@@ -210,7 +220,7 @@ const exportToPDF = () => {
       tableLineWidth: 0.2
     })
 
-    doc.save('Dampak GreenActivy.pdf')
+    doc.save('Dampak GreenActify.pdf')
   }
 }
 
@@ -244,7 +254,7 @@ const exportToPDF = () => {
       </div>
 
       <div className="overflow-x-auto bg-white rounded-xl shadow border border-whiteGreen">
-        <h3 className="text-xl font-bold mb-4 text-greenDark px-4 pt-4">Dampak GreenActivy Terhadap Aksi Pro-Lingkungan</h3>
+        <h3 className="text-xl font-bold mb-4 text-greenDark px-4 pt-4">Dampak GreenActify Terhadap Aksi Pro-Lingkungan</h3>
         <table className="table-auto w-full text-sm border-collapse">
           <thead className="bg-whiteGreen text-oliveDark">
             <tr>

@@ -6,6 +6,7 @@ import { HeatmapWidget, useProvinceData, ProvinceData } from '@/components/heatm
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs';
 
 export type ActivityItem = {
   id: string
@@ -34,7 +35,14 @@ export type ProvinceStats = {
 
 const UnifiedActivitiesPage = () => {
   const router = useRouter()
-  
+  const { user } = useUser();
+  useEffect(() => {
+    if (user === null) {
+      router.push('/');
+    }
+  }, [user, router]);
+
+
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null)
@@ -401,7 +409,7 @@ const UnifiedActivitiesPage = () => {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.setAttribute("download", "Laporan Dampak GreenActivy.csv")
+    link.setAttribute("download", "Laporan Dampak GreenActify.csv")
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -426,7 +434,7 @@ const UnifiedActivitiesPage = () => {
       doc.setFontSize(16)
       doc.setTextColor(5, 46, 22) 
       doc.setFont('helvetica', 'bold')
-      doc.text('Laporan Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
+      doc.text('Laporan Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
         align: 'center'
       })
 
@@ -471,7 +479,7 @@ const UnifiedActivitiesPage = () => {
         tableLineWidth: 0.2
       })
 
-      doc.save('Laporan Dampak GreenActivy.pdf')
+      doc.save('Laporan Dampak GreenActify.pdf')
     }
 
     img.onerror = () => {
@@ -481,7 +489,7 @@ const UnifiedActivitiesPage = () => {
       doc.setFontSize(16)
       doc.setTextColor(34, 197, 94)
       doc.setFont('helvetica', 'bold')
-      doc.text('Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
+      doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
         align: 'center'
       })
 
@@ -526,7 +534,7 @@ const UnifiedActivitiesPage = () => {
         tableLineWidth: 0.2
       })
 
-      doc.save('Dampak GreenActivy.pdf')
+      doc.save('Dampak GreenActify.pdf')
     }
   }
 

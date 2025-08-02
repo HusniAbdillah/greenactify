@@ -430,58 +430,85 @@ const UserProfilePage = () => {
           <Activity className="w-7 h-7 text-oliveSoft mr-3" />
           Aktivitas Terbaru (3 Terakhir)
         </h3>
-        
-        <div className="space-y-6">
-          {recentActivities.map((activity) => (
-            <div key={activity.id} className="border border-whiteGreen rounded-2xl p-6 hover:shadow-lg transition-all bg-whiteGreen/30">
-              <div className="flex flex-col sm:flex-row items-start space-x-4">
 
+        <div className="space-y-4">
+          {recentActivities.map((activity) => (
+            <div 
+              key={activity.id} 
+              className="group bg-white/80 backdrop-blur-sm border border-whiteGreen/50 rounded-3xl p-4 md:p-6 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 hover:bg-white/90"
+            >
+              <div className="flex flex-col md:flex-row gap-4">
+                
                 {(activity.image_url || activity.generated_image_url) && (
-                  <div className="mb-3 sm:mb-0 w-20 h-20 bg-oliveSoft/20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
-                    <img
-                      src={activity.image_url || activity.generated_image_url}
-                      alt={activity.title}
-                      className="w-full h-full object-cover "
-                    />
+                  <div className="relative">
+                    <div className="w-full md:w-24 h-20 md:h-24 bg-gradient-to-br from-oliveSoft/20 to-tealLight/20 rounded-2xl overflow-hidden shadow-lg">
+                      <img
+                        src={activity.image_url || activity.generated_image_url}
+                        alt={activity.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+
+                    <div className="absolute -top-2 -right-2 md:hidden">
+                      <div className="bg-gradient-to-r from-oliveSoft to-tealLight text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                        +{activity.points}
+                      </div>
+                    </div>
                   </div>
                 )}
                 
+    
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-bold text-greenDark  text-sm lg:text-base">{activity.title}</h4>
-                      {activity.description && (
-                        <p className="text-xs lg:text-sm text-oliveDark mt-2">{activity.description}</p>
-                      )}
-                      <div className="flex items-center space-x-4 mt-3 text-sm text-oliveDark">
-                        <span className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          <span className=" text-xs md:text-base"> {`${activity.province || 'Unknown'}`} </span>
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                      
+                    <div className="flex-1 min-w-0">
+
+                      <div className="mb-3">
+                        <h4 className="font-bold text-greenDark text-base md:text-lg leading-tight line-clamp-2">
+                          {activity.title}
+                        </h4>
+                        {activity.description && (
+                          <p className="text-sm md:text-base text-oliveDark mt-2 line-clamp-2 leading-relaxed">
+                            {activity.description}
+                          </p>
+                        )}
+                      </div>
+                       
+                      <div className="mb-3">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs md:text-sm font-semibold bg-gradient-to-r from-tealLight/20 to-oliveSoft/20 text-greenDark border border-tealLight/40 shadow-sm">
+                          {activity.activity_categories.group_category}
                         </span>
-                        <span className="flex items-center text:xs md:text-base">
-                          <Calendar className="w-4 h-4 mr-1" />
-                           <span className=" text-xs md:text-base"> {formatDate(activity.created_at)} </span>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-oliveDark">
+                        <span className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-2 text-tealLight" />
+                          <span className="text-xs md:text-sm font-medium">
+                            {`${activity.province || 'Unknown'}`}
+                          </span>
+                        </span>
+                        <span className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-2 text-tealLight" />
+                          <span className="text-xs md:text-sm font-medium">
+                            {formatDate(activity.created_at)}
+                          </span>
                         </span>
                       </div>
                     </div>
                     
-                    <div className="flex flex-col justify-center items-center ">
-                      <div className="bg-oliveSoft text-whiteMint px-2 py-2  md:px-4 rounded-full text-[10px] md:text-sm font-bold shadow-md text-c">
+                    <div className="hidden md:flex flex-col items-end justify-start">
+                      <div className="bg-tealLight text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg whitespace-nowrap">
                         +{activity.points} poin
                       </div>
                     </div>
+
                   </div>
-                  
-                  <div className="mt-4">
-                    <span className="inline-flex items-center px-4 py-1 md:py-2 rounded-full text-xs font-semibold bg-tealLight/20 text-greenDark border border-tealLight/30">
-                      {activity.activity_categories.group_category}
-                    </span>
-                  </div>
-                </div> 
+                </div>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   )

@@ -13,7 +13,7 @@ export default function ProfileContent() {
   const clerk = useClerk();
   const router = useRouter();
   const { activities, loading, error, refetch } = useActivities();
-
+  
   useEffect(() => {
     if (user === null) {
       router.push('/');
