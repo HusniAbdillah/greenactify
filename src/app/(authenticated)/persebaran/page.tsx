@@ -104,10 +104,165 @@ const PersebaranPage = () => {
   const mapRef = useRef<any>(null)
   const mapInstanceRef = useRef<any>(null)
 
+  // Statistics state
+  const [statisticsData, setStatisticsData] = useState({
+    totalActivities: 0,
+    totalParticipants: 0,
+    totalPoints: 0,
+    activeRegions: 0,
+    loading: true
+  })
+
+  // Popular activities state
+  const [popularActivitiesData, setPopularActivitiesData] = useState({
+    activities: [] as Array<{ name: string; count: number; percentage: number; color: string }>,
+    loading: true
+  })
+
+  // Province data state
+  const [provinceData, setProvinceData] = useState<Array<{
+    id: string
+    name: string
+    code: string
+    totalPoints: number
+    totalActivities: number
+    participants: number
+    averagePerUser: number
+    topActivity: string
+    coordinates: [number, number]
+    growth: string
+    position: { x: number; y: number }
+    rank?: number
+  }>>([])
+
+  const [provinceDataLoading, setProvinceDataLoading] = useState(true)
+
   useEffect(() => {
     setIsClient(true)
     setLastUpdate(new Date().toLocaleString('id-ID'))
+    fetchStatisticsData()
+    fetchPopularActivitiesData()
+    fetchProvinceData()
   }, [])
+
+  // Fetch real statistics data from APIs
+  const fetchStatisticsData = async () => {
+    try {
+      setStatisticsData(prev => ({ ...prev, loading: true }))
+
+      // Fetch data from multiple endpoints in parallel
+      const [activitiesRes, participantsRes, pointsRes] = await Promise.all([
+        fetch('/api/stats/total-activities'),
+        fetch('/api/stats/total-participants'),
+        fetch('/api/stats/total-points')
+      ])
+
+      const [activitiesData, participantsData, pointsData] = await Promise.all([
+        activitiesRes.json(),
+        participantsRes.json(),
+        pointsRes.json()
+      ])
+
+      setStatisticsData({
+        totalActivities: activitiesData.totalActivities || 0,
+        totalParticipants: participantsData.totalParticipants || 0,
+        totalPoints: pointsData.totalPoints || 0,
+        activeRegions: pointsData.activeRegions || 0,
+        loading: false
+      })
+
+    } catch (error) {
+      console.error('Error fetching statistics data:', error)
+      setStatisticsData(prev => ({ ...prev, loading: false }))
+    }
+  }
+
+  // Fetch real popular activities data from API
+  const fetchPopularActivitiesData = async () => {
+    try {
+      setPopularActivitiesData(prev => ({ ...prev, loading: true }))
+
+      const response = await fetch('/api/activities/popular')
+      const data = await response.json()
+
+      if (data.success && data.popularActivities) {
+        // Add colors to the activities
+        const colors = ['#16a34a', '#2563eb', '#9333ea', '#ea580c', '#dc2626']
+        const activitiesWithColors = data.popularActivities.map((activity: any, index: number) => ({
+          ...activity,
+          color: colors[index] || '#6b7280'
+        }))
+
+        setPopularActivitiesData({
+          activities: activitiesWithColors,
+          loading: false
+        })
+      } else {
+        console.error('Failed to fetch popular activities:', data.error)
+        setPopularActivitiesData(prev => ({ ...prev, loading: false }))
+      }
+
+    } catch (error) {
+      console.error('Error fetching popular activities data:', error)
+      setPopularActivitiesData(prev => ({ ...prev, loading: false }))
+    }
+  }
+
+  // Fetch real province data from API
+  const fetchProvinceData = async () => {
+    try {
+      setProvinceDataLoading(true)
+
+      const response = await fetch('/api/provinces/stats')
+      const data = await response.json()
+
+      if (data.success && data.provinces) {
+        // Add default coordinates and positions for provinces
+        const provincesWithCoordinates = data.provinces.map((province: any) => {
+          // Map province names to coordinates (you can expand this mapping)
+          const coordinateMapping: { [key: string]: { coordinates: [number, number]; position: { x: number; y: number } } } = {
+            'DKI_JAKARTA': { coordinates: [106.8456, -6.2088], position: { x: 52, y: 62 } },
+            'JAWA_BARAT': { coordinates: [107.6191, -6.9175], position: { x: 54, y: 65 } },
+            'JAWA_TIMUR': { coordinates: [112.7521, -7.2575], position: { x: 62, y: 67 } },
+            'JAWA_TENGAH': { coordinates: [110.1403, -7.1500], position: { x: 58, y: 66 } },
+            'SUMATERA_UTARA': { coordinates: [98.6722, 3.5952], position: { x: 25, y: 25 } },
+            'SUMATERA_BARAT': { coordinates: [100.6531, -0.7893], position: { x: 22, y: 45 } },
+            'RIAU': { coordinates: [101.7068, 0.2933], position: { x: 28, y: 42 } },
+            'KALIMANTAN_TIMUR': { coordinates: [116.8392, 1.6753], position: { x: 75, y: 40 } },
+            'SULAWESI_SELATAN': { coordinates: [119.9740, -3.6687], position: { x: 78, y: 55 } },
+            'BALI': { coordinates: [115.1889, -8.4095], position: { x: 65, y: 70 } },
+            'SUMATERA_SELATAN': { coordinates: [103.9140, -3.3194], position: { x: 25, y: 52 } },
+            'KALIMANTAN_SELATAN': { coordinates: [115.2838, -3.0926], position: { x: 70, y: 52 } },
+            'PAPUA': { coordinates: [138.0804, -4.2699], position: { x: 85, y: 50 } },
+            'NUSA_TENGGARA_BARAT': { coordinates: [117.3616, -8.6529], position: { x: 68, y: 72 } },
+            'LAMPUNG': { coordinates: [105.4068, -4.5585], position: { x: 28, y: 58 } }
+          }
+
+          const mapping = coordinateMapping[province.id] || {
+            coordinates: [0, 0] as [number, number],
+            position: { x: 0, y: 0 }
+          }
+
+          return {
+            ...province,
+            coordinates: mapping.coordinates,
+            position: mapping.position,
+            growth: '+0%' // Default growth for now
+          }
+        })
+
+        setProvinceData(provincesWithCoordinates)
+        setProvinceDataLoading(false)
+      } else {
+        console.error('Failed to fetch province data:', data.error)
+        setProvinceDataLoading(false)
+      }
+
+    } catch (error) {
+      console.error('Error fetching province data:', error)
+      setProvinceDataLoading(false)
+    }
+  }
 
   // Helper function to extract province name from GeoJSON properties
   const extractProvinceName = (properties: any): string | null => {
@@ -157,10 +312,10 @@ const PersebaranPage = () => {
 
   // Initialize map after client-side rendering - ONLY ONCE
   useEffect(() => {
-    if (!isClient || mapInstanceRef.current) return
+    if (!isClient || mapInstanceRef.current || provinceDataLoading || provinceData.length === 0) return
 
     const initializeMap = async () => {
-      console.log('Initializing map...')
+      console.log('Initializing map with', provinceData.length, 'provinces...')
       // Dynamic import to prevent SSR issues
       const L = (await import('leaflet')).default
 
@@ -359,7 +514,7 @@ const PersebaranPage = () => {
         mapInstanceRef.current = null
       }
     }
-  }, [isClient]) // ONLY isClient dependency to prevent map recreation
+  }, [isClient, provinceData, provinceDataLoading]) // Add dependencies for province data
 
   // Helper function to match province names from GeoJSON to our data
   const findProvinceIdByName = (provinceName: string): string | null => {
@@ -539,204 +694,6 @@ const PersebaranPage = () => {
     return bounds[provinceId] || null
   }
 
-  const provinceData = [
-    {
-      id: 'DKI_JAKARTA',
-      name: 'DKI Jakarta',
-      code: 'JK',
-      totalPoints: 45420,
-      totalActivities: 8420,
-      participants: 1250,
-      averagePerUser: 36.3,
-      topActivity: 'Transportasi Umum',
-      coordinates: [106.8456, -6.2088], // [lng, lat] for SVG positioning
-      growth: '+12%',
-      position: { x: 52, y: 62 } // SVG coordinates (percentage)
-    },
-    {
-      id: 'JAWA_BARAT',
-      name: 'Jawa Barat',
-      code: 'JB',
-      totalPoints: 42350,
-      totalActivities: 7200,
-      participants: 2100,
-      averagePerUser: 20.2,
-      topActivity: 'Tanam Pohon',
-      coordinates: [107.6191, -6.9175],
-      growth: '+8%',
-      position: { x: 54, y: 65 }
-    },
-    {
-      id: 'JAWA_TIMUR',
-      name: 'Jawa Timur',
-      code: 'JT',
-      totalPoints: 38200,
-      totalActivities: 6800,
-      participants: 1800,
-      averagePerUser: 21.2,
-      topActivity: 'Daur Ulang',
-      coordinates: [112.7521, -7.2575],
-      growth: '+15%',
-      position: { x: 62, y: 67 }
-    },
-    {
-      id: 'JAWA_TENGAH',
-      name: 'Jawa Tengah',
-      code: 'JTG',
-      totalPoints: 32100,
-      totalActivities: 5900,
-      participants: 1650,
-      averagePerUser: 19.5,
-      topActivity: 'Bersih-bersih',
-      coordinates: [110.1403, -7.1500],
-      growth: '+5%',
-      position: { x: 58, y: 66 }
-    },
-    {
-      id: 'SUMATERA_UTARA',
-      name: 'Sumatera Utara',
-      code: 'SU',
-      totalPoints: 28500,
-      totalActivities: 5400,
-      participants: 1200,
-      averagePerUser: 23.8,
-      topActivity: 'Konservasi Hutan',
-      coordinates: [98.6722, 3.5952],
-      growth: '+18%',
-      position: { x: 25, y: 25 }
-    },
-    {
-      id: 'SUMATERA_BARAT',
-      name: 'Sumatera Barat',
-      code: 'SB',
-      totalPoints: 22300,
-      totalActivities: 4850,
-      participants: 950,
-      averagePerUser: 23.5,
-      topActivity: 'Tanam Pohon',
-      coordinates: [100.6531, -0.7893],
-      growth: '+10%',
-      position: { x: 22, y: 45 }
-    },
-    {
-      id: 'RIAU',
-      name: 'Riau',
-      code: 'RI',
-      totalPoints: 19800,
-      totalActivities: 4650,
-      participants: 780,
-      averagePerUser: 25.4,
-      topActivity: 'Reboisasi',
-      coordinates: [101.7068, 0.2933],
-      growth: '+22%',
-      position: { x: 28, y: 42 }
-    },
-    {
-      id: 'KALIMANTAN_TIMUR',
-      name: 'Kalimantan Timur',
-      code: 'KAL',
-      totalPoints: 25600,
-      totalActivities: 5100,
-      participants: 1100,
-      averagePerUser: 23.3,
-      topActivity: 'Konservasi',
-      coordinates: [116.8392, 1.6753],
-      growth: '+14%',
-      position: { x: 75, y: 40 }
-    },
-    {
-      id: 'SULAWESI_SELATAN',
-      name: 'Sulawesi Selatan',
-      code: 'SUL',
-      totalPoints: 21400,
-      totalActivities: 4750,
-      participants: 850,
-      averagePerUser: 25.2,
-      topActivity: 'Bersih Pantai',
-      coordinates: [119.9740, -3.6687],
-      growth: '+16%',
-      position: { x: 78, y: 55 }
-    },
-    {
-      id: 'BALI',
-      name: 'Bali',
-      code: 'BALI',
-      totalPoints: 31200,
-      totalActivities: 5650,
-      participants: 1350,
-      averagePerUser: 23.1,
-      topActivity: 'Eco Tourism',
-      coordinates: [115.1889, -8.4095],
-      growth: '+20%',
-      position: { x: 65, y: 70 }
-    },
-    {
-      id: 'SUMATERA_SELATAN',
-      name: 'Sumatera Selatan',
-      code: 'SS',
-      totalPoints: 18900,
-      totalActivities: 4200,
-      participants: 720,
-      averagePerUser: 26.2,
-      topActivity: 'Konservasi Lahan',
-      coordinates: [103.9140, -3.3194],
-      growth: '+11%',
-      position: { x: 25, y: 52 }
-    },
-    {
-      id: 'KALIMANTAN_SELATAN',
-      name: 'Kalimantan Selatan',
-      code: 'KS',
-      totalPoints: 17500,
-      totalActivities: 3800,
-      participants: 680,
-      averagePerUser: 25.7,
-      topActivity: 'Penghijauan',
-      coordinates: [115.2838, -3.0926],
-      growth: '+9%',
-      position: { x: 70, y: 52 }
-    },
-    {
-      id: 'PAPUA',
-      name: 'Papua',
-      code: 'PP',
-      totalPoints: 15200,
-      totalActivities: 3200,
-      participants: 580,
-      averagePerUser: 26.2,
-      topActivity: 'Konservasi Hutan',
-      coordinates: [138.0804, -4.2699],
-      growth: '+25%',
-      position: { x: 85, y: 50 }
-    },
-    {
-      id: 'NUSA_TENGGARA_BARAT',
-      name: 'Nusa Tenggara Barat',
-      code: 'NTB',
-      totalPoints: 14800,
-      totalActivities: 3100,
-      participants: 520,
-      averagePerUser: 28.5,
-      topActivity: 'Konservasi Air',
-      coordinates: [117.3616, -8.6529],
-      growth: '+13%',
-      position: { x: 68, y: 72 }
-    },
-    {
-      id: 'LAMPUNG',
-      name: 'Lampung',
-      code: 'LA',
-      totalPoints: 16700,
-      totalActivities: 3500,
-      participants: 650,
-      averagePerUser: 25.7,
-      topActivity: 'Pertanian Organik',
-      coordinates: [105.4068, -4.5585],
-      growth: '+7%',
-      position: { x: 28, y: 58 }
-    }
-  ]
-
   const getMarkerSize = (activities: number) => {
     if (activities > 7000) return 15
     if (activities > 5500) return 12
@@ -753,16 +710,6 @@ const PersebaranPage = () => {
     if (activities > 2500) return '#86efac' // Low - very light green
     return '#dcfce7' // Very low - pale green
   }
-
-  // ...existing code...
-
-  const activityTypes = [
-    { name: 'Tanam Pohon', count: 2850, color: '#16a34a', percentage: 28 },
-    { name: 'Daur Ulang', count: 2100, color: '#2563eb', percentage: 21 },
-    { name: 'Transportasi Hijau', count: 1950, color: '#9333ea', percentage: 19 },
-    { name: 'Konservasi', count: 1650, color: '#ea580c', percentage: 16 },
-    { name: 'Bersih-bersih', count: 1450, color: '#dc2626', percentage: 14 },
-  ]
 
   // Consistent number formatting function
   const formatNumber = (num: number) => {
@@ -831,6 +778,16 @@ const PersebaranPage = () => {
                 totalActivities={provinceData.reduce((sum, p) => sum + p.totalActivities, 0)}
                 formatNumber={formatNumber}
               />
+
+              {/* Show loading state for map */}
+              {(provinceDataLoading || provinceData.length === 0) && (
+                <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                    <p className="text-gray-600 text-sm">Memuat data provinsi...</p>
+                  </div>
+                </div>
+              )}
 
               {/* Enhanced Legend */}
               <div className="absolute bottom-4 left-4 bg-white bg-opacity-95 rounded-lg p-3 shadow-lg">
@@ -901,15 +858,10 @@ const PersebaranPage = () => {
                       <div className="text-sm text-gray-600">Avg/User</div>
                     </div>
                   </div>
-
-                  <div className="p-3 bg-oliveSoft rounded">
-                    <div className="text-sm text-black italic">Aktivitas Terpopuler</div>
-                    <div className="font-semibold text-white">{selectedProvinceData.topActivity}</div>
-                  </div>
                 </div>
               </div>
               ) : (
-              <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="bg-whiteMint rounded-lg shadow-lg p-6">
                 <h3 className="text-lg font-bold mb-4">Pilih Provinsi</h3>
                 <p className="text-gray-600 text-center">
                   Klik pada provinsi di peta untuk melihat detail aktivitas
@@ -922,23 +874,38 @@ const PersebaranPage = () => {
 
             {/* Top Activities */}
             <div className="bg-whiteMint rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-bold mb-4">Aktivitas Terpopuler</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Aktivitas Terpopuler</h3>
+                {popularActivitiesData.loading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                )}
+              </div>
               <div className="space-y-3">
-                {activityTypes.map((activity, index) => (
-                  <div key={activity.name} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className="w-4 h-4 rounded"
-                        style={{ backgroundColor: activity.color }}
-                      ></div>
-                      <span className="font-medium">{activity.name}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-gray-800">{formatNumber(activity.count)}</div>
-                      <div className="text-xs text-gray-500">{activity.percentage}%</div>
-                    </div>
+                {popularActivitiesData.loading ? (
+                  <div className="text-center text-gray-500 py-4">
+                    Memuat data aktivitas...
                   </div>
-                ))}
+                ) : popularActivitiesData.activities.length > 0 ? (
+                  popularActivitiesData.activities.map((activity, index) => (
+                    <div key={activity.name} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className="w-4 h-4 rounded"
+                          style={{ backgroundColor: activity.color }}
+                        ></div>
+                        <span className="font-medium">{activity.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-800">{formatNumber(activity.count)}</div>
+                        <div className="text-xs text-gray-500">{activity.percentage}%</div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 py-4">
+                    Belum ada data aktivitas
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -947,32 +914,41 @@ const PersebaranPage = () => {
 
       {/* Statistics Summary */}
       <div className="bg-whiteMint rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-bold mb-6">Ringkasan Nasional</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold">Ringkasan Nasional</h2>
+          {statisticsData.loading && (
+            <div className="flex items-center text-sm text-gray-500">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+              Memuat data...
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600">
-              {formatNumber(provinceData.reduce((sum, p) => sum + p.totalActivities, 0))}
+              {statisticsData.loading ? '...' : formatNumber(statisticsData.totalActivities)}
             </div>
             <div className="text-gray-600">Total Aktivitas</div>
           </div>
 
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600">
-              {formatNumber(provinceData.reduce((sum, p) => sum + p.participants, 0))}
+              {statisticsData.loading ? '...' : formatNumber(statisticsData.totalParticipants)}
             </div>
             <div className="text-gray-600">Total Peserta</div>
           </div>
 
           <div className="text-center">
             <div className="text-3xl font-bold text-purple-600">
-              {formatNumber(provinceData.reduce((sum, p) => sum + p.totalPoints, 0))}
+              {statisticsData.loading ? '...' : formatNumber(statisticsData.totalPoints)}
             </div>
             <div className="text-gray-600">Total Poin</div>
           </div>
 
           <div className="text-center">
             <div className="text-3xl font-bold text-yellowGold">
-              {provinceData.length}
+              {statisticsData.loading ? '...' : statisticsData.activeRegions}
             </div>
             <div className="text-gray-600">Region Aktif</div>
           </div>
