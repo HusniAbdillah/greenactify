@@ -86,6 +86,8 @@ export default function ResultStep({
   const [fileId] = useState(() => uuidv4());
   const uploadRef = useRef(false);
   const router = useRouter();
+  const newTotalActivities = totalActivities + 1;
+  const newTotalPoints = totalPoints + imageData.points;
 
   const now = new Date();
   const formattedDate = now.toLocaleDateString("id-ID", {
@@ -145,10 +147,10 @@ export default function ResultStep({
       ctx.fillStyle = "#0C3B2E"; // bg-yellowAmber
       ctx.font = "bold 62px 'Poppins', sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(`${totalActivities} Aktivitas`, padding, currentY);
+      ctx.fillText(`${newTotalActivities} Aktivitas`, padding, currentY);
       ctx.fillStyle = "#A56D00"; // bg-yellowAmber
       ctx.textAlign = "right";
-      ctx.fillText(`${totalPoints} Poin`, cardWidth - padding, currentY);
+      ctx.fillText(`${newTotalPoints} Poin`, cardWidth - padding, currentY);
 
       currentY += 50;
       const imageContainerX = padding;
@@ -282,8 +284,8 @@ export default function ResultStep({
     imageData.points,
     imageData.username,
     onGeneratedImageReady,
-    totalActivities,
-    totalPoints,
+    newTotalActivities,
+    newTotalPoints,
   ]);
 
   const handleDownload = () => {

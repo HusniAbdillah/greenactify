@@ -195,7 +195,7 @@ export default function AksiPage() {
         category_id: selectedActivity!.id,
         title: selectedActivity!.name,
         description: selectedActivity!.description,
-        points: selectedActivity!.base_points, // Already includes multiplier
+        points: Math.round(selectedActivity!.base_points * challengeMultiplier), // Apply multiplier
         latitude: confirmedLatitude ?? 0,
         longitude: confirmedLongitude ?? 0,
         province: confirmedLocation ?? "",
@@ -206,8 +206,8 @@ export default function AksiPage() {
         challenge_id: isChallenge ? challengeId : undefined, // Add challenge_id
       });
 
-      await updateUserPoints(profileId!, selectedActivity!.base_points);
-      await updateProvinceStats(confirmedLocation, selectedActivity!.base_points);
+      await updateUserPoints(profileId!, Math.round(selectedActivity!.base_points * challengeMultiplier));
+      await updateProvinceStats(confirmedLocation, Math.round(selectedActivity!.base_points * challengeMultiplier));
 
       const now = Date.now();
       setLastUploadTime(now);
@@ -249,7 +249,7 @@ export default function AksiPage() {
         category_id: selectedActivity.id,
         title: selectedActivity.name,
         description: selectedActivity.description,
-        points: selectedActivity.base_points,
+        points: Math.round(selectedActivity.base_points * challengeMultiplier),
         latitude: confirmedLatitude ?? 0,
         longitude: confirmedLongitude ?? 0,
         province: confirmedLocation,
@@ -257,6 +257,7 @@ export default function AksiPage() {
         is_shared: false,
         image_url: uploadedImageUrl ?? "",
         generated_image_url: generatedImageUrl,
+        challenge_id: isChallenge ? challengeId : undefined,
       })
         .then(() => { /* ... */ })
         .catch((err) => { /* ... */ });
@@ -270,6 +271,9 @@ export default function AksiPage() {
     confirmedLatitude,
     confirmedLongitude,
     uploadedImageUrl,
+    challengeMultiplier,
+    isChallenge,
+    challengeId,
   ]);
 
   useEffect(() => {
@@ -293,7 +297,7 @@ export default function AksiPage() {
     if (isChallenge && challengeData) {
       return {
         UPLOADING: {
-          title: "🎯 " + challengeData.title,
+          title: challengeData.title,
           subtitle: challengeData.description,
         },
         SELECTING_ACTIVITY: {
@@ -355,6 +359,7 @@ export default function AksiPage() {
           onActivitySelect={handleActivitySelect}
           onBack={handleBackToUpload}
           challengeFilter={challengeData?.category_id}
+          challengeMultiplier={challengeMultiplier}
         />
       )}
 
@@ -371,7 +376,7 @@ export default function AksiPage() {
             file: uploadedFile,
             activity: selectedActivity,
             location: confirmedLocation,
-            points: selectedActivity.base_points,
+            points: Math.round(selectedActivity.base_points * challengeMultiplier),
             username: user?.username || user?.fullName || user?.firstName || "",
           }}
           totalActivities={totalActivities} 
