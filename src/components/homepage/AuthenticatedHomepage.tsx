@@ -11,10 +11,13 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
+  Map,
+  ExternalLink,
 } from "lucide-react";
 import { DailyChallenge, ActivityHistory } from "@/lib/types/homepage";
 import DesktopSidebar from "@/components/navbar/DesktopSidebar";
 import MobileBottomNav from "@/components/navbar/MobileBottomNav";
+import { HeatmapWidget, useProvinceData } from "@/components/heatmap";
 
 interface AuthenticatedHomepageProps {
   dailyChallenges: DailyChallenge[];
@@ -270,8 +273,93 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Heatmap Section */}
+        <div className="mt-12 lg:mt-16">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-greenDark mb-2">
+                  Persebaran Aktivitas Lingkungan
+                </h2>
+                <p className="text-gray-600 text-sm md:text-base">
+                  Lihat aktivitas lingkungan di seluruh Indonesia
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-0">
+              <HomepageHeatmap />
+            </div>
+
+            {/* Bottom button for map detail */}
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => window.location.href = '/persebaran'}
+                className="inline-flex items-center gap-2 bg-greenDark hover:bg-tealLight text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-base shadow-md hover:shadow-lg"
+              >
+                <Map className="w-5 h-5" />
+                Lihat Detail Lengkap
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
+  );
+};
+
+// Heatmap component for homepage
+const HomepageHeatmap: React.FC = () => {
+  const { provinceData, loading, error } = useProvinceData();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-tealLight/20 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
+            <Map className="w-6 h-6 text-tealLight" />
+          </div>
+          <p className="text-gray-600">Memuat peta persebaran...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Map className="w-6 h-6 text-red-500" />
+          </div>
+          <p className="text-red-600 mb-2">Gagal memuat peta</p>
+          <p className="text-gray-500 text-sm">Silakan coba lagi nanti</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <HeatmapWidget
+      provinceData={provinceData}
+      config={{
+        height: '400px',
+        dataField: 'totalActivities',
+        colorScheme: 'green',
+        showLegend: true,
+        showSummary: false
+      }}
+      mapControls={{
+        showZoom: true,
+        showAttribution: false,
+        showScale: false
+      }}
+      title="Aktivitas Lingkungan per Provinsi"
+      description="Distribusi aktivitas lingkungan di seluruh Indonesia"
+      className="w-full"
+    />
   );
 };
 
