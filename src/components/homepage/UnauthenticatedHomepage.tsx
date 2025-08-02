@@ -28,7 +28,7 @@ import { HeatmapWidget, useProvinceData } from "@/components/heatmap";
 
 interface UserLeaderboard {
   id: string;
-  name: string | null;
+  username: string | null;
   full_name: string | null;
   province: string | null;
   points: number;
@@ -247,10 +247,10 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
 
                             <div className="flex-1">
                               <h4 className="font-bold text-greenDark">
-                                {user.full_name || user.name || "Unknown User"}
+                                {user.username || "Unknown User"}
                               </h4>
                               <p className="text-sm text-gray-600">
-                                {user.province || "Unknown Province"}
+                                {user.full_name || "Unknown Name"} • {user.province || "Unknown Province"}
                               </p>
                             </div>
                           </div>
