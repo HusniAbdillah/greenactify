@@ -93,20 +93,18 @@ const PeringkatPage = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+
       <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-4 sm:p-6">
         <h1 className="text-2xl font-bold mb-1 sm:mb-2">Papan Peringkat</h1>
         <p>Lihat pencapaian komunitas GreenActify</p>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           Error: {error}
         </div>
       )}
 
-      {/* Tabs */}
       <div className="flex bg-mintPastel border-greenDark border-2 rounded-full p-1 w-full md:w-fit md:mx-auto">
         <button
           className={`flex-1 md:flex-none py-3 px-4 md:py-2 md:px-4 md:text-sm rounded-full font-semibold transition-colors ${
@@ -132,7 +130,6 @@ const PeringkatPage = () => {
         </button>
       </div>
 
-      {/* Search Bar */}
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <Search className="h-5 w-5 text-gray-400" />
@@ -146,7 +143,7 @@ const PeringkatPage = () => {
         />
       </div>
 
-      {/* Users Leaderboard */}
+
       {activeTab === 'users' && (
         <div className="space-y-4">
           {loading ? (
@@ -208,7 +205,6 @@ const PeringkatPage = () => {
         </div>
       )}
 
-      {/* Provinces Leaderboard */}
       {activeTab === 'provinces' && (
         <div className="space-y-4">
           {loading ? (
@@ -233,7 +229,7 @@ const PeringkatPage = () => {
               <div
                 key={province.id || province.province || index}
                 className={`${province.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
-                onClick={() => {/* Navigate to province details */}}
+                onClick={() => {/* Navigate ke province details (ga sempet duh -g) */}}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">
