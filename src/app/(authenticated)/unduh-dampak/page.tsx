@@ -139,7 +139,7 @@ const ActivitiesMapPage = () => {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.setAttribute("download", "GreenActivy-Dampak.csv")
+    link.setAttribute("download", "Dampak GreenActivy.csv")
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -210,7 +210,7 @@ const exportToPDF = () => {
       tableLineWidth: 0.2
     })
 
-    doc.save('GreenActivy-Dampak.pdf')
+    doc.save('Dampak GreenActivy.pdf')
   }
 }
 
