@@ -56,7 +56,7 @@ export default function AuthPageWithImage({
             <div className="h-100 w-100">
               {" "}
               <Image
-                src="/images/logo-fiks.png"
+                src="/logo-greenactify.png"
                 width="500"
                 height="320"
                 alt="Green Actify Logo"

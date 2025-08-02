@@ -18,7 +18,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname === '/sign-in' || req.nextUrl.pathname === '/sign-up') {
     const { userId } = await auth();
     if (userId) {
-      return Response.redirect(new URL('/beranda', req.url));
+      return Response.redirect(new URL('/', req.url));
     }
   }
 

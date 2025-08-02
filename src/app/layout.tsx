@@ -26,8 +26,8 @@ export default function RootLayout({
       }}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      afterSignInUrl="/beranda"
-      afterSignUpUrl="/beranda"
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
     >
       <html lang="en" className={poppins.variable}>
         <body className="font-sans antialiased">{children}</body>

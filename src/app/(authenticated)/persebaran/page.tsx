@@ -410,7 +410,7 @@ const UnifiedActivitiesPage = () => {
   const exportToPDF = () => {
     const doc = new jsPDF()
 
-    const logoUrl = '/images/logo-fiks.png'
+    const logoUrl = '/logo-greenactify.png'
     const img = new window.Image()
     img.src = logoUrl
     img.crossOrigin = 'anonymous'
