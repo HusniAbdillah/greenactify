@@ -1,12 +1,30 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Trophy, HandHeart, Bot, UserRound } from 'lucide-react'
 
 const MobileBottomNav = () => {
   const pathname = usePathname() || ''
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const res = await fetch('/api/profile/check-user', { method: 'POST' })
+        if (!res.ok) {
+          console.error('User check failed')
+          return
+        }
+        const data = await res.json()
+        console.log('User synced:', data.user)
+      } catch (err) {
+        console.error('Error checking user:', err)
+      }
+    }
+
+    checkUser()
+  }, [])
 
   const navItems = [
     { href: '/', icon: Home, label: 'Beranda' },
@@ -52,7 +70,6 @@ const MobileBottomNav = () => {
         </div>
       </div>
 
-      {/* Mobile bottom padding - Hanya untuk non-chatbot pages */}
       {!pathname.includes('/chatbot') && <div className="lg:hidden h-20"></div>}
     </>
   )

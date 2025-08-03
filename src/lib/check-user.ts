@@ -6,7 +6,6 @@ export const checkUser = async () => {
     const user = await currentUser();
     if (!user) return null;
 
-    // 1. Cek apakah profil sudah ada
     const { data: existing, error } = await supabaseAdmin
       .from('profiles')
       .select('*')
@@ -18,7 +17,6 @@ export const checkUser = async () => {
     }
 
     if (existing) {
-      // 1a. Update avatar_url dan username jika user sudah ada
       const updates: Partial<{ avatar_url: string; username: string }> = {};
       if (existing.avatar_url !== user.imageUrl) {
         updates.avatar_url = user.imageUrl;
