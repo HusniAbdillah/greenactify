@@ -36,16 +36,12 @@ interface UserActivity {
   description?: string;
   points: number;
   image_url?: string;
-  location_name?: string;
   latitude?: number;
   longitude?: number;
   province?: string;
   status?: 'pending' | 'approved' | 'rejected';
   verified_by?: string;
   verified_at?: string;
-  is_shared?: boolean;
-  share_count?: number;
-  like_count?: number;
   metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;

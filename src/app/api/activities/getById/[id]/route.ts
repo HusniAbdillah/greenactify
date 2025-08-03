@@ -25,7 +25,6 @@ export async function GET(
       title,
       description,
       image_url,
-      location_name,
       latitude,
       longitude,
       province,

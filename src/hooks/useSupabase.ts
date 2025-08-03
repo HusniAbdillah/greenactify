@@ -193,7 +193,6 @@ export type ActivityItem = {
   latitude?: number | null; 
   longitude?: number | null; 
   province?: string | null;
-  like_count: number;
   created_at: string; 
   updated_at: string; 
   generated_image_url?: string | null;
@@ -312,14 +311,13 @@ export const handleDeleteActivity = async (activityId: string): Promise<boolean>
 export async function handleUpdateActivity(
   id: string,
   title: string,
-  location_name: string,
   image_url: string
 ) {
   try {
     const res = await fetch('/api/activities/edit', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, title, location_name, image_url }),
+      body: JSON.stringify({ id, title, image_url }),
     })
 
     if (!res.ok) {

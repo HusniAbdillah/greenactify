@@ -23,16 +23,12 @@ export type Activity = {
   description?: string
   points: number
   image_url?: string
-  location_name?: string
   latitude?: number
   longitude?: number
   province?: string
   status: 'pending' | 'approved' | 'rejected'
   verified_by?: string
   verified_at?: string
-  is_shared: boolean
-  share_count: number
-  like_count: number
   metadata?: Record<string, any>
   created_at: string
   updated_at: string
@@ -193,10 +189,7 @@ export type ActivityFeed = {
   description?: string
   points: number
   image_url?: string
-  location_name?: string
   province?: string
-  like_count: number
-  share_count: number
   created_at: string
   user_name?: string
   username?: string
