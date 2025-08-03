@@ -49,14 +49,14 @@ const DesktopSidebar = () => {
                 href={item.href}
                 className={`group flex flex-col items-center justify-center w-20 h-16 rounded-2xl transition-all duration-200 ${
                   active
-                    ? 'bg-tealLight text-black shadow-lg scale-110'
+                    ? 'bg-tealLight text-whiteMint shadow-lg scale-110'
                     : 'text-black hover:bg-yellowAmber hover:scale-110 hover:shadow-md'
                 }`}
               >
                 <Icon
-                  className={`h-9 w-9 mb-1 ${active ? 'text-black' : 'text-black'}`}
+                  className={`h-9 w-9 mb-1 ${active ? 'text-whiteMint' : 'text-black'}`}
                 />
-                <span className={`text-xs font-semibold leading-tight text-center ${active ? 'text-black' : 'text-black'}`}>
+                <span className={`text-xs font-semibold leading-tight text-center ${active ? 'text-whiteMint' : 'text-black'}`}>
                   {item.label}
                 </span>
               </Link>
