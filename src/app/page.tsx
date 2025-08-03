@@ -234,6 +234,7 @@ export default function HomePage() {
         relativeTime: getRelativeTime(activity.date)
       })));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isClient, activityHistory.length]);
 
   // Show authenticated homepage for signed in users

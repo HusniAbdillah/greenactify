@@ -36,17 +36,9 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
 }) => {
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
-  // Enhanced debug logging
-  console.log('=== CHALLENGE DEBUG INFO ===');
-  console.log('Daily challenges received:', dailyChallenges?.length || 0);
-  console.log('Current challenge index:', currentChallengeIndex);
-  console.log('All challenges data:', dailyChallenges);
-  console.log('============================');
-
   const nextChallenge = () => {
     if (dailyChallenges && dailyChallenges.length > 1) {
       const newIndex = currentChallengeIndex === dailyChallenges.length - 1 ? 0 : currentChallengeIndex + 1;
-      console.log('Next challenge: moving from', currentChallengeIndex, 'to', newIndex);
       setCurrentChallengeIndex(newIndex);
     }
   };
@@ -54,7 +46,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
   const prevChallenge = () => {
     if (dailyChallenges && dailyChallenges.length > 1) {
       const newIndex = currentChallengeIndex === 0 ? dailyChallenges.length - 1 : currentChallengeIndex - 1;
-      console.log('Previous challenge: moving from', currentChallengeIndex, 'to', newIndex);
       setCurrentChallengeIndex(newIndex);
     }
   };
@@ -62,7 +53,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
   // Reset index if it's out of bounds
   React.useEffect(() => {
     if (dailyChallenges && currentChallengeIndex >= dailyChallenges.length) {
-      console.log('Resetting challenge index from', currentChallengeIndex, 'to 0');
       setCurrentChallengeIndex(0);
     }
   }, [dailyChallenges, currentChallengeIndex]);
@@ -71,8 +61,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
   const validChallenges = dailyChallenges || [];
   const safeIndex = Math.max(0, Math.min(currentChallengeIndex, validChallenges.length - 1));
   const currentChallenge = validChallenges[safeIndex];
-
-  console.log('Using safe index:', safeIndex, 'for challenge:', currentChallenge?.title);
   return (
     <div className="min-h-screen bg-mintPastel">
       {/* Navigation Components */}
@@ -134,7 +122,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                             <button
                               key={index}
                               onClick={() => {
-                                console.log('Clicking dot', index);
                                 setCurrentChallengeIndex(index);
                               }}
                               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${

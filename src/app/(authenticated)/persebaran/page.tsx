@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { MapPin, Users, TrendingUp, Filter, Calendar, Download, Eye, Activity, BarChart3, ExternalLink } from 'lucide-react'
 import { HeatmapWidget, useProvinceData, ProvinceData } from '@/components/heatmap'
 import jsPDF from 'jspdf'
@@ -108,6 +108,7 @@ const UnifiedActivitiesPage = () => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode, loadingActivities, mapType, activities])
 
   const fetchActivities = async () => {

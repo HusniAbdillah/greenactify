@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   SignInButton,
   SignUpButton,
@@ -374,14 +375,14 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
             </div>
 
             <div className="flex justify-center">
-              <a
+              <Link
                 href="/sign-in"
                 className="w-full md:w-auto bg-tealLight text-white py-2 px-4 rounded-lg font-semibold hover:bg-greenDark transition-colors flex items-center justify-center gap-2 mb-6 text-center"
               >
                 <Download className="w-4 h-4" />
                 Masuk untuk Unduh PDF
                 <ExternalLink className="w-4 h-4" />
-              </a>
+              </Link>
             </div>
 
             <div className="text-center">
