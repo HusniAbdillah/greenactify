@@ -35,14 +35,7 @@ export type ProvinceStats = {
 
 const UnifiedActivitiesPage = () => {
   const router = useRouter()
-  const { user } = useUser();
   const { isLoaded, isSignedIn } = useUser()
-
-  useEffect(() => {
-    if (user === null) {
-      router.push('/');
-    }
-  }, [user, router]);
 
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
@@ -477,11 +470,7 @@ const UnifiedActivitiesPage = () => {
           cellPadding: 3
         },
         headStyles: {
-<<<<<<<<< Temporary merge branch 1
           fillColor: [12, 59, 46],
-=========
-          fillColor: [34, 197, 94],
->>>>>>>>> Temporary merge branch 2
           textColor: [255, 255, 255],
           fontStyle: 'bold'
         },
@@ -495,17 +484,16 @@ const UnifiedActivitiesPage = () => {
         tableLineWidth: 0.2
       })
 
-      doc.save('Laporan Dampak GreenActivy.pdf')
+      doc.save('Dampak GreenActify.pdf')
     }
 
     img.onerror = () => {
-
       const pageWidth = doc.internal.pageSize.getWidth()
 
       doc.setFontSize(16)
-      doc.setTextColor(34, 197, 94)
+      doc.setTextColor(34, 78, 64)
       doc.setFont('helvetica', 'bold')
-      doc.text('Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
+      doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
         align: 'center'
       })
 
@@ -539,7 +527,7 @@ const UnifiedActivitiesPage = () => {
           cellPadding: 3
         },
         headStyles: {
-          fillColor: [34, 197, 94],
+          fillColor: [12, 59, 46],
           textColor: [255, 255, 255],
           fontStyle: 'bold'
         },
@@ -575,9 +563,9 @@ const UnifiedActivitiesPage = () => {
 
       <div className="bg-tealLight text-white rounded-lg p-4 sm:p-6 mx-6 mb-0 sm:mb-4 md:mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Peta Persebaran Aktivitas Hijau Indonesia</h1>
-        <p  className=' text-sm sm:text-base '>Visualisasi komprehensif aktivitas hijau di seluruh Indonesia dengan data real-time</p>
+        <p className="text-sm sm:text-base">Visualisasi komprehensif aktivitas hijau di seluruh Indonesia dengan data real-time</p>
 
-        <div className=" mt-4 flex space-x-2">
+        <div className="mt-4 flex space-x-2">
           <button
             onClick={() => setViewMode('province')}
             className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -783,7 +771,7 @@ const UnifiedActivitiesPage = () => {
 
         {viewMode === 'activities' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
-            <div className="lg:col-span-2 space-y-8 min-w-265">
+            <div className="lg:col-span-2 space-y-8">
               <div className="bg-whiteMint rounded-xl shadow-lg overflow-hidden">
                 <div className="p-6 border-b border-whiteGreen">
 
@@ -798,14 +786,14 @@ const UnifiedActivitiesPage = () => {
 
                       <button
                         onClick={() => setMapType('marker')}
-                        className={` mt-3 sm:mt-0 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
+                        className={`mt-3 sm:mt-0 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
                           ${mapType === 'marker' ? 'bg-greenDark text-white shadow-md' : 'bg-whiteGreen text-oliveDark hover:bg-whiteGreen/80'}`}
                       >
                         Marker
                       </button>
                       <button
                         onClick={() => setMapType('heatmap')}
-                        className={` mt-3 sm:mt-0  px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
+                        className={`mt-3 sm:mt-0 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
                           ${mapType === 'heatmap' ? 'bg-greenDark text-white shadow-md' : 'bg-whiteGreen text-oliveDark hover:bg-whiteGreen/80'}`}
                       >
                         Heatmap
@@ -845,7 +833,7 @@ const UnifiedActivitiesPage = () => {
                         key={`activity-map-${mapType}-${viewMode}`}
                       ></div>
                       {!mapReady && (
-                        <div className=" inset-0 flex items-center justify-center bg-whiteMint bg-opacity-75 rounded-xl">
+                        <div className="inset-0 flex items-center justify-center bg-whiteMint bg-opacity-75 rounded-xl">
                           <div className="text-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tealLight mx-auto mb-2"></div>
                             <p className="text-sm text-oliveSoft">Memuat peta...</p>
@@ -857,7 +845,7 @@ const UnifiedActivitiesPage = () => {
                 </div>
               </div>
 
-              <div className="grid  grid-cols-2 sm :grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                 <div className="bg-whiteMint rounded-xl shadow-lg p-5">
                   <h3 className="text-sm font-medium text-oliveSoft">Total Aktivitas</h3>
                   <p className="text-2xl sm:text-3xl font-extrabold text-oliveDark">{activities.length}</p>
