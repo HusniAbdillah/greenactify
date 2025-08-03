@@ -22,7 +22,6 @@ const MobileBottomNav = () => {
 
   return (
     <>
-      {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed inset-x-0 bottom-0 bg-mintPastel border-t-2 border-oliveDark shadow-lg z-50 rounded-t-[20px] py-2">
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
