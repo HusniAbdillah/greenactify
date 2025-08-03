@@ -67,6 +67,7 @@ export default function AksiPage() {
   const [totalPoints, setTotalPoints] = useState<number>(0);
   const [lastUploadTime, setLastUploadTime] = useState<number | null>(null);
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [isUpdatingPoints, setIsUpdatingPoints] = useState(false);
 
   const { user } = useUser();
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -131,7 +132,7 @@ export default function AksiPage() {
           if (data.success) {
             setChallengeData(data.data);
             setChallengeMultiplier(
-              data.data.double_points || data.data.points || 1
+              data.data.double_points || 1
             );
           }
         })
@@ -161,7 +162,17 @@ export default function AksiPage() {
   // 🆕 Helper function untuk calculate final points sekali saja
   const getFinalPoints = () => {
     if (!selectedActivity) return 0;
-    return Math.round(selectedActivity.base_points * challengeMultiplier);
+    const finalPoints = Math.round(selectedActivity.base_points * challengeMultiplier);
+    
+    // 🆕 Debug logging
+    console.log("=== FINAL POINTS CALCULATION ===");
+    console.log("selectedActivity.base_points:", selectedActivity.base_points);
+    console.log("challengeMultiplier:", challengeMultiplier);
+    console.log("isChallenge:", isChallenge);
+    console.log("finalPoints:", finalPoints);
+    console.log("===================================");
+    
+    return finalPoints;
   };
 
   const handleLocationConfirm = (
@@ -175,73 +186,24 @@ export default function AksiPage() {
     setCurrentStep("SHOWING_RESULT");
   };
 
-  // 🆕 Perbaikan handleFinish dengan getFinalPoints()
+  // 🆕 Perbaikan handleFinish - hanya untuk routing, tidak ada database operations
   const handleFinish = async () => {
-    try {
-      const missingFields: string[] = [];
-      if (!profileId) missingFields.push("Profile ID");
-      if (!selectedActivity) missingFields.push("Jenis Aksi");
-      if (!uploadedImageUrl) missingFields.push("Gambar yang diunggah");
-      if (!confirmedLocation) missingFields.push("Lokasi");
-      if (!generatedImageUrl) missingFields.push("Gambar hasil generate");
+    // Reset state untuk persiapan aksi berikutnya
+    const now = Date.now();
+    setLastUploadTime(now);
+    localStorage.setItem("lastActivityUpload", now.toString());
+    setCooldownRemaining(45);
 
-      if (missingFields.length > 0) {
-        alert(
-          `Data belum lengkap!\n\nMohon lengkapi: ${missingFields.join(", ")}`
-        );
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("province")
-        .eq("id", profileId)
-        .single();
-
-      if (!profileError && (!profile?.province || profile.province === "")) {
-        await supabase
-          .from("profiles")
-          .update({ province: confirmedLocation })
-          .eq("id", profileId);
-      }
-
-      // 🆕 Calculate final points once
-      const finalPoints = getFinalPoints();
-
-      await createActivity({
-        user_id: profileId!,
-        category_id: selectedActivity!.id,
-        title: selectedActivity!.name,
-        description: selectedActivity!.description,
-        points: finalPoints, // 🆕 Use calculated final points
-        latitude: confirmedLatitude ?? 0,
-        longitude: confirmedLongitude ?? 0,
-        province: confirmedLocation ?? "",
-        city: "",
-        is_shared: false,
-        image_url: uploadedImageUrl ?? "",
-        generated_image_url: generatedImageUrl ?? "",
-        challenge_id: isChallenge ? challengeId : undefined,
-      });
-
-      await updateUserPoints(profileId!, finalPoints); // 🆕 Use final points
-      await updateProvinceStats(confirmedLocation, finalPoints); // 🆕 Use final points
-
-      const now = Date.now();
-      setLastUploadTime(now);
-      localStorage.setItem("lastActivityUpload", now.toString());
-      setCooldownRemaining(45);
-
-      setCurrentStep("UPLOADING");
-      setUploadedFile(null);
-      setUploadedImageUrl(null);
-      setSelectedActivity(null);
-      setConfirmedLocation("");
-      setGeneratedImageUrl("");
-      setIsActivityInserted(false);
-    } catch (err: any) {
-      alert(err.message || JSON.stringify(err));
-    }
+    setCurrentStep("UPLOADING");
+    setUploadedFile(null);
+    setUploadedImageUrl(null);
+    setSelectedActivity(null);
+    setConfirmedLocation("");
+    setGeneratedImageUrl("");
+    setIsActivityInserted(false);
+    
+    // Navigate to home or desired route
+    // router.push("/"); // Uncomment jika ingin redirect
   };
 
   const handleBackToUpload = () => {
@@ -261,16 +223,20 @@ export default function AksiPage() {
       selectedActivity &&
       confirmedLocation &&
       generatedImageUrl &&
-      !isActivityInserted
+      !isActivityInserted &&
+      !isUpdatingPoints // 👈 Tambah kondisi ini
     ) {
-      const finalPoints = getFinalPoints(); // 🆕 Use calculated final points
-
+      
+      setIsUpdatingPoints(true); // 👈 Set flag
+    
+      const finalPoints = getFinalPoints();
+      
       createActivity({
         user_id: profileId,
         category_id: selectedActivity.id,
         title: selectedActivity.name,
         description: selectedActivity.description,
-        points: finalPoints, // 🆕 Use final points
+        points: finalPoints,
         latitude: confirmedLatitude ?? 0,
         longitude: confirmedLongitude ?? 0,
         province: confirmedLocation,
@@ -281,12 +247,19 @@ export default function AksiPage() {
         challenge_id: isChallenge ? challengeId : undefined,
       })
         .then(() => {
+          console.log("✅ Activity created successfully");
           setIsActivityInserted(true);
-          updateUserPoints(profileId, finalPoints); // 🆕 Use final points
-          updateProvinceStats(confirmedLocation, finalPoints); // 🆕 Use final points
+          return updateUserPoints(profileId, finalPoints);
+        })
+        .then(() => {
+          return updateProvinceStats(confirmedLocation, finalPoints);
+        })
+        .finally(() => {
+          setIsUpdatingPoints(false); // 👈 Reset flag
         })
         .catch((err) => {
-          console.error("Error creating activity:", err);
+          console.error("❌ Error creating activity:", err);
+          setIsUpdatingPoints(false); // 👈 Reset flag on error
         });
     }
   }, [
@@ -295,10 +268,10 @@ export default function AksiPage() {
     confirmedLocation,
     generatedImageUrl,
     isActivityInserted,
+    isUpdatingPoints, // 👈 Tambah ke dependency
     confirmedLatitude,
     confirmedLongitude,
     uploadedImageUrl,
-    challengeMultiplier, // 🆕 Add to dependencies
     isChallenge,
     challengeId,
     getFinalPoints, // Add getFinalPoints to dependencies

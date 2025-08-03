@@ -154,10 +154,14 @@ export default function ResultStep({
       ctx.fillStyle = "#0C3B2E"; // bg-yellowAmber
       ctx.font = "bold 62px 'Poppins', sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(`${newTotalActivities} Aktivitas`, padding, currentY);
+      ctx.fillText(`${totalActivities + 1} Aktivitas`, padding, currentY);
       ctx.fillStyle = "#A56D00"; // bg-yellowAmber
       ctx.textAlign = "right";
-      ctx.fillText(`${newTotalPoints} Poin`, cardWidth - padding, currentY);
+      ctx.fillText(
+        `${totalPoints + imageData.points} Poin`,
+        cardWidth - padding,
+        currentY
+      );
 
       currentY += 50;
       const imageContainerX = padding;
