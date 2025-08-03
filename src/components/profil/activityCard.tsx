@@ -20,13 +20,7 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
     setCustomModal({ title, message })
   }
 
-  const handleEditSubmit = async () => {
-    const success = await handleUpdateActivity(activity.id, newTitle, newProvince, newImageUrl)
-    if (success) {
-      setEditing(false)
-      onUpdated?.()
-    }
-  }
+
   const handleDeleteConfirmed = async () => {
     const success = await handleDeleteActivity(activity.id)
     setShowDeleteConfirm(false)
