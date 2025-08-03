@@ -193,7 +193,7 @@ export default function HomePage() {
                 date: new Date(activity.created_at),
                 status: activity.status || 'completed',
                 category: activity.activity_categories?.group_category || 'other',
-                location: activity.location_name || activity.city || activity.province || 'Lokasi tidak diketahui',
+                location: activity.province || 'Lokasi tidak diketahui',
                 image_url: activity.image_url || '',
                 verified: !!activity.verified_at,
                 challenge_id: null, // Real API doesn't have challenge_id in this format

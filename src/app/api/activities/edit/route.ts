@@ -11,7 +11,7 @@ export async function PUT(req: Request) {
   if (!profileId) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
   const body = await req.json()
-  const { id, title, location_name, image_url } = body
+  const { id, title, image_url } = body
 
   if (!id) return NextResponse.json({ error: 'Missing activity ID' }, { status: 400 })
 
@@ -19,7 +19,6 @@ export async function PUT(req: Request) {
     .from('activities')
     .update({
       title,
-      location_name,
       image_url,
       updated_at: new Date().toISOString()
     })
