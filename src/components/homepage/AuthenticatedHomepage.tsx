@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Target,
   Trophy,
@@ -13,6 +13,8 @@ import {
   ChevronRight,
   Map,
   ExternalLink,
+  FileText,
+  Download,
 } from "lucide-react";
 import { DailyChallenge, ActivityHistory } from "@/lib/types/homepage";
 import DesktopSidebar from "@/components/navbar/DesktopSidebar";
@@ -35,18 +37,30 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
   const nextChallenge = () => {
-    setCurrentChallengeIndex((prev) =>
-      prev === dailyChallenges.length - 1 ? 0 : prev + 1
-    );
+    if (dailyChallenges && dailyChallenges.length > 1) {
+      const newIndex = currentChallengeIndex === dailyChallenges.length - 1 ? 0 : currentChallengeIndex + 1;
+      setCurrentChallengeIndex(newIndex);
+    }
   };
 
   const prevChallenge = () => {
-    setCurrentChallengeIndex((prev) =>
-      prev === 0 ? dailyChallenges.length - 1 : prev - 1
-    );
+    if (dailyChallenges && dailyChallenges.length > 1) {
+      const newIndex = currentChallengeIndex === 0 ? dailyChallenges.length - 1 : currentChallengeIndex - 1;
+      setCurrentChallengeIndex(newIndex);
+    }
   };
 
-  const currentChallenge = dailyChallenges[currentChallengeIndex];
+  // Reset index if it's out of bounds
+  React.useEffect(() => {
+    if (dailyChallenges && currentChallengeIndex >= dailyChallenges.length) {
+      setCurrentChallengeIndex(0);
+    }
+  }, [dailyChallenges, currentChallengeIndex]);
+
+  // Ensure we have valid challenges and index
+  const validChallenges = dailyChallenges || [];
+  const safeIndex = Math.max(0, Math.min(currentChallengeIndex, validChallenges.length - 1));
+  const currentChallenge = validChallenges[safeIndex];
   return (
     <div className="min-h-screen bg-mintPastel">
       {/* Navigation Components */}
@@ -54,7 +68,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
       <MobileBottomNav />
 
       {/* Main Content - This will work with the existing layout */}
-      <main className="container mx-auto px-6 pb-24 pt-0 lg:ml-40 lg:pb-8 lg:pt-20">
+      <main className="container mx-auto px-6 pb-24 pt-0 lg:ml-36 lg:pl-15 lg:pb-8 lg:pt-20">
         {/* Welcome Section */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-10 md:mb-8">
@@ -73,7 +87,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
         <div className="flex flex-col lg:flex-row lg:gap-8 lg:items-start">
           {/* Today's Challenge Carousel */}
           <div className="lg:flex-1 mb-12 lg:mb-0">
-            <div className="relative bg-gradient-to-br from-tealLight via-greenDark to-oliveDark rounded-3xl py-6 text-white overflow-hidden shadow-xl">
+            <div className="relative bg-gradient-to-br from-tealLight via-greenDark to-oliveDark rounded-3xl py-6 px-2 md:px-6 text-white overflow-visible md:overflow-hidden shadow-xl">
               {dailyChallenges.length > 0 && currentChallenge ? (
                 <>
                   {/* Challenge Content */}
@@ -81,16 +95,37 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                     {/* Header with indicators */}
                     <div className="flex items-center justify-between mb-4 px-6">
                       <div>
-                        <h2 className="text-xl font-bold mb-1">Tantangan Hari Ini</h2>
+                        <h2 className="text-xl font-bold mb-1">
+                          {currentChallenge.id === 0 ? 'Tantangan Acak' : 'Tantangan Hari Ini'}
+                          {dailyChallenges.length > 1 && (
+                            <span className="text-sm font-normal ml-2 opacity-80">
+                              ({safeIndex + 1}/{dailyChallenges.length})
+                            </span>
+                          )}
+                        </h2>
+                        <p className="text-white/80 text-sm">
+                          {(() => {
+                            const now = new Date();
+                            const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+                            return indonesianTime.toLocaleDateString('id-ID', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            });
+                          })()}
+                        </p>
                       </div>
                       {dailyChallenges.length > 1 && (
                         <div className="flex items-center space-x-2">
                           {dailyChallenges.map((_, index) => (
                             <button
                               key={index}
-                              onClick={() => setCurrentChallengeIndex(index)}
+                              onClick={() => {
+                                setCurrentChallengeIndex(index);
+                              }}
                               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                                index === currentChallengeIndex
+                                index === safeIndex
                                   ? 'bg-white scale-110'
                                   : 'bg-white/40 hover:bg-white/60'
                               }`}
@@ -101,7 +136,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                     </div>
 
                     {/* Challenge Card and Arrows Container */}
-                    <div className="flex items-center justify-center gap-2 px-2">
+                    <div className="flex items-center justify-center gap-1 md:gap-2 px-1 md:px-2">
                       {/* Left Arrow */}
                       {dailyChallenges.length > 1 && (
                         <button
@@ -114,7 +149,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
 
                       {/* Challenge Card */}
                       <div
-                        className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-h-[140px] flex items-start justify-center mx-auto max-w-2xl flex-1 h-60 cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-[1.02] hover:border-white/30"
+                        className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-h-[200px] md:min-h-[140px] flex items-start justify-center mx-auto max-w-2xl flex-1 h-auto cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-[1.02] hover:border-white/30"
                         onClick={() => window.location.href = `/aksi?challenge=${currentChallenge.id}&mode=challenge`}
                       >
                         <div className="flex items-start justify-between flex-wrap gap-4 w-full">
@@ -131,6 +166,25 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
 
                             {/* Description */}
                             <p className="text-white/90 mb-3 leading-relaxed text-sm">{currentChallenge.description}</p>
+
+                            {/* Instructions */}
+                            {currentChallenge.instructions && (
+                              <div className="mb-3 p-3 bg-white/10 rounded-lg border border-white/20">
+                                <h4 className="text-sm font-semibold text-white mb-2">📋 Instruksi:</h4>
+                                {Array.isArray(currentChallenge.instructions) ? (
+                                  <ul className="space-y-1">
+                                    {currentChallenge.instructions.map((instruction, index) => (
+                                      <li key={index} className="text-white/90 text-xs leading-relaxed flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>{instruction}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="text-white/90 text-xs leading-relaxed">{currentChallenge.instructions}</p>
+                                )}
+                              </div>
+                            )}
 
                             {/* Challenge Stats */}
                             <div className="flex items-center gap-2 flex-wrap">
@@ -274,34 +328,88 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
           </div>
         </div>
 
-        {/* Heatmap Section */}
+        {/* Heatmap and PDF Report Section */}
         <div className="mt-12 lg:mt-16">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-greenDark mb-2">
-                  Persebaran Aktivitas Lingkungan
-                </h2>
-                <p className="text-gray-600 text-sm md:text-base">
-                  Lihat aktivitas lingkungan di seluruh Indonesia
-                </p>
+          <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            {/* Heatmap Section - 70% width on desktop */}
+            <div className="lg:col-span-7">
+              <div className="bg-whiteMint rounded-2xl shadow-lg p-6 h-full">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-bold text-greenDark mb-2">
+                      Persebaran Aktivitas Lingkungan
+                    </h2>
+                    <p className="text-gray-600 text-sm md:text-base">
+                      Lihat aktivitas lingkungan di seluruh Indonesia
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-0">
+                  <HomepageHeatmap />
+                </div>
+
+                {/* Bottom button for map detail */}
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => window.location.href = '/persebaran'}
+                    className="inline-flex items-center gap-2 bg-greenDark hover:bg-tealLight text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-base shadow-md hover:shadow-lg"
+                  >
+                    <Map className="w-5 h-5" />
+                    Lihat Detail Lengkap
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-0">
-              <HomepageHeatmap />
-            </div>
+            {/* PDF Report Download Section - 30% width on desktop */}
+            <div className="lg:col-span-3">
+              <div className="bg-whiteMint rounded-2xl shadow-lg p-6 h-full flex flex-col justify-center">
+                <div className="text-center mb-6">
+                  <FileText className="w-12 h-12 lg:w-16 lg:h-16 text-tealLight mx-auto mb-4" />
+                  <h2 className="text-lg lg:text-xl font-bold text-greenDark mb-4">
+                    Laporan Dampak Lingkungan
+                  </h2>
+                  <p className="text-gray-600 mb-4 text-sm lg:text-base">
+                    Unduh laporan lengkap tentang dampak aksi lingkungan di
+                    Indonesia. Dapatkan insight mendalam tentang kontribusi setiap
+                    provinsi dan pencapaian komunitas.
+                  </p>
+                </div>
 
-            {/* Bottom button for map detail */}
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => window.location.href = '/persebaran'}
-                className="inline-flex items-center gap-2 bg-greenDark hover:bg-tealLight text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-base shadow-md hover:shadow-lg"
-              >
-                <Map className="w-5 h-5" />
-                Lihat Detail Lengkap
-                <ExternalLink className="w-4 h-4" />
-              </button>
+                <div className="flex justify-center mb-6">
+                  <a
+                    href="/unduh-dampak"
+                    className="w-full bg-tealLight text-white py-2 px-4 rounded-lg font-semibold hover:bg-greenDark transition-colors flex items-center justify-center gap-2 text-center text-sm lg:text-base"
+                  >
+                    <Download className="w-4 h-4" />
+                    Unduh PDF
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 mb-4">
+                    Laporan ini berisi data real-time dari aktivitas pengguna dan
+                    dampak lingkungan yang terukur
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Target className="w-3 h-3" />
+                      Data Statistik
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Trophy className="w-3 h-3" />
+                      Trend Analisis
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Award className="w-3 h-3" />
+                      Pencapaian Komunitas
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

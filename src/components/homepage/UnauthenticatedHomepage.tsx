@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   SignInButton,
   SignUpButton,
@@ -28,7 +29,7 @@ import { HeatmapWidget, useProvinceData } from "@/components/heatmap";
 
 interface UserLeaderboard {
   id: string;
-  name: string | null;
+  username: string | null;
   full_name: string | null;
   province: string | null;
   points: number;
@@ -103,38 +104,38 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
       {/* Hero Section */}
       <main className="container mx-auto px-6 py-8">
         <div className="text-center mb-20 md:mb-24">
-          <h1 className="text-3xl md:text-6xl font-bold text-greenDark mb-6">
+          <h1 className="text-2xl md:text-6xl font-bold text-greenDark mb-4 md:mb-6">
             Aksi Hijau Hari Ini,
             <span className="text-tealLight block">Nafas Segar Esok Hari</span>
           </h1>
-          <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
+          <p className="text-xs md:text-lg text-gray-700 mb-6 md:mb-8 max-w-2xl mx-auto">
             Bergabunglah dengan ribuan pejuang lingkungan di Indonesia. Lakukan
             aksi nyata, kumpulkan poin, dan jadilah bagian dari perubahan
             positif untuk planet ini.
           </p>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-8 md:mb-12">
-            <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
-              <Users className="w-12 h-12 text-tealLight mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 max-w-4xl mx-auto mb-8 md:mb-12">
+            <div className="bg-whiteMint rounded-2xl p-4 md:p-6 shadow-lg">
+              <Users className="w-8 h-8 md:w-12 md:h-12 text-tealLight mx-auto mb-2 md:mb-4" />
+              <h3 className="text-xl md:text-3xl font-bold text-greenDark">
                 {loading ? "..." : formatNumber(stats.totalUsers)}
               </h3>
-              <p className="text-gray-600">Pejuang Lingkungan</p>
+              <p className="text-sm md:text-base text-gray-600">Pejuang Lingkungan</p>
             </div>
-            <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
-              <Target className="w-12 h-12 text-yellowGold mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">
+            <div className="bg-whiteMint rounded-2xl p-4 md:p-6 shadow-lg">
+              <Target className="w-8 h-8 md:w-12 md:h-12 text-yellowGold mx-auto mb-2 md:mb-4" />
+              <h3 className="text-xl md:text-3xl font-bold text-greenDark">
                 {loading ? "..." : formatNumber(stats.totalActivities)}
               </h3>
-              <p className="text-gray-600">Aksi Lingkungan</p>
+              <p className="text-sm md:text-base text-gray-600">Aksi Lingkungan</p>
             </div>
-            <div className="bg-whiteMint rounded-2xl p-6 shadow-lg">
-              <Heart className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-greenDark">
+            <div className="bg-whiteMint rounded-2xl p-4 md:p-6 shadow-lg col-span-2 md:col-span-1">
+              <Heart className="w-8 h-8 md:w-12 md:h-12 text-red-500 mx-auto mb-2 md:mb-4" />
+              <h3 className="text-xl md:text-3xl font-bold text-greenDark">
                 {loading ? "..." : stats.activeProvinces}
               </h3>
-              <p className="text-gray-600">Provinsi Aktif</p>
+              <p className="text-sm md:text-base text-gray-600">Provinsi Aktif</p>
             </div>
           </div>
 
@@ -247,10 +248,10 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
 
                             <div className="flex-1">
                               <h4 className="font-bold text-greenDark">
-                                {user.full_name || user.name || "Unknown User"}
+                                {user.username || "Unknown User"}
                               </h4>
                               <p className="text-sm text-gray-600">
-                                {user.province || "Unknown Province"}
+                                {user.full_name || "Unknown Name"} • {user.province || "Unknown Province"}
                               </p>
                             </div>
                           </div>
@@ -373,34 +374,15 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-whiteGreen rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Target className="w-6 h-6 text-tealLight" />
-                  <h3 className="font-bold text-greenDark">Laporan Bulanan</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Ringkasan aktivitas dan pencapaian bulan ini
-                </p>
-                <button className="w-full bg-tealLight text-white py-2 px-4 rounded-lg font-semibold hover:bg-greenDark transition-colors flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Unduh PDF (2.3 MB)
-                </button>
-              </div>
-
-              <div className="bg-whiteGreen rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Trophy className="w-6 h-6 text-yellowGold" />
-                  <h3 className="font-bold text-greenDark">Laporan Tahunan</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Analisis komprehensif dampak lingkungan sepanjang tahun
-                </p>
-                <button className="w-full bg-yellowGold text-greenDark py-2 px-4 rounded-lg font-semibold hover:bg-oliveSoft transition-colors flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" />
-                  Unduh PDF (8.7 MB)
-                </button>
-              </div>
+            <div className="flex justify-center">
+              <Link
+                href="/sign-in"
+                className="w-full md:w-auto bg-tealLight text-white py-2 px-4 rounded-lg font-semibold hover:bg-greenDark transition-colors flex items-center justify-center gap-2 mb-6 text-center"
+              >
+                <Download className="w-4 h-4" />
+                Masuk untuk Unduh PDF
+                <ExternalLink className="w-4 h-4" />
+              </Link>
             </div>
 
             <div className="text-center">
@@ -409,9 +391,18 @@ const UnauthenticatedHomepage: React.FC<UnauthenticatedHomepageProps> = ({
                 dampak lingkungan yang terukur
               </p>
               <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-400">
-                <span>📊 Data Statistik</span>
-                <span>📈 Trend Analisis</span>
-                <span>🏆 Pencapaian Komunitas</span>
+                <span className="flex items-center gap-1">
+                  <Target className="w-3 h-3" />
+                  Data Statistik
+                </span>
+                <span className="flex items-center gap-1">
+                  <Trophy className="w-3 h-3" />
+                  Trend Analisis
+                </span>
+                <span className="flex items-center gap-1">
+                  <Award className="w-3 h-3" />
+                  Pencapaian Komunitas
+                </span>
               </div>
             </div>
           </div>

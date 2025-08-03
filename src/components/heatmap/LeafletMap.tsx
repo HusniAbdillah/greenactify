@@ -262,7 +262,23 @@ const LeafletMap = memo(({
         mapInstanceRef.current = null
       }
     }
-  }, [isClient, provinceData, dataField, colorScheme, minValue, maxValue])
+  }, [
+    isClient,
+    provinceData,
+    dataField,
+    colorScheme,
+    minValue,
+    maxValue,
+    center,
+    zoom,
+    minZoom,
+    maxZoom,
+    showZoom,
+    showAttribution,
+    showScale,
+    selectedProvince,
+    onProvinceClick
+  ])
 
   // Separate effect to update styles when selectedProvince changes
   useEffect(() => {

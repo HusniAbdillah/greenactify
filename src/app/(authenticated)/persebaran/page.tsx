@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { MapPin, Users, TrendingUp, Filter, Calendar, Download, Eye, Activity, BarChart3, ExternalLink } from 'lucide-react'
 import { HeatmapWidget, useProvinceData, ProvinceData } from '@/components/heatmap'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 
 export type ActivityItem = {
   id: string
@@ -34,7 +35,8 @@ export type ProvinceStats = {
 
 const UnifiedActivitiesPage = () => {
   const router = useRouter()
-  
+  const { isLoaded, isSignedIn } = useUser()
+
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null)
@@ -72,6 +74,13 @@ const UnifiedActivitiesPage = () => {
     loading: true
   })
 
+  // Check authentication
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/')
+    }
+  }, [isLoaded, isSignedIn, router])
+
   useEffect(() => {
     setIsClient(true)
     setLastUpdate(new Date().toLocaleString('id-ID'))
@@ -87,7 +96,7 @@ const UnifiedActivitiesPage = () => {
         loadLeafletAndCreateMap()
       }
     }
-    
+
     return () => {
       if (mapRef.current && viewMode !== 'activities') {
         try {
@@ -99,6 +108,7 @@ const UnifiedActivitiesPage = () => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode, loadingActivities, mapType, activities])
 
   const fetchActivities = async () => {
@@ -262,7 +272,7 @@ const UnifiedActivitiesPage = () => {
 
     try {
       setMapReady(false)
-      
+
       const map = L.map('activity-map').setView([-2.5, 118], 5)
       mapRef.current = map
 
@@ -417,14 +427,14 @@ const UnifiedActivitiesPage = () => {
 
     img.onload = () => {
       const pageWidth = doc.internal.pageSize.getWidth()
-      
+
       const logoWidth = 60
       const logoX = (pageWidth - logoWidth) / 2
       doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
 
 
       doc.setFontSize(16)
-      doc.setTextColor(5, 46, 22) 
+      doc.setTextColor(5, 46, 22)
       doc.setFont('helvetica', 'bold')
       doc.text('Laporan Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
         align: 'center'
@@ -460,12 +470,12 @@ const UnifiedActivitiesPage = () => {
           cellPadding: 3
         },
         headStyles: {
-          fillColor: [34, 197, 94], 
+          fillColor: [34, 197, 94],
           textColor: [255, 255, 255],
           fontStyle: 'bold'
         },
         alternateRowStyles: {
-          fillColor: [240, 253, 244] 
+          fillColor: [240, 253, 244]
         },
         tableLineColor: [200, 250, 200],
         tableLineWidth: 0.2
@@ -477,7 +487,7 @@ const UnifiedActivitiesPage = () => {
     img.onerror = () => {
 
       const pageWidth = doc.internal.pageSize.getWidth()
-      
+
       doc.setFontSize(16)
       doc.setTextColor(34, 197, 94)
       doc.setFont('helvetica', 'bold')
@@ -515,12 +525,12 @@ const UnifiedActivitiesPage = () => {
           cellPadding: 3
         },
         headStyles: {
-          fillColor: [34, 197, 94], 
+          fillColor: [34, 197, 94],
           textColor: [255, 255, 255],
           fontStyle: 'bold'
         },
         alternateRowStyles: {
-          fillColor: [240, 253, 244] 
+          fillColor: [240, 253, 244]
         },
         tableLineColor: [200, 250, 200],
         tableLineWidth: 0.2
@@ -541,7 +551,7 @@ const UnifiedActivitiesPage = () => {
   ).length
 
   return (
-    <div className="min-h-screen bg-mintPastel font-poppins">
+    <div className="min-h-screen bg-mintPastel font-poppins pt-5">
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -552,13 +562,13 @@ const UnifiedActivitiesPage = () => {
       <div className="bg-tealLight from-green-500 to-blue-500 text-white rounded-lg p-4 sm:p-6 mx-6 mb-6">
         <h1 className="text-3xl font-bold mb-2">Peta Persebaran Aktivitas Hijau Indonesia</h1>
         <p>Visualisasi komprehensif aktivitas hijau di seluruh Indonesia dengan data real-time</p>
-        
+
         <div className="mt-4 flex space-x-2">
           <button
             onClick={() => setViewMode('province')}
             className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              viewMode === 'province' 
-                ? 'bg-white text-tealLight shadow-md' 
+              viewMode === 'province'
+                ? 'bg-white text-tealLight shadow-md'
                 : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
@@ -568,8 +578,8 @@ const UnifiedActivitiesPage = () => {
           <button
             onClick={() => setViewMode('activities')}
             className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              viewMode === 'activities' 
-                ? 'bg-white text-tealLight shadow-md' 
+              viewMode === 'activities'
+                ? 'bg-white text-tealLight shadow-md'
                 : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
