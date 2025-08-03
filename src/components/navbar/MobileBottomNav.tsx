@@ -22,8 +22,8 @@ const MobileBottomNav = () => {
 
   return (
     <>
-      <div className="lg:hidden fixed inset-x-0 bottom-0 bg-mintPastel border-t-2 border-oliveDark shadow-lg z-50 rounded-t-[20px] py-2">
-        <div className="grid grid-cols-5">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 max-w-full bg-mintPastel border-t-2 border-oliveDark shadow-lg z-50 rounded-t-[20px] py-2 mx-auto">
+        <div className="grid grid-cols-5 max-w-screen-sm mx-auto px-2">
           {navItems.map((item) => {
             const Icon = item.icon
             const active = isActive(item.href)
@@ -32,18 +32,18 @@ const MobileBottomNav = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative flex flex-col items-center justify-center py-1 px-1 mx-1 text-xs transition-all ${
+                className={`relative flex flex-col items-center justify-center py-1 px-2 mx-1 text-xs transition-all ${
                   active
                     ? 'bg-tealLight text-black rounded-[20px]'
                     : 'text-black rounded-[20px] hover:bg-yellowAmber'
                 }`}
-                style={{ minWidth: 0 }}
+                style={{ minWidth: 0, maxWidth: '100%' }}
               >
                 {active && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-tealLight rounded-b-lg"></div>
                 )}
-                <Icon className="h-8 w-8 mb-1 text-black" />
-                <span className="font-medium text-black truncate">
+                <Icon className="h-6 w-6 mb-1 text-black" />
+                <span className="font-medium text-black truncate text-[10px] leading-tight">
                   {item.label}
                 </span>
               </Link>
