@@ -62,13 +62,15 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
   const safeIndex = Math.max(0, Math.min(currentChallengeIndex, validChallenges.length - 1));
   const currentChallenge = validChallenges[safeIndex];
   return (
-    <div className="min-h-screen bg-mintPastel overflow-x-hidden">
+    <div className="min-h-screen bg-mintPastel">
       {/* Navigation Components */}
       <DesktopSidebar />
       <MobileBottomNav />
 
-      {/* Main Content - This will work with the existing layout */}
-      <main className="container mx-auto px-4 pb-24 pt-0 lg:ml-36 lg:pl-15 lg:pb-8 lg:pt-20 max-w-full overflow-x-hidden">
+      {/* Main Content - Use same approach as authenticated layout */}
+      <div className="lg:ml-35">
+        <main className="w-full p-4 md:p-8 pb-24 lg:pb-8 lg:pt-20 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto">
         {/* Welcome Section */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-10 md:mb-8">
@@ -413,7 +415,9 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
             </div>
           </div>
         </div>
+        </div>
       </main>
+      </div>
     </div>
   );
 };
