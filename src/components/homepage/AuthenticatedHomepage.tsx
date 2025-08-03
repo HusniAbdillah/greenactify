@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Target,
   Trophy,
@@ -36,19 +36,43 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
 }) => {
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
 
+  // Enhanced debug logging
+  console.log('=== CHALLENGE DEBUG INFO ===');
+  console.log('Daily challenges received:', dailyChallenges?.length || 0);
+  console.log('Current challenge index:', currentChallengeIndex);
+  console.log('All challenges data:', dailyChallenges);
+  console.log('============================');
+
   const nextChallenge = () => {
-    setCurrentChallengeIndex((prev) =>
-      prev === dailyChallenges.length - 1 ? 0 : prev + 1
-    );
+    if (dailyChallenges && dailyChallenges.length > 1) {
+      const newIndex = currentChallengeIndex === dailyChallenges.length - 1 ? 0 : currentChallengeIndex + 1;
+      console.log('Next challenge: moving from', currentChallengeIndex, 'to', newIndex);
+      setCurrentChallengeIndex(newIndex);
+    }
   };
 
   const prevChallenge = () => {
-    setCurrentChallengeIndex((prev) =>
-      prev === 0 ? dailyChallenges.length - 1 : prev - 1
-    );
+    if (dailyChallenges && dailyChallenges.length > 1) {
+      const newIndex = currentChallengeIndex === 0 ? dailyChallenges.length - 1 : currentChallengeIndex - 1;
+      console.log('Previous challenge: moving from', currentChallengeIndex, 'to', newIndex);
+      setCurrentChallengeIndex(newIndex);
+    }
   };
 
-  const currentChallenge = dailyChallenges[currentChallengeIndex];
+  // Reset index if it's out of bounds
+  React.useEffect(() => {
+    if (dailyChallenges && currentChallengeIndex >= dailyChallenges.length) {
+      console.log('Resetting challenge index from', currentChallengeIndex, 'to 0');
+      setCurrentChallengeIndex(0);
+    }
+  }, [dailyChallenges, currentChallengeIndex]);
+
+  // Ensure we have valid challenges and index
+  const validChallenges = dailyChallenges || [];
+  const safeIndex = Math.max(0, Math.min(currentChallengeIndex, validChallenges.length - 1));
+  const currentChallenge = validChallenges[safeIndex];
+
+  console.log('Using safe index:', safeIndex, 'for challenge:', currentChallenge?.title);
   return (
     <div className="min-h-screen bg-mintPastel">
       {/* Navigation Components */}
@@ -83,16 +107,38 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                     {/* Header with indicators */}
                     <div className="flex items-center justify-between mb-4 px-6">
                       <div>
-                        <h2 className="text-xl font-bold mb-1">Tantangan Hari Ini</h2>
+                        <h2 className="text-xl font-bold mb-1">
+                          {currentChallenge.id === 0 ? 'Tantangan Acak' : 'Tantangan Hari Ini'}
+                          {dailyChallenges.length > 1 && (
+                            <span className="text-sm font-normal ml-2 opacity-80">
+                              ({safeIndex + 1}/{dailyChallenges.length})
+                            </span>
+                          )}
+                        </h2>
+                        <p className="text-white/80 text-sm">
+                          {(() => {
+                            const now = new Date();
+                            const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+                            return indonesianTime.toLocaleDateString('id-ID', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            });
+                          })()}
+                        </p>
                       </div>
                       {dailyChallenges.length > 1 && (
                         <div className="flex items-center space-x-2">
                           {dailyChallenges.map((_, index) => (
                             <button
                               key={index}
-                              onClick={() => setCurrentChallengeIndex(index)}
+                              onClick={() => {
+                                console.log('Clicking dot', index);
+                                setCurrentChallengeIndex(index);
+                              }}
                               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                                index === currentChallengeIndex
+                                index === safeIndex
                                   ? 'bg-white scale-110'
                                   : 'bg-white/40 hover:bg-white/60'
                               }`}
@@ -138,7 +184,18 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                             {currentChallenge.instructions && (
                               <div className="mb-3 p-3 bg-white/10 rounded-lg border border-white/20">
                                 <h4 className="text-sm font-semibold text-white mb-2">📋 Instruksi:</h4>
-                                <p className="text-white/90 text-xs leading-relaxed">{currentChallenge.instructions}</p>
+                                {Array.isArray(currentChallenge.instructions) ? (
+                                  <ul className="space-y-1">
+                                    {currentChallenge.instructions.map((instruction, index) => (
+                                      <li key={index} className="text-white/90 text-xs leading-relaxed flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>{instruction}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="text-white/90 text-xs leading-relaxed">{currentChallenge.instructions}</p>
+                                )}
                               </div>
                             )}
 
