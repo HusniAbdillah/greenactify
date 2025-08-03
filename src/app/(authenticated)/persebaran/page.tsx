@@ -716,7 +716,6 @@ const UnifiedActivitiesPage = () => {
         )}
         {viewMode === 'activities' && (
           <div className="space-y-6">
-            {/* Map Section with Top 5 Activities on the right - like province view */}
             <div className={`grid gap-6 ${isMapFullscreen ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-5'}`}>
               <div className={`${isMapFullscreen ? 'col-span-1' : 'col-span-1 lg:col-span-4'}`}>
                 <div className="bg-whiteMint rounded-xl shadow-lg overflow-hidden">
