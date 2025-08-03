@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Home, Trophy, HandHeart, Bot, UserRound } from 'lucide-react'
 
 const MobileBottomNav = () => {
-  const pathname = usePathname()
+  const pathname = usePathname() || '' // Fallback to an empty string if pathname is null
 
   const navItems = [
     { href: '/', icon: Home, label: 'Beranda' },

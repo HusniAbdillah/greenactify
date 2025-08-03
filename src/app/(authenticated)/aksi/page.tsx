@@ -26,7 +26,8 @@ type FlowStep =
 const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
   UPLOADING: {
     title: "Unggah Aksi Hijaumu",
-    subtitle: "Yuk, unggah foto aksi hijaumu biar makin banyak yang terinspirasi!",
+    subtitle:
+      "Yuk, unggah foto aksi hijaumu biar makin banyak yang terinspirasi!",
   },
   SELECTING_ACTIVITY: {
     title: "Pilih Jenis Aksimu",
@@ -42,20 +43,24 @@ const stepTitles: Record<FlowStep, { title: string; subtitle: string }> = {
   },
 };
 
-
 export default function AksiPage() {
   const searchParams = useSearchParams();
-  const challengeId = searchParams?.get('challenge');
-  const mode = searchParams?.get('mode');
-  const isChallenge = mode === 'challenge' && challengeId;
+  const challengeId = searchParams?.get("challenge");
+  const mode = searchParams?.get("mode");
+  const isChallenge = mode === "challenge" && challengeId;
 
   const [currentStep, setCurrentStep] = useState<FlowStep>("UPLOADING");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [selectedActivity, setSelectedActivity] = useState<ActivityCategory | null>(null);
+  const [selectedActivity, setSelectedActivity] =
+    useState<ActivityCategory | null>(null);
   const [confirmedLocation, setConfirmedLocation] = useState<string>("");
-  const [confirmedLatitude, setConfirmedLatitude] = useState<number | null>(null);
-  const [confirmedLongitude, setConfirmedLongitude] = useState<number | null>(null);
+  const [confirmedLatitude, setConfirmedLatitude] = useState<number | null>(
+    null
+  );
+  const [confirmedLongitude, setConfirmedLongitude] = useState<number | null>(
+    null
+  );
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
   const [isActivityInserted, setIsActivityInserted] = useState(false);
   const [totalActivities, setTotalActivities] = useState<number>(0);
@@ -86,15 +91,15 @@ export default function AksiPage() {
   }, [user]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('lastActivityUpload');
+    const saved = localStorage.getItem("lastActivityUpload");
     if (saved) {
       const timestamp = parseInt(saved);
       setLastUploadTime(timestamp);
-      
+
       const now = Date.now();
       const timeDiff = now - timestamp;
       const cooldownMs = 45 * 1000;
-      
+
       if (timeDiff < cooldownMs) {
         setCooldownRemaining(Math.ceil((cooldownMs - timeDiff) / 1000));
       }
@@ -104,7 +109,7 @@ export default function AksiPage() {
   useEffect(() => {
     if (cooldownRemaining > 0) {
       const timer = setInterval(() => {
-        setCooldownRemaining(prev => {
+        setCooldownRemaining((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
             return 0;
@@ -112,7 +117,7 @@ export default function AksiPage() {
           return prev - 1;
         });
       }, 1000);
-      
+
       return () => clearInterval(timer);
     }
   }, [cooldownRemaining]);
@@ -121,11 +126,13 @@ export default function AksiPage() {
   useEffect(() => {
     if (isChallenge && challengeId) {
       fetch(`/api/daily-challenge/${challengeId}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.success) {
             setChallengeData(data.data);
-            setChallengeMultiplier(data.data.double_points || data.data.points || 1);
+            setChallengeMultiplier(
+              data.data.double_points || data.data.points || 1
+            );
           }
         })
         .catch(console.error);
@@ -145,24 +152,30 @@ export default function AksiPage() {
     }
   };
 
+  // 🆕 Perbaikan handleActivitySelect - JANGAN kalikan disini
   const handleActivitySelect = (activity: ActivityCategory) => {
-    // Calculate points with multiplier if it's a challenge
-    const finalPoints = isChallenge ? activity.base_points * challengeMultiplier : activity.base_points;
-    
-    setSelectedActivity({
-      ...activity,
-      base_points: finalPoints
-    });
+    setSelectedActivity(activity); // Keep original base_points
     setCurrentStep("CONFIRMING_LOCATION");
   };
+  
+  // 🆕 Helper function untuk calculate final points sekali saja
+  const getFinalPoints = () => {
+    if (!selectedActivity) return 0;
+    return Math.round(selectedActivity.base_points * challengeMultiplier);
+  };
 
-  const handleLocationConfirm = (location: string, latitude?: number, longitude?: number) => {
+  const handleLocationConfirm = (
+    location: string,
+    latitude?: number,
+    longitude?: number
+  ) => {
     setConfirmedLocation(location);
     setConfirmedLatitude(latitude ?? null);
     setConfirmedLongitude(longitude ?? null);
     setCurrentStep("SHOWING_RESULT");
   };
 
+  // 🆕 Perbaikan handleFinish dengan getFinalPoints()
   const handleFinish = async () => {
     try {
       const missingFields: string[] = [];
@@ -173,7 +186,9 @@ export default function AksiPage() {
       if (!generatedImageUrl) missingFields.push("Gambar hasil generate");
 
       if (missingFields.length > 0) {
-        alert(`Data belum lengkap!\n\nMohon lengkapi: ${missingFields.join(", ")}`);
+        alert(
+          `Data belum lengkap!\n\nMohon lengkapi: ${missingFields.join(", ")}`
+        );
         return;
       }
 
@@ -190,12 +205,15 @@ export default function AksiPage() {
           .eq("id", profileId);
       }
 
+      // 🆕 Calculate final points once
+      const finalPoints = getFinalPoints();
+
       await createActivity({
         user_id: profileId!,
         category_id: selectedActivity!.id,
         title: selectedActivity!.name,
         description: selectedActivity!.description,
-        points: selectedActivity!.base_points, // Already includes multiplier
+        points: finalPoints, // 🆕 Use calculated final points
         latitude: confirmedLatitude ?? 0,
         longitude: confirmedLongitude ?? 0,
         province: confirmedLocation ?? "",
@@ -203,15 +221,15 @@ export default function AksiPage() {
         is_shared: false,
         image_url: uploadedImageUrl ?? "",
         generated_image_url: generatedImageUrl ?? "",
-        challenge_id: isChallenge ? challengeId : undefined, // Add challenge_id
+        challenge_id: isChallenge ? challengeId : undefined,
       });
 
-      await updateUserPoints(profileId!, selectedActivity!.base_points);
-      await updateProvinceStats(confirmedLocation, selectedActivity!.base_points);
+      await updateUserPoints(profileId!, finalPoints); // 🆕 Use final points
+      await updateProvinceStats(confirmedLocation, finalPoints); // 🆕 Use final points
 
       const now = Date.now();
       setLastUploadTime(now);
-      localStorage.setItem('lastActivityUpload', now.toString());
+      localStorage.setItem("lastActivityUpload", now.toString());
       setCooldownRemaining(45);
 
       setCurrentStep("UPLOADING");
@@ -236,6 +254,7 @@ export default function AksiPage() {
     setCurrentStep("SELECTING_ACTIVITY");
   };
 
+  // 🆕 Update useEffect untuk background insert dengan getFinalPoints()
   useEffect(() => {
     if (
       profileId &&
@@ -244,12 +263,14 @@ export default function AksiPage() {
       generatedImageUrl &&
       !isActivityInserted
     ) {
+      const finalPoints = getFinalPoints(); // 🆕 Use calculated final points
+      
       createActivity({
         user_id: profileId,
         category_id: selectedActivity.id,
         title: selectedActivity.name,
         description: selectedActivity.description,
-        points: selectedActivity.base_points,
+        points: finalPoints, // 🆕 Use final points
         latitude: confirmedLatitude ?? 0,
         longitude: confirmedLongitude ?? 0,
         province: confirmedLocation,
@@ -257,9 +278,16 @@ export default function AksiPage() {
         is_shared: false,
         image_url: uploadedImageUrl ?? "",
         generated_image_url: generatedImageUrl,
+        challenge_id: isChallenge ? challengeId : undefined,
       })
-        .then(() => { /* ... */ })
-        .catch((err) => { /* ... */ });
+        .then(() => {
+          setIsActivityInserted(true);
+          updateUserPoints(profileId, finalPoints); // 🆕 Use final points
+          updateProvinceStats(confirmedLocation, finalPoints); // 🆕 Use final points
+        })
+        .catch((err) => {
+          console.error("Error creating activity:", err);
+        });
     }
   }, [
     profileId,
@@ -270,6 +298,9 @@ export default function AksiPage() {
     confirmedLatitude,
     confirmedLongitude,
     uploadedImageUrl,
+    challengeMultiplier, // 🆕 Add to dependencies
+    isChallenge,
+    challengeId,
   ]);
 
   useEffect(() => {
@@ -293,7 +324,7 @@ export default function AksiPage() {
     if (isChallenge && challengeData) {
       return {
         UPLOADING: {
-          title: "🎯 " + challengeData.title,
+          title: challengeData.title,
           subtitle: challengeData.description,
         },
         SELECTING_ACTIVITY: {
@@ -319,12 +350,16 @@ export default function AksiPage() {
     <div className="w-full p-4 md:p-8">
       {currentStep !== "SHOWING_RESULT" && (
         <div className="bg-tealLight rounded-lg p-3 md:p-6 mb-4 md:mb-6 flex items-center">
-          
           <div className="w-1/5">
-            {(currentStep === "SELECTING_ACTIVITY" || currentStep === "CONFIRMING_LOCATION") && (
+            {(currentStep === "SELECTING_ACTIVITY" ||
+              currentStep === "CONFIRMING_LOCATION") && (
               <button
-                onClick={currentStep === "SELECTING_ACTIVITY" ? handleBackToUpload : handleBackToSelectActivity}
-                className="flex items-center gap-2 text-black font-semibold hover:bg-black/10 p-2 rounded-lg transition-colors -ml-2"
+                onClick={
+                  currentStep === "SELECTING_ACTIVITY"
+                    ? handleBackToUpload
+                    : handleBackToSelectActivity
+                }
+                className="flex items-center gap-2 text-white font-semibold hover:bg-white/10 p-2 rounded-lg transition-colors -ml-2"
               >
                 <ArrowLeft size={22} />
                 <span className="hidden md:inline">Kembali</span>
@@ -332,10 +367,10 @@ export default function AksiPage() {
             )}
           </div>
           <div className="w-3/5 text-center">
-            <h1 className="text-base md:text-2xl font-bold text-black">
+            <h1 className="text-base md:text-2xl font-bold text-white">
               {currentStepTitles[currentStep].title}
             </h1>
-            <p className="text-center text-black text-xs md:text-lg mt-1">
+            <p className="text-center text-white text-xs md:text-lg mt-1">
               {currentStepTitles[currentStep].subtitle}
             </p>
           </div>
@@ -344,8 +379,8 @@ export default function AksiPage() {
       )}
 
       {currentStep === "UPLOADING" && (
-        <UploadStep 
-          onFileSelect={handleFileSelect} 
+        <UploadStep
+          onFileSelect={handleFileSelect}
           cooldownRemaining={cooldownRemaining}
         />
       )}
@@ -354,7 +389,8 @@ export default function AksiPage() {
         <SelectActivityStep
           onActivitySelect={handleActivitySelect}
           onBack={handleBackToUpload}
-          challengeFilter={challengeData?.category_id} // Pass challenge filter
+          challengeFilter={challengeData?.category_id}
+          challengeMultiplier={challengeMultiplier}
         />
       )}
 
@@ -365,20 +401,22 @@ export default function AksiPage() {
         />
       )}
 
+      {/* 🆕 Update ResultStep call dengan getFinalPoints() */}
       {currentStep === "SHOWING_RESULT" && uploadedFile && selectedActivity && (
         <ResultStep
           imageData={{
             file: uploadedFile,
             activity: selectedActivity,
             location: confirmedLocation,
-            points: selectedActivity.base_points,
+            points: getFinalPoints(), // 🆕 Use calculated final points
             username: user?.username || user?.fullName || user?.firstName || "",
           }}
-          totalActivities={totalActivities} 
-          totalPoints={totalPoints}         
+          totalActivities={totalActivities}
+          totalPoints={totalPoints}
           onFinish={handleFinish}
           onGeneratedImageReady={setGeneratedImageUrl}
           challengeId={isChallenge ? challengeId : undefined}
+          challengeMultiplier={challengeMultiplier} // 🆕 Pass multiplier to ResultStep
         />
       )}
     </div>

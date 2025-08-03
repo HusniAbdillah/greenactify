@@ -21,7 +21,6 @@ body {
   font-family: var(--font-poppins);
 }
 
-/* Utilities for hiding scrollbars */
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -32,29 +31,23 @@ body {
   }
 }
 
-/* Mobile viewport fixes untuk chatbot */
 @layer utilities {
   .mobile-viewport-fix {
-    /* Fix untuk mobile viewport yang berubah saat keyboard muncul */
     height: 100vh;
-    height: 100svh; /* Safe viewport height untuk browser modern */
+    height: 100svh; 
   }
   
   .mobile-safe-bottom {
-    /* Safe area untuk bottom navigation */
     padding-bottom: env(safe-area-inset-bottom);
   }
   
   .keyboard-responsive {
-    /* Container yang responsive terhadap keyboard */
     height: 100vh;
-    height: 100dvh; /* Dynamic viewport height */
+    height: 100dvh;
   }
 }
 
-/* Perbaikan khusus untuk mobile keyboard */
 @media (max-width: 1024px) {
-  /* Prevent zoom saat focus input pada iOS */
   input[type="text"],
   input[type="email"],
   input[type="password"],
@@ -62,7 +55,6 @@ body {
     font-size: 16px !important;
   }
   
-  /* Fix untuk bottom navigation agar tidak terangkat */
   .fixed-bottom-nav {
     position: fixed !important;
     bottom: 0 !important;
@@ -70,19 +62,16 @@ body {
     will-change: transform;
   }
   
-  /* Chat container optimization */
   .chat-container {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
 }
 
-/* Smooth scrolling untuk chat */
 .smooth-scroll {
   scroll-behavior: smooth;
 }
 
-/* Loading animation untuk chat */
 @keyframes bounce {
   0%, 80%, 100% {
     transform: scale(0);
@@ -104,4 +93,19 @@ body {
 
 .animate-bounce-delay-3 {
   animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.chat-container {
+  padding-bottom: 180px;
+}
+
+.chat-container.no-prompts {
+  padding-bottom: 140px;
+}
+
+@media (min-width: 1024px) {
+  .chat-container,
+  .chat-container.no-prompts {
+    padding-bottom: 120px;
+  }
 }

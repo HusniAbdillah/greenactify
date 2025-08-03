@@ -1,5 +1,5 @@
 "use client";
-
+import React, { Dispatch, SetStateAction } from 'react';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { uploadGeneratedImage } from "@/lib/upload-generated-image";
 import Image from "next/image";
@@ -7,19 +7,26 @@ import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { Share2, Download, CheckCircle2, LoaderCircle } from "lucide-react";
 
+interface ActivityCategory {
+  id: string;
+  name: string;
+  base_points: number;
+}
+
 interface ResultStepProps {
   imageData: {
     file: File;
-    activity: { id: string; name: string; base_points: number };
+    activity: ActivityCategory;
     location: string;
     points: number;
-    username?: string;
+    username: string;
   };
   totalActivities: number;
   totalPoints: number;
-  onFinish: () => void;
-  onGeneratedImageReady?: (url: string) => void;
+  onFinish: () => Promise<void>; // or whatever the return type should be
+  onGeneratedImageReady: Dispatch<SetStateAction<string>>;
   challengeId?: string;
+  challengeMultiplier: number; // 🆕 Add this line
 }
 
 const wrapText = (
@@ -86,6 +93,8 @@ export default function ResultStep({
   const [fileId] = useState(() => uuidv4());
   const uploadRef = useRef(false);
   const router = useRouter();
+  const newTotalActivities = totalActivities;
+  const newTotalPoints = totalPoints;
 
   const now = new Date();
   const formattedDate = now.toLocaleDateString("id-ID", {
@@ -145,10 +154,10 @@ export default function ResultStep({
       ctx.fillStyle = "#0C3B2E"; // bg-yellowAmber
       ctx.font = "bold 62px 'Poppins', sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(`${totalActivities} Aktivitas`, padding, currentY);
+      ctx.fillText(`${newTotalActivities} Aktivitas`, padding, currentY);
       ctx.fillStyle = "#A56D00"; // bg-yellowAmber
       ctx.textAlign = "right";
-      ctx.fillText(`${totalPoints} Poin`, cardWidth - padding, currentY);
+      ctx.fillText(`${newTotalPoints} Poin`, cardWidth - padding, currentY);
 
       currentY += 50;
       const imageContainerX = padding;
@@ -282,8 +291,8 @@ export default function ResultStep({
     imageData.points,
     imageData.username,
     onGeneratedImageReady,
-    totalActivities,
-    totalPoints,
+    newTotalActivities,
+    newTotalPoints,
   ]);
 
   const handleDownload = () => {
@@ -322,7 +331,6 @@ Yuk ikutan juga 😎🌱`,
   };
 
   const handleFinish = () => {
-    onFinish();
     router.push("/");
   };
 

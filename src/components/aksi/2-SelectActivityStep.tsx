@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { getActivityCategoriesWithGroups, getActivityGroups } from '@/lib/get-activities';
 import { 
-  Search, Leaf, Recycle, TreeDeciduous, BookOpen, BrushCleaning, Bike, Droplet, Zap, Layers, ArrowLeft, Sparkles, X
+  Search, Leaf, Recycle, TreeDeciduous, BookOpen, BrushCleaning, Bike, Droplet, Zap, Layers, ArrowLeft, Sparkles, X, Target, Trophy, Zap as Lightning
 } from 'lucide-react';
 
 export type ActivityCategory = {
@@ -24,6 +24,7 @@ interface SelectActivityStepProps {
   onActivitySelect: (activity: ActivityCategory) => void;
   onBack: () => void;
   challengeFilter?: string; // Add challenge filter prop
+  challengeMultiplier?: number; // Add challenge multiplier
 }
 
 const IconRenderer = ({ iconName, className }: { iconName?: string; className?: string }) => {
@@ -37,6 +38,9 @@ const IconRenderer = ({ iconName, className }: { iconName?: string; className?: 
     zap: Zap,
     leaf: Leaf,
     Layers: Layers,
+    target: Target,
+    trophy: Trophy,
+    lightning: Lightning,
   }), []);
 
   const IconComponent = iconName ? iconMap[iconName.toLowerCase()] : Layers;
@@ -46,7 +50,8 @@ const IconRenderer = ({ iconName, className }: { iconName?: string; className?: 
 export default function SelectActivityStep({ 
   onActivitySelect, 
   onBack, 
-  challengeFilter 
+  challengeFilter,
+  challengeMultiplier 
 }: SelectActivityStepProps) {
   const [groups, setGroups] = useState<ActivityGroup[]>([]);
   const [categories, setCategories] = useState<ActivityCategory[]>([]);
@@ -158,10 +163,15 @@ export default function SelectActivityStep({
       {/* Show challenge info if in challenge mode */}
       {challengeFilter && (
         <div className="bg-yellowGold/10 border border-yellowGold/30 rounded-lg p-4 mb-4">
-          <h3 className="font-bold text-yellowAmber mb-2">🎯 Mode Challenge Aktif</h3>
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="w-5 h-5 text-yellowAmber" />
+            <h3 className="font-bold text-yellowAmber">Mode Challenge Aktif</h3>
+          </div>
           <p className="text-sm text-gray-700">
             Aktivitas telah difilter sesuai dengan challenge hari ini. 
-            Poin akan dikalikan sesuai dengan multiplier challenge!
+            {challengeMultiplier && challengeMultiplier > 1 && (
+              <span className="font-semibold"> Poin akan dikalikan {challengeMultiplier}x!</span>
+            )}
           </p>
         </div>
       )}
@@ -230,7 +240,7 @@ export default function SelectActivityStep({
                 <div className="px-4 py-2 rounded-full flex items-center gap-2 text-sm font-semibold border bg-yellowGold text-greenDark border-yellowGold">
                   <IconRenderer iconName={group?.icon} className="w-4 h-4" />
                   {group?.name || 'Challenge Group'}
-                  <span className="ml-1">🎯</span>
+                  <Target className="w-4 h-4 ml-1" />
                 </div>
               );
             })()}
@@ -266,20 +276,29 @@ export default function SelectActivityStep({
             `}
           >
             <div className="flex flex-col">
-              <span className="font-medium text-sm md:text-base mr-4">
-                {activity.name}
-                {challengeFilter && <span className="ml-2">🎯</span>}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-sm md:text-base">
+                  {activity.name}
+                </span>
+                {challengeFilter && <Target className="w-4 h-4" />}
+              </div>
               {activity.description && (
                 <span className="text-xs opacity-80 mt-1">{activity.description}</span>
               )}
             </div>
-            <span className={`font-bold text-sm md:text-base whitespace-nowrap ${
-              challengeFilter ? 'text-greenDark' : 'text-yellowGold'
-            }`}>
-              +{activity.base_points} Poin
-              {challengeFilter && <span className="ml-1 text-xs">(x2-3)</span>}
-            </span>
+            <div className="flex items-center gap-1">
+              <span className={`font-bold text-sm md:text-base whitespace-nowrap ${
+                challengeFilter ? 'text-greenDark' : 'text-yellowGold'
+              }`}>
+                +{activity.base_points} Poin
+              </span>
+              {challengeFilter && challengeMultiplier && challengeMultiplier > 1 && (
+                <div className="flex items-center gap-1 ml-2">
+                  <Lightning className="w-3 h-3" />
+                  <span className="text-xs">(x{challengeMultiplier})</span>
+                </div>
+              )}
+            </div>
           </button>
         ))}
         
