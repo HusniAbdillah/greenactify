@@ -10,6 +10,7 @@ import { Trash2, Pencil, Share2 } from 'lucide-react'
 export default function ActivityCard({ activity, onUpdated }: { activity: ActivityItem, onUpdated?: () => void }) {
   const [editing, setEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false) 
   const [customModal, setCustomModal] = useState<{ title: string, message: string } | null>(null)
   const [newTitle, setNewTitle] = useState(activity.title)
   const [newProvince, setNewLocation] = useState(activity.province || '')
@@ -20,8 +21,10 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
     setCustomModal({ title, message })
   }
 
-
   const handleDeleteConfirmed = async () => {
+    if (isDeleting) return 
+    
+    setIsDeleting(true)
     const success = await handleDeleteActivity(activity.id)
     setShowDeleteConfirm(false)
 
@@ -29,9 +32,9 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
       onUpdated?.()
     } else {
       showModal("Gagal Menghapus", "Terjadi kesalahan saat menghapus aktivitas.")
+      setIsDeleting(false) 
     }
   }
-
 
   const handleShareActivity = async () => {
     console.log("Sharing activity:", activity)
@@ -129,8 +132,20 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
             <h2 className="text-lg font-bold mb-4">Hapus Aktivitas?</h2>
             <p className="text-sm text-zinc-300">Apakah kamu yakin ingin menghapus aktivitas ini? Tindakan ini tidak bisa dibatalkan.</p>
             <div className="flex justify-end space-x-2 mt-6">
-              <button onClick={() => setShowDeleteConfirm(false)} className="px-4 py-2 text-sm rounded bg-zinc-700 hover:bg-zinc-600">Batal</button>
-              <button onClick={handleDeleteConfirmed} className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 font-semibold">Hapus</button>
+              <button 
+                onClick={() => setShowDeleteConfirm(false)} 
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={handleDeleteConfirmed} 
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? 'Menghapus...' : 'Hapus'}
+              </button>
             </div>
           </div>
         </div>
