@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { MapPin, Users, TrendingUp, Filter, Calendar, Download, Eye, Activity, BarChart3, ExternalLink } from 'lucide-react'
 import { HeatmapWidget, useProvinceData, ProvinceData } from '@/components/heatmap'
 import jsPDF from 'jspdf'
@@ -36,12 +36,13 @@ export type ProvinceStats = {
 const UnifiedActivitiesPage = () => {
   const router = useRouter()
   const { user } = useUser();
+  const { isLoaded, isSignedIn } = useUser()
+  
   useEffect(() => {
     if (user === null) {
       router.push('/');
     }
   }, [user, router]);
-
 
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
@@ -80,6 +81,13 @@ const UnifiedActivitiesPage = () => {
     loading: true
   })
 
+  // Check authentication
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/')
+    }
+  }, [isLoaded, isSignedIn, router])
+
   useEffect(() => {
     setIsClient(true)
     setLastUpdate(new Date().toLocaleString('id-ID'))
@@ -95,7 +103,7 @@ const UnifiedActivitiesPage = () => {
         loadLeafletAndCreateMap()
       }
     }
-    
+
     return () => {
       if (mapRef.current && viewMode !== 'activities') {
         try {
@@ -107,6 +115,7 @@ const UnifiedActivitiesPage = () => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode, loadingActivities, mapType, activities])
 
   const fetchActivities = async () => {
@@ -270,7 +279,7 @@ const UnifiedActivitiesPage = () => {
 
     try {
       setMapReady(false)
-      
+
       const map = L.map('activity-map').setView([-2.5, 118], 5)
       mapRef.current = map
 
@@ -425,12 +434,10 @@ const UnifiedActivitiesPage = () => {
 
     img.onload = () => {
       const pageWidth = doc.internal.pageSize.getWidth()
-      
 
       const logoWidth = 60
       const logoX = (pageWidth - logoWidth) / 2
       doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
-
 
       doc.setFontSize(16)
       doc.setTextColor(34, 78, 64)
@@ -476,9 +483,67 @@ const UnifiedActivitiesPage = () => {
         },
         bodyStyles: {
           textColor: [0,0,0] 
+          fillColor: [34, 197, 94],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
         },
         alternateRowStyles: {
-          fillColor: [240, 253, 244] 
+          fillColor: [240, 253, 244]
+        },
+        tableLineColor: [200, 250, 200],
+        tableLineWidth: 0.2
+      })
+
+      doc.save('Laporan Dampak GreenActivy.pdf')
+    }
+
+    img.onerror = () => {
+
+      const pageWidth = doc.internal.pageSize.getWidth()
+
+      doc.setFontSize(16)
+      doc.setTextColor(34, 197, 94)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
+        align: 'center'
+      })
+
+      const tableData = provinces.map(prov => {
+        const extra = getProvinceExtraStats(prov.province)
+        return [
+          prov.province,
+          prov.total_users,
+          prov.total_activities,
+          prov.total_points,
+          prov.avg_points_per_user,
+          extra.highPointPercentage,
+          extra.mostFrequentActivity,
+          extra.avgPointsPerActivity,
+          extra.latestActivity
+        ]
+      })
+
+      autoTable(doc, {
+        startY: 30,
+        head: [[
+          "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+          "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+          "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+        ]],
+        body: tableData,
+        styles: {
+          fontSize: 9,
+          halign: 'center',
+          valign: 'middle',
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [34, 197, 94],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [240, 253, 244]
         },
         tableLineColor: [200, 250, 200],
         tableLineWidth: 0.2
@@ -515,8 +580,8 @@ const UnifiedActivitiesPage = () => {
           <button
             onClick={() => setViewMode('province')}
             className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              viewMode === 'province' 
-                ? 'bg-white text-tealLight shadow-md' 
+              viewMode === 'province'
+                ? 'bg-white text-tealLight shadow-md'
                 : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
@@ -526,8 +591,8 @@ const UnifiedActivitiesPage = () => {
           <button
             onClick={() => setViewMode('activities')}
             className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              viewMode === 'activities' 
-                ? 'bg-white text-tealLight shadow-md' 
+              viewMode === 'activities'
+                ? 'bg-white text-tealLight shadow-md'
                 : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
