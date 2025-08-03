@@ -270,9 +270,14 @@ export default function ResultStep({
       }
 
       const totalTextHeight = lines * lineHeight;
-
       const areaTop = currentY;
-      const startY = areaTop + (areaHeight - totalTextHeight) / 2;
+      
+      let startY;
+      if (wordsCount > 2 || lines > 1) {
+        startY = areaTop + 20;
+      } else {
+        startY = areaTop + (areaHeight - totalTextHeight) / 2;
+      }
 
       ctx.font = activityFont;
       ctx.fillStyle = "#0C3B2E";
@@ -335,7 +340,7 @@ export default function ResultStep({
         
         ctx.save();
         ctx.fillStyle = textColor;
-        ctx.font = "bold 22px 'Poppins', sans-serif";
+        ctx.font = "bold 26px 'Poppins', sans-serif";
         ctx.textAlign = "center";
         
         const textX = cardWidth - badgeSize / 2.8;
@@ -349,8 +354,8 @@ export default function ResultStep({
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
         
-        ctx.fillText("DAILY", 0, -12);
-        ctx.fillText("CHALLENGE", 0, 12);
+        ctx.fillText("DAILY", 0, -15);
+        ctx.fillText("CHALLENGE", 0, 15);
         
         ctx.restore();
       }
