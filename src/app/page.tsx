@@ -47,7 +47,6 @@ const formatPoints = (points: number) => {
   return points.toString();
 };
 
-// Function to format relative time
 const getRelativeTime = (date: Date): string => {
   const now = new Date();
   const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
@@ -106,13 +105,11 @@ export default function HomePage() {
     activeProvinces: 0,
   });
 
-  // Authenticated user state
   const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([]);
   const [activityHistory, setActivityHistory] = useState<ActivityHistory[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  // Set client flag after mount to prevent hydration mismatch
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -125,7 +122,6 @@ export default function HomePage() {
           setActivityLoading(true);
         }
 
-        // Fetch stats data
         const statsData = await fetchStats();
         setStats(statsData);
 
@@ -165,25 +161,20 @@ export default function HomePage() {
           setProvinceLeaderboard(sortedProvinces);
         }
 
-        // Fetch authenticated user data if signed in
         if (isSignedIn) {
-          // Fetch daily challenge
           const challengeResponse = await fetch("/api/daily-challenge");
           if (challengeResponse.ok) {
             const challengeResult = await challengeResponse.json();
             console.log('Challenge API response:', challengeResult);
             if (challengeResult.success && challengeResult.data) {
-              // The API already returns an array in challengeResult.data
               setDailyChallenges(challengeResult.data);
             }
           }
 
-          // Fetch activity history (real data from activities API)
           const activityResponse = await fetch("/api/activities");
           if (activityResponse.ok) {
             const activityResult = await activityResponse.json();
             if (Array.isArray(activityResult) && activityResult.length > 0) {
-              // Transform the real API data to match the expected format
               const transformedActivities = activityResult.slice(0, 3).map((activity: any) => ({
                 id: activity.id,
                 userId: activity.user_id,
@@ -193,10 +184,10 @@ export default function HomePage() {
                 date: new Date(activity.created_at),
                 status: activity.status || 'completed',
                 category: activity.activity_categories?.group_category || 'other',
-                location: activity.location_name || activity.city || activity.province || 'Lokasi tidak diketahui',
+                location: activity.province || 'Lokasi tidak diketahui',
                 image_url: activity.image_url || '',
                 verified: !!activity.verified_at,
-                challenge_id: null, // Real API doesn't have challenge_id in this format
+                challenge_id: null,
                 relativeTime: isClient ? getRelativeTime(new Date(activity.created_at)) : 'Memuat...'
               }));
               setActivityHistory(transformedActivities);
@@ -210,7 +201,6 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        // Set empty arrays for activity history if there's an error
         if (isSignedIn) {
           setActivityHistory([]);
           setDailyChallenges([]);
@@ -226,7 +216,6 @@ export default function HomePage() {
     fetchLeaderboardData();
   }, [isSignedIn]);
 
-  // Update relative times after client mount to prevent hydration mismatch
   useEffect(() => {
     if (isClient && activityHistory.length > 0) {
       setActivityHistory(prev => prev.map(activity => ({
@@ -234,10 +223,8 @@ export default function HomePage() {
         relativeTime: getRelativeTime(activity.date)
       })));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isClient, activityHistory.length]);
 
-  // Show authenticated homepage for signed in users
   if (isSignedIn) {
     return (
       <AuthenticatedHomepage
@@ -249,7 +236,6 @@ export default function HomePage() {
     );
   }
 
-  // Render unauthenticated homepage for guests
   return (
     <UnauthenticatedHomepage
       activeTab={activeTab}

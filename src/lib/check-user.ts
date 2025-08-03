@@ -50,7 +50,6 @@ export const checkUser = async () => {
         username: user.username || user.id.slice(0, 8),
         avatar_url: user.imageUrl,
         points: 0,
-        level: 0,
         total_activities: 0,
       })
       .select()

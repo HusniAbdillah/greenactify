@@ -6,17 +6,13 @@ export type Profile = {
   username?: string
   avatar_url?: string
   points: number
-  level: number
   province?: string
-  city?: string
-  bio?: string
   onboarding_completed: boolean
   last_activity_upload?: string
   total_activities: number
   created_at: string
   updated_at: string
   clerk_id?: string
-  pinned_post?: any[]
 }
 
 export type Activity = {
@@ -27,17 +23,12 @@ export type Activity = {
   description?: string
   points: number
   image_url?: string
-  location_name?: string
   latitude?: number
   longitude?: number
   province?: string
-  city?: string
   status: 'pending' | 'approved' | 'rejected'
   verified_by?: string
   verified_at?: string
-  is_shared: boolean
-  share_count: number
-  like_count: number
   metadata?: Record<string, any>
   created_at: string
   updated_at: string
@@ -134,7 +125,6 @@ export type LeaderboardUser = {
   avatar_url?: string
   points: number
   province?: string
-  level: number
   total_activities: number
   active_days: number
   completed_challenges: number
@@ -199,10 +189,7 @@ export type ActivityFeed = {
   description?: string
   points: number
   image_url?: string
-  location_name?: string
   province?: string
-  like_count: number
-  share_count: number
   created_at: string
   user_name?: string
   username?: string

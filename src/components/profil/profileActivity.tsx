@@ -18,7 +18,6 @@ export type ActivityItem = {
   latitude?: number | null;
   longitude?: number | null;
   province?: string | null;
-  like_count: number;
   created_at: string;
   updated_at: string;
   generated_image_url?: string | null;
@@ -124,7 +123,7 @@ export default function ProfileActivity({
           }}
           className="px-4 py-2 rounded-xl bg-oliveSoft text-whiteMint hover:bg-greenDark transition-colors duration-200 text-xs sm:text-sm md:text-base shadow-md"
         >
-          Cari Akrivitas
+          Cari Aktivitas
         </button>
       </div>
 
