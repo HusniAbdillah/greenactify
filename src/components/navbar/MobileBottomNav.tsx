@@ -34,7 +34,7 @@ const MobileBottomNav = () => {
                 href={item.href}
                 className={`relative flex flex-col items-center justify-center py-1 px-2 mx-1 text-xs transition-all ${
                   active
-                    ? 'bg-tealLight text-black rounded-[20px]'
+                    ? 'bg-tealLight text-whiteMint rounded-[20px]'
                     : 'text-black rounded-[20px] hover:bg-yellowAmber'
                 }`}
                 style={{ minWidth: 0, maxWidth: '100%' }}
@@ -42,8 +42,8 @@ const MobileBottomNav = () => {
                 {active && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-tealLight rounded-b-lg"></div>
                 )}
-                <Icon className="h-6 w-6 mb-1 text-black" />
-                <span className="font-medium text-black truncate text-[10px] leading-tight">
+                <Icon className="h-6 w-6 mb-1 text-inherit" />
+                <span className="font-medium text-inherit truncate text-[10px] leading-tight">
                   {item.label}
                 </span>
               </Link>
