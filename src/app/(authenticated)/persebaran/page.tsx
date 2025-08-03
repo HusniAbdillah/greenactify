@@ -575,7 +575,7 @@ const UnifiedActivitiesPage = () => {
               <div className="text-2xl md:text-3xl font-bold text-yellowGold">
                 {statisticsData.loading ? '...' : statisticsData.activeRegions}
               </div>
-              <div className="text-xs md:text-sm text-gray-600">Region Aktif</div>
+              <div className="text-xs md:text-sm text-gray-600">Provinsi Aktif</div>
             </div>
           </div>
         </div>

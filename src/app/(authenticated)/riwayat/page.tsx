@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useActivities } from '@/hooks/useSupabase'
-import { Calendar, Filter, Search, MapPin, Share2, Download, TrendingUp, Trash2 } from 'lucide-react'
+import { Calendar, Search, MapPin, Share2, Download, TrendingUp, Trash2 } from 'lucide-react'
 import { handleDeleteActivity } from '@/hooks/useSupabase'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
