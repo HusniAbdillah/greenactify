@@ -12,7 +12,6 @@ export async function createActivity(payload: {
   latitude: number,
   longitude: number,
   province: string,
-  city?: string,
   is_shared?: boolean,
   challenge_id?: string // Add challenge_id
 }) {

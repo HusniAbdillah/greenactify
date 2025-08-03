@@ -240,7 +240,6 @@ export default function AksiPage() {
         latitude: confirmedLatitude ?? 0,
         longitude: confirmedLongitude ?? 0,
         province: confirmedLocation,
-        city: "",
         is_shared: false,
         image_url: uploadedImageUrl ?? "",
         generated_image_url: generatedImageUrl,

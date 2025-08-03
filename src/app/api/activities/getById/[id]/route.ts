@@ -29,7 +29,6 @@ export async function GET(
       latitude,
       longitude,
       province,
-      city,
       status,
       created_at,
       updated_at,

@@ -285,7 +285,6 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
       latitude,
       longitude,
       province,
-      city,
       like_count,
       created_at,
       updated_at,

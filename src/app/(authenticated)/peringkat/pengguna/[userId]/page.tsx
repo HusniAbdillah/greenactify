@@ -12,16 +12,12 @@ interface UserProfile {
   username: string | null;
   avatar_url: string | null;
   points: number | 0;
-  level: number | 0;
   province: string | null;
-  city: string | null;
-  bio: string | "";
   last_activity_upload: string | null;
   total_activities: number | null;
   created_at: string;
   updated_at: string | null;
   clerk_id: string | null;
-  pinned_post: string[] | null;
   rank: number | null;
 }
 
@@ -44,7 +40,6 @@ interface UserActivity {
   latitude?: number;
   longitude?: number;
   province?: string;
-  city?: string;
   status?: 'pending' | 'approved' | 'rejected';
   verified_by?: string;
   verified_at?: string;
@@ -276,7 +271,7 @@ const UserProfilePage = () => {
               )}
               <div className="flex items-center space-x-2 text-oliveDark mt-2">
                 <MapPin className="w-4 h-4" />
-                <span>{profile.city || 'Unknown City'}, {profile.province || 'Unknown Province'}</span>
+                <span>{profile.province || 'Provinsi tidak diketahui'}</span>
               </div>
             </div>
 
@@ -287,17 +282,10 @@ const UserProfilePage = () => {
               </div>
             )}
           </div>
-
-
-          {profile.bio && (
-            <div className="mt-6 p-4 bg-whiteGreen rounded-xl">
-              <p className="text-greenDark">{profile.bio}</p>
-            </div>
-          )}
         </div>
 
         <div className="bg-whiteMint rounded-3xl p-8 shadow-xl text-center border border-whiteGreen">
-          <p className="text-oliveDark text-lg">User belum punya aktivitas</p>
+          <p className="text-oliveDark text-lg">Pengguna belum punya aktivitas</p>
         </div>
       </div>
     );
@@ -371,11 +359,6 @@ const UserProfilePage = () => {
           )}
         </div>
 
-        {profile.bio && (
-          <div className="mt-4 p-3 bg-whiteGreen rounded-xl md:mt-6 md:p-4">
-            <p className="text-greenDark text-sm md:text-base">{profile.bio}</p>
-          </div>
-        )}
       </div>
 
 
