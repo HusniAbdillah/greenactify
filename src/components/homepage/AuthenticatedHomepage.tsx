@@ -132,16 +132,14 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                             <p className="text-white/80 text-sm">
                               {(() => {
                                 const now = new Date();
-                                const indonesianTime = new Date(
-                                  now.getTime() + 7 * 60 * 60 * 1000
-                                );
-                                return indonesianTime.toLocaleDateString(
+                                return now.toLocaleDateString(
                                   "id-ID",
                                   {
                                     weekday: "long",
                                     year: "numeric",
                                     month: "long",
                                     day: "numeric",
+                                    timeZone: "Asia/Jakarta"
                                   }
                                 );
                               })()}
