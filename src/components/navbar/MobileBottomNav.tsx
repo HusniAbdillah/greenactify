@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Home, Trophy, HandHeart, Bot, UserRound } from 'lucide-react'
 
 const MobileBottomNav = () => {
-  const pathname = usePathname() || '' // Fallback to an empty string if pathname is null
+  const pathname = usePathname() || ''
 
   const navItems = [
     { href: '/', icon: Home, label: 'Beranda' },
@@ -42,7 +42,7 @@ const MobileBottomNav = () => {
                 {active && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-tealLight rounded-b-lg"></div>
                 )}
-                <Icon className="h-6 w-6 mb-1 text-inherit" />
+                <Icon className="h-8 w-8 mb-1 text-inherit" />
                 <span className="font-medium text-inherit truncate text-[10px] leading-tight">
                   {item.label}
                 </span>
