@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
+
 const PeringkatPage = () => {
   const [usersData, setUsersData] = useState<any[]>([])
   const [provincesData, setProvincesData] = useState<any[]>([])
@@ -11,6 +13,14 @@ const PeringkatPage = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
+  const { isLoaded, isSignedIn } = useUser()
+
+  // Check authentication
+  React.useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/')
+    }
+  }, [isLoaded, isSignedIn, router])
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -71,8 +81,8 @@ const PeringkatPage = () => {
 
     if (searchQuery.trim()) {
       return sortedUsers.filter(user =>
-        (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (user.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+        (user.username || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     } else {
       return sortedUsers.slice(0, 10)
@@ -188,8 +198,9 @@ const PeringkatPage = () => {
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg text-whiteMint">{user.full_name || 'Unknown User'}</h3>
-                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{user.province || 'Unknown Province'}</p>
+                    <h3 className="font-bold text-lg text-whiteMint">{user.username || 'Unknown User'}</h3>
+                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{user.full_name || 'Unknown Name'}</p>
+                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm`}>{user.province || 'Unknown Province'}</p>
                   </div>
 
                   <div className="text-right">

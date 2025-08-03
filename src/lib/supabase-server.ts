@@ -28,13 +28,13 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const createServerSupabaseClient = async () => {
   const { getToken } = await auth()
   const token = await getToken({ template: 'supabase' })
-  
+
   return createClient(
     supabaseUrl,
     supabaseAnonKey,
     {
       global: {
-        headers: token 
+        headers: token
           ? { Authorization: `Bearer ${token}` }
           : {},
       },
@@ -180,7 +180,12 @@ export const getActivityCategories = async (): Promise<ActivityCategory[]> => {
 }
 
 export const getTodayChallenge = async (): Promise<DailyChallenge | null> => {
-  const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+  // Use Indonesian timezone (WIB/UTC+7)
+  const now = new Date();
+  const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+  const today = indonesianTime.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+  console.log('Getting today challenge for Indonesian date:', today);
 
   const { data, error } = await supabase
     .from('daily_challenges')
@@ -236,7 +241,7 @@ export const checkUploadCooldown = async (userId: string): Promise<boolean> => {
 
   const now = new Date()
   const cooldownExpires = new Date(data.cooldown_expires)
-  
+
   return now > cooldownExpires // Can upload if cooldown expired
 }
 
@@ -299,10 +304,10 @@ export const getActivitiesFeed = async (limit: number = 20, offset: number = 0):
 export const subscribeToActivities = (callback: (payload: RealtimePayload) => void) => {
   return supabase
     .channel('activities')
-    .on('postgres_changes', { 
-      event: '*', 
-      schema: 'public', 
-      table: 'activities' 
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'activities'
     }, callback)
     .subscribe()
 }
@@ -310,10 +315,10 @@ export const subscribeToActivities = (callback: (payload: RealtimePayload) => vo
 export const subscribeToLeaderboard = (callback: (payload: RealtimePayload) => void) => {
   return supabase
     .channel('profiles')
-    .on('postgres_changes', { 
-      event: 'UPDATE', 
-      schema: 'public', 
-      table: 'profiles' 
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'profiles'
     }, callback)
     .subscribe()
 }

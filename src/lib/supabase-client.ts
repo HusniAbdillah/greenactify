@@ -171,7 +171,12 @@ export const getActivityCategories = async (): Promise<ActivityCategory[]> => {
 }
 
 export const getTodayChallenge = async (): Promise<DailyChallenge | null> => {
-  const today = new Date().toISOString().split('T')[0]
+  // Use Indonesian timezone (WIB/UTC+7)
+  const now = new Date();
+  const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+  const today = indonesianTime.toISOString().split('T')[0];
+
+  console.log('Getting today challenge for Indonesian date:', today);
 
   const { data, error } = await supabase
     .from('daily_challenges')
@@ -202,11 +207,16 @@ export const getUserChallengeProgress = async (userId: string, challengeId: stri
 }
 
 export const getRandomChallenges = async (limit: number = 3): Promise<DailyChallenge[]> => {
-  // Get challenges that haven't been used in the last 7 days
-  const sevenDaysAgo = new Date();
+  // Get challenges that haven't been used in the last 7 days using Indonesian timezone
+  const now = new Date();
+  const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+
+  const sevenDaysAgo = new Date(indonesianTime);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
-  const today = new Date().toISOString().split('T')[0];
+  const today = indonesianTime.toISOString().split('T')[0];
+
+  console.log('Using Indonesian timezone - Today:', today, 'Seven days ago:', sevenDaysAgoStr);
 
   // First, get the total count of available challenges
   const { count, error: countError } = await supabase

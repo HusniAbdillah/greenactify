@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { MapPin, Users, TrendingUp, Filter, Calendar, Download, Eye, Activity, BarChart3, ExternalLink } from 'lucide-react'
 import { HeatmapWidget, useProvinceData, ProvinceData } from '@/components/heatmap'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs'
 
 export type ActivityItem = {
   id: string
@@ -35,13 +35,7 @@ export type ProvinceStats = {
 
 const UnifiedActivitiesPage = () => {
   const router = useRouter()
-  const { user } = useUser();
-  useEffect(() => {
-    if (user === null) {
-      router.push('/');
-    }
-  }, [user, router]);
-
+  const { isLoaded, isSignedIn } = useUser()
 
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
@@ -80,6 +74,13 @@ const UnifiedActivitiesPage = () => {
     loading: true
   })
 
+  // Check authentication
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/')
+    }
+  }, [isLoaded, isSignedIn, router])
+
   useEffect(() => {
     setIsClient(true)
     setLastUpdate(new Date().toLocaleString('id-ID'))
@@ -95,7 +96,7 @@ const UnifiedActivitiesPage = () => {
         loadLeafletAndCreateMap()
       }
     }
-    
+
     return () => {
       if (mapRef.current && viewMode !== 'activities') {
         try {
@@ -107,7 +108,7 @@ const UnifiedActivitiesPage = () => {
         }
       }
     }
-  }, [viewMode, loadingActivities, mapType, activities])
+      }, [viewMode, loadingActivities, mapType, activities])
 
   const fetchActivities = async () => {
     setLoadingActivities(true)
@@ -270,7 +271,7 @@ const UnifiedActivitiesPage = () => {
 
     try {
       setMapReady(false)
-      
+
       const map = L.map('activity-map').setView([-2.5, 118], 5)
       mapRef.current = map
 
@@ -425,12 +426,10 @@ const UnifiedActivitiesPage = () => {
 
     img.onload = () => {
       const pageWidth = doc.internal.pageSize.getWidth()
-      
 
       const logoWidth = 60
       const logoX = (pageWidth - logoWidth) / 2
       doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
-
 
       doc.setFontSize(16)
       doc.setTextColor(34, 78, 64)
@@ -470,15 +469,69 @@ const UnifiedActivitiesPage = () => {
           cellPadding: 3
         },
         headStyles: {
-          fillColor: [12, 59, 46], 
+          fillColor: [12, 59, 46],
           textColor: [255, 255, 255],
           fontStyle: 'bold'
         },
         bodyStyles: {
-          textColor: [0,0,0] 
+          textColor: [0,0,0]
         },
         alternateRowStyles: {
-          fillColor: [240, 253, 244] 
+          fillColor: [240, 253, 244]
+        },
+        tableLineColor: [200, 250, 200],
+        tableLineWidth: 0.2
+      })
+
+      doc.save('Dampak GreenActify.pdf')
+    }
+
+    img.onerror = () => {
+      const pageWidth = doc.internal.pageSize.getWidth()
+
+      doc.setFontSize(16)
+      doc.setTextColor(34, 78, 64)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
+        align: 'center'
+      })
+
+      const tableData = provinces.map(prov => {
+        const extra = getProvinceExtraStats(prov.province)
+        return [
+          prov.province,
+          prov.total_users,
+          prov.total_activities,
+          prov.total_points,
+          prov.avg_points_per_user,
+          extra.highPointPercentage,
+          extra.mostFrequentActivity,
+          extra.avgPointsPerActivity,
+          extra.latestActivity
+        ]
+      })
+
+      autoTable(doc, {
+        startY: 30,
+        head: [[
+          "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+          "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+          "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+        ]],
+        body: tableData,
+        styles: {
+          fontSize: 9,
+          halign: 'center',
+          valign: 'middle',
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [12, 59, 46],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [240, 253, 244]
         },
         tableLineColor: [200, 250, 200],
         tableLineWidth: 0.2
@@ -509,14 +562,14 @@ const UnifiedActivitiesPage = () => {
 
       <div className="bg-tealLight text-white rounded-lg p-4 sm:p-6 mx-6 mb-0 sm:mb-4 md:mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Peta Persebaran Aktivitas Hijau Indonesia</h1>
-        <p  className=' text-sm sm:text-base '>Visualisasi komprehensif aktivitas hijau di seluruh Indonesia dengan data real-time</p>
-        
-        <div className=" mt-4 flex space-x-2">
+        <p className="text-sm sm:text-base">Visualisasi komprehensif aktivitas hijau di seluruh Indonesia dengan data real-time</p>
+
+        <div className="mt-4 flex space-x-2">
           <button
             onClick={() => setViewMode('province')}
             className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              viewMode === 'province' 
-                ? 'bg-white text-tealLight shadow-md' 
+              viewMode === 'province'
+                ? 'bg-white text-tealLight shadow-md'
                 : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
@@ -526,8 +579,8 @@ const UnifiedActivitiesPage = () => {
           <button
             onClick={() => setViewMode('activities')}
             className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              viewMode === 'activities' 
-                ? 'bg-white text-tealLight shadow-md' 
+              viewMode === 'activities'
+                ? 'bg-white text-tealLight shadow-md'
                 : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
@@ -766,7 +819,7 @@ const UnifiedActivitiesPage = () => {
                       <div className="w-full">
                         <div
                           id="activity-map"
-                          className="h-96 w-full rounded-xl border border-whiteGreen z-0"
+                          className="h-96 w-full rounded-xl border border-whiteGreen"
                           style={{
                             minHeight: '400px'
                           }}
@@ -841,6 +894,45 @@ const UnifiedActivitiesPage = () => {
               )}
             </div>
 
+          
+            {selectedActivity && (
+              <div className="bg-whiteMint rounded-xl shadow-lg">
+                <div className="p-6 border-b border-whiteGreen">
+                  <h3 className="text-xl font-bold text-oliveDark">Detail Aktivitas</h3>
+                </div>
+                <div className="p-6">
+                  <h4 className="font-bold text-lg mb-4 text-greenDark">{selectedActivity.title}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                    <div className="flex flex-col items-center text-center p-4 bg-whiteGreen rounded-lg">
+                      <span className="text-sm text-oliveSoft mb-2">Kategori</span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(selectedActivity.activity_categories.name)}`}>
+                        {selectedActivity.activity_categories.name}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-4 bg-whiteGreen rounded-lg">
+                      <span className="text-sm text-oliveSoft mb-2">Provinsi</span>
+                      <span className="text-sm font-medium text-oliveDark">{selectedActivity.province || 'Tidak ada'}</span>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-4 bg-whiteGreen rounded-lg">
+                      <span className="text-sm text-oliveSoft mb-2">Poin</span>
+                      <span className="text-lg font-bold text-yellowGold">+{selectedActivity.points}</span>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-4 bg-whiteGreen rounded-lg">
+                      <span className="text-sm text-oliveSoft mb-2">Koordinat</span>
+                      <span className="text-xs text-oliveDark font-mono">
+                        {selectedActivity.latitude?.toFixed(4)}, {selectedActivity.longitude?.toFixed(4)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-4 bg-whiteGreen rounded-lg">
+                      <span className="text-sm text-oliveSoft mb-2">Dibuat</span>
+                      <span className="text-xs text-oliveDark">
+                        {new Date(selectedActivity.created_at).toLocaleDateString('id-ID')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
