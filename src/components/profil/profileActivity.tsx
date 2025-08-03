@@ -115,13 +115,19 @@ export default function ProfileActivity({
         </button>
       </section>
 
-      <p className="text-center mt-1 text-sm sm:text-lg underline text-oliveSoft hover:text-whiteMint cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          router.push('/riwayat');
-        }}>
-        Lihat semua
-      </p>
+      <div className="flex justify-center mt-4">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push('/riwayat');
+          }}
+          className="px-4 py-2 rounded-xl bg-oliveSoft text-whiteMint hover:bg-greenDark transition-colors duration-200 text-xs sm:text-sm md:text-base shadow-md"
+        >
+          Cari Akrivitas
+        </button>
+      </div>
+
 
 
 
@@ -142,7 +148,7 @@ export default function ProfileActivity({
               {hasMoreActivities && (
                 <button
                   onClick={() => setVisibleCount((prev) => prev + 9)}
-                  className="mt-8 px-6 py-3 border-2 border-[#BBE8C3] text-[#BBE8C3] rounded-full shadow-md hover:bg-[#6d9773] hover:border-green-700 transition-all duration-300 text-sm md:text-md lg:text-lg font-medium flex items-center gap-2"
+                  className="mt-8 mb-4 px-6 py-3 border-2 border-[#BBE8C3] text-[#BBE8C3] rounded-full shadow-md hover:bg-[#6d9773] hover:border-green-700 transition-all duration-300 text-xs sm:text-sm lg:text-lg font-medium flex items-center gap-2"
                 >
                   Lihat Lebih Banyak Aktivitas <ChevronDown className="h-5 w-5" />
                 </button>
@@ -151,7 +157,7 @@ export default function ProfileActivity({
               {visibleCount > 9 && (
                 <button
                   onClick={() => setVisibleCount(9)}
-                  className="mt-4 px-6 py-2 border border-white text-white rounded-full hover:bg-gray-700 transition-all flex items-center gap-2 text-sm md:text-md lg:text-lg"
+                  className="mt-4  mb-4 px-6 py-2 border border-white text-white rounded-full hover:bg-gray-700 transition-all flex items-center gap-2 text-xs sm:text-sm  lg:text-lg"
                 >
                   Sembunyikan Aktivitas <ChevronUp className="h-4 w-4" />
                 </button>

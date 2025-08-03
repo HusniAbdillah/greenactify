@@ -11,7 +11,7 @@ import AuthenticatedHomepage from "@/components/homepage/AuthenticatedHomepage";
 
 interface UserLeaderboard {
   id: string;
-  name: string | null;
+  username: string | null;
   full_name: string | null;
   province: string | null;
   points: number;
@@ -138,7 +138,11 @@ export default function HomePage() {
             .sort((a: any, b: any) => (b.points || 0) - (a.points || 0))
             .slice(0, 5)
             .map((user: any, index: number) => ({
-              ...user,
+              id: user.id,
+              username: user.name || user.username || user.full_name,
+              full_name: user.full_name,
+              province: user.province,
+              points: user.points || 0,
               rank: index + 1,
             }));
           setUserLeaderboard(sortedUsers);
@@ -167,8 +171,10 @@ export default function HomePage() {
           const challengeResponse = await fetch("/api/daily-challenge");
           if (challengeResponse.ok) {
             const challengeResult = await challengeResponse.json();
-            if (challengeResult.success) {
-              setDailyChallenges(Array.isArray(challengeResult.data) ? challengeResult.data : [challengeResult.data]);
+            console.log('Challenge API response:', challengeResult);
+            if (challengeResult.success && challengeResult.data) {
+              // The API already returns an array in challengeResult.data
+              setDailyChallenges(challengeResult.data);
             }
           }
 
@@ -228,6 +234,7 @@ export default function HomePage() {
         relativeTime: getRelativeTime(activity.date)
       })));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isClient, activityHistory.length]);
 
   // Show authenticated homepage for signed in users

@@ -158,7 +158,7 @@ export default function AksiPage() {
     setSelectedActivity(activity); // Keep original base_points
     setCurrentStep("CONFIRMING_LOCATION");
   };
-  
+
   // 🆕 Helper function untuk calculate final points sekali saja
   const getFinalPoints = () => {
     if (!selectedActivity) return 0;
@@ -226,6 +226,7 @@ export default function AksiPage() {
       !isActivityInserted &&
       !isUpdatingPoints // 👈 Tambah kondisi ini
     ) {
+      
       setIsUpdatingPoints(true); // 👈 Set flag
     
       const finalPoints = getFinalPoints();
@@ -273,6 +274,7 @@ export default function AksiPage() {
     uploadedImageUrl,
     isChallenge,
     challengeId,
+    getFinalPoints, // Add getFinalPoints to dependencies
   ]);
 
   useEffect(() => {

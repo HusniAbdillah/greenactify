@@ -6,11 +6,12 @@ import { DailyChallenge } from '@/lib/types/supabase';
 function transformChallenge(dbChallenge: DailyChallenge | null) {
   if (!dbChallenge) return null;
 
-  // Calculate hours remaining until end of day
+  // Calculate hours remaining until end of day using Indonesian timezone
   const now = new Date();
-  const endOfDay = new Date();
+  const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+  const endOfDay = new Date(indonesianTime);
   endOfDay.setHours(23, 59, 59, 999);
-  const hoursRemaining = Math.max(0, Math.floor((endOfDay.getTime() - now.getTime()) / (1000 * 60 * 60)));
+  const hoursRemaining = Math.max(0, Math.floor((endOfDay.getTime() - indonesianTime.getTime()) / (1000 * 60 * 60)));
 
   // Parse instructions from string to array if it's a string
   let instructions = [];
@@ -46,9 +47,13 @@ function transformChallenge(dbChallenge: DailyChallenge | null) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get today's challenge from database
+    // Get today's challenge from database using Indonesian timezone (WIB/UTC+7)
     let dbChallenges = [];
-    const today = new Date().toISOString().split('T')[0];
+
+    // Get current date in Indonesian timezone
+    const now = new Date();
+    const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+    const today = indonesianTime.toISOString().split('T')[0];
 
     // Check if there are already challenges for today
     const { data: existingChallenges, error } = await supabase
@@ -58,38 +63,27 @@ export async function GET(request: NextRequest) {
 
     if (!error && existingChallenges && existingChallenges.length > 0) {
       dbChallenges = existingChallenges;
-      console.log(`Found ${dbChallenges.length} existing challenges for today`);
     } else {
-      console.log('No challenges found for today, selecting 3 random challenges...');
-
       // Get 3 random challenges that don't have today's date
       const randomChallenges = await getRandomChallenges(3);
 
       if (randomChallenges.length > 0) {
         // Update all challenges to today's date
-        const updatePromises = randomChallenges.map(async (challenge: any, index: number) => {
-          console.log(`Attempting to set challenge ${challenge.id} (${challenge.title}) as today's challenge #${index + 1}`);
-
+        const updatePromises = randomChallenges.map(async (challenge: any) => {
           const updateSuccess = await updateChallengeDate(challenge.id, today);
 
           if (updateSuccess) {
-            console.log(`Successfully updated challenge ${challenge.id} to today's date`);
             return {
               ...challenge,
               date: today
             };
           } else {
-            console.error(`Failed to update challenge ${challenge.id} date`);
             return null;
           }
         });
 
         const results = await Promise.all(updatePromises);
         dbChallenges = results.filter((challenge: any) => challenge !== null);
-
-        console.log(`Successfully assigned ${dbChallenges.length} challenges to today`);
-      } else {
-        console.log('No random challenges available in database');
       }
     }
 
@@ -112,7 +106,13 @@ export async function GET(request: NextRequest) {
           'Ambil foto bukti aktivitas Anda'
         ],
         tips: 'Mulai dari hal kecil yang bisa dilakukan sehari-hari!',
-        hoursRemaining: Math.max(0, Math.floor((new Date(new Date().setHours(23, 59, 59, 999)).getTime() - new Date().getTime()) / (1000 * 60 * 60))),
+        hoursRemaining: (() => {
+          const now = new Date();
+          const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+          const endOfDay = new Date(indonesianTime);
+          endOfDay.setHours(23, 59, 59, 999);
+          return Math.max(0, Math.floor((endOfDay.getTime() - indonesianTime.getTime()) / (1000 * 60 * 60)));
+        })(),
         isActive: true
       };
 
@@ -123,7 +123,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform all challenges
-    const transformedChallenges = dbChallenges.map((challenge: any) => transformChallenge(challenge)).filter(Boolean);
+    const transformedChallenges = dbChallenges
+      .map((challenge: any) => transformChallenge(challenge))
+      .filter((challenge): challenge is NonNullable<typeof challenge> => challenge !== null);
 
     return NextResponse.json({
       success: true,

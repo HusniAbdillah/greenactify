@@ -297,6 +297,7 @@ export default function ResultStep({
     onGeneratedImageReady,
     newTotalActivities,
     newTotalPoints,
+    challengeId,
   ]);
 
   const handleDownload = () => {

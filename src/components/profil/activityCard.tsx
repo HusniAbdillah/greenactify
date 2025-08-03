@@ -27,15 +27,18 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
       onUpdated?.()
     }
   }
-
   const handleDeleteConfirmed = async () => {
     const success = await handleDeleteActivity(activity.id)
+    setShowDeleteConfirm(false)
+
     if (success) {
-      setShowDeleteConfirm(false)
       onUpdated?.()
+    } else {
+      showModal("Gagal Menghapus", "Terjadi kesalahan saat menghapus aktivitas.")
     }
   }
-  
+
+
   const handleShareActivity = async () => {
     console.log("Sharing activity:", activity)
     try {
@@ -67,7 +70,6 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
       showModal("Kesalahan", "Terjadi kesalahan saat membagikan aktivitas.")
     }
   }
-
 
   return (
     <>
@@ -127,8 +129,6 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
         </div>
       </div>
 
-
-      {/* Modal Konfirmasi Delete */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-sm shadow-xl border border-zinc-700 text-white">
@@ -142,7 +142,6 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
         </div>
       )}
 
-      {/* Modal Pesan Custom */}
       {customModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm text-center space-y-4">
@@ -160,5 +159,3 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
     </>
   )
 }
-
-

@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import Image from 'next/image'
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 export type ActivityItem = {
   id: string
@@ -35,6 +37,14 @@ const ActivitiesMapPage = () => {
   const [provinces, setProvinces] = useState<ProvinceStats[]>([])
   const [loadingActivities, setLoadingActivities] = useState(true)
   const [loadingProvinces, setLoadingProvinces] = useState(true)
+  const { user } = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    if (user === null) {
+      router.push('/');
+    }
+  }, [user, router]);
+
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -139,7 +149,7 @@ const ActivitiesMapPage = () => {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.setAttribute("download", "Dampak GreenActivy.csv")
+    link.setAttribute("download", "Dampak GreenActify.csv")
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -156,16 +166,17 @@ const exportToPDF = () => {
   img.onload = () => {
     const pageWidth = doc.internal.pageSize.getWidth()
     
-    // === LOGO DI TENGAH ===
-    const logoWidth = 50
+
+    const logoWidth = 60
     const logoX = (pageWidth - logoWidth) / 2
     doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
 
-    // === JUDUL DI TENGAH & LEBIH BAGUS ===
+
     doc.setFontSize(16)
-    doc.setTextColor(34, 197, 94) // Menggunakan warna green-500 sebagai referensi
+    doc.setTextColor(34, 78, 64)
+
     doc.setFont('helvetica', 'bold')
-    doc.text('Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
+    doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
       align: 'center'
     })
 
@@ -193,15 +204,18 @@ const exportToPDF = () => {
       ]],
       body: tableData,
       styles: {
-        fontSize: 9,
+        fontSize: 7,
         halign: 'center',
         valign: 'middle',
         cellPadding: 3
       },
       headStyles: {
-        fillColor: [34, 197, 94], 
+        fillColor: [12, 59, 46], 
         textColor: [255, 255, 255],
         fontStyle: 'bold'
+      },
+       bodyStyles: {
+        textColor: [0,0,0] 
       },
       alternateRowStyles: {
         fillColor: [240, 253, 244] 
@@ -210,7 +224,7 @@ const exportToPDF = () => {
       tableLineWidth: 0.2
     })
 
-    doc.save('Dampak GreenActivy.pdf')
+    doc.save('Dampak GreenActify.pdf')
   }
 }
 
@@ -229,22 +243,24 @@ const exportToPDF = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 justify-center md:justify-end">
           <button
-            onClick={exportToCSV}
-            className="bg-greenDark text-white px-4 py-2 rounded hover:bg-oliveSoft w-full sm:w-auto transition-colors"
-          >
-            Download CSV
-          </button>
-          <button
             onClick={exportToPDF}
-            className="bg-oliveSoft text-white px-4 py-2 rounded hover:bg-greenDark w-full sm:w-auto transition-colors"
+            className="bg-red/60 text-white px-4 py-2 rounded-md hover:bg-red w-full sm:w-auto transition-colors"
           >
-            Download PDF
+            Unduh PDF
           </button>
+
+          <button
+            onClick={exportToCSV}
+            className="bg-oliveSoft/80 text-white px-4 py-2 rounded-md hover:bg-oliveSoft w-full sm:w-auto transition-colors"
+          >
+            Unduh CSV
+          </button>
+
         </div>
       </div>
 
       <div className="overflow-x-auto bg-white rounded-xl shadow border border-whiteGreen">
-        <h3 className="text-xl font-bold mb-4 text-greenDark px-4 pt-4">Dampak GreenActivy Terhadap Aksi Pro-Lingkungan</h3>
+        <h3 className="text-xl font-bold mb-4 text-greenDark px-4 pt-4">Dampak GreenActify Terhadap Aksi Pro-Lingkungan</h3>
         <table className="table-auto w-full text-sm border-collapse">
           <thead className="bg-whiteGreen text-oliveDark">
             <tr>

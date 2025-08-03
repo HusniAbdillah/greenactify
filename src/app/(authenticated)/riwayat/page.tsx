@@ -1,25 +1,25 @@
 'use client'
-import React, { useState, useEffect } from 'react' 
+import React, { useState, useEffect } from 'react'
 import { useActivities } from '@/hooks/useSupabase'
-import { Calendar, Filter, Search, MapPin, Share2, Download, TrendingUp, Trash2,  } from 'lucide-react'
+import { Calendar, Search, MapPin, Share2, Download, TrendingUp, Trash2 } from 'lucide-react'
 import { handleDeleteActivity } from '@/hooks/useSupabase'
-import { useRouter } from 'next/navigation';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import { ActivityItem } from '@/hooks/useSupabase'
-
 
 export default function RiwayatPage() {
   const { activities, loading, error } = useActivities()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'week' | 'month' | 'year'>('all')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const { user } = useUser();
-  const router = useRouter();
+  const { user } = useUser()
+  const router = useRouter()
+
   useEffect(() => {
     if (user === null) {
-      router.push('/');
+      router.push('/')
     }
-  }, [user, router]);
+  }, [user, router])
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [customModal, setCustomModal] = useState<{ title: string, message: string } | null>(null)
@@ -31,11 +31,13 @@ export default function RiwayatPage() {
 
   const handleDeleteConfirmed = async () => {
     if (!activityToDelete) return
+    setShowDeleteConfirm(false)
     const success = await handleDeleteActivity(activityToDelete.id)
     if (success) {
-      setShowDeleteConfirm(false)
       setActivityToDelete(null)
       router.refresh()
+    } else {
+      showModal("Gagal Menghapus", "Terjadi kesalahan saat menghapus aktivitas.")
     }
   }
 
@@ -70,7 +72,6 @@ export default function RiwayatPage() {
       showModal("Kesalahan", "Terjadi kesalahan saat membagikan aktivitas.")
     }
   }
-
 
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
@@ -110,174 +111,175 @@ export default function RiwayatPage() {
   })
 
   const totalPoints = filteredActivities.reduce((sum, a) => sum + a.points, 0)
+
   const streakDays = (() => {
-  const dates = filteredActivities
-    .map((a) => new Date(a.created_at).toISOString().split('T')[0])
-    .filter((v, i, arr) => arr.indexOf(v) === i)
-    .map((d) => new Date(d))
-    .sort((a, b) => a.getTime() - b.getTime());
+    const dates = filteredActivities
+      .map((a) => new Date(a.created_at).toISOString().split('T')[0])
+      .filter((v, i, arr) => arr.indexOf(v) === i)
+      .map((d) => new Date(d))
+      .sort((a, b) => a.getTime() - b.getTime())
 
-  let maxStreak = 0;
-  let currentStreak = 0;
+    let maxStreak = 0
+    let currentStreak = 0
 
-  for (let i = 0; i < dates.length; i++) {
-    if (i === 0) {
-      currentStreak = 1;
-    } else {
-      const diff = (dates[i].getTime() - dates[i - 1].getTime()) / (1000 * 60 * 60 * 24);
-      if (diff === 1) {
-        currentStreak++;
-      } else if (diff > 1) {
-        currentStreak = 1;
+    for (let i = 0; i < dates.length; i++) {
+      if (i === 0) {
+        currentStreak = 1
+      } else {
+        const diff = (dates[i].getTime() - dates[i - 1].getTime()) / (1000 * 60 * 60 * 24)
+        if (diff === 1) {
+          currentStreak++
+        } else if (diff > 1) {
+          currentStreak = 1
+        }
+      }
+      if (currentStreak > maxStreak) {
+        maxStreak = currentStreak
       }
     }
-    if (currentStreak > maxStreak) {
-      maxStreak = currentStreak;
-    }
-  }
 
-    return maxStreak;
-  })();
- 
-
+    return maxStreak
+  })()
 
   return (
-    <div className="p-6 space-y-6 bg-mintPastel min-h-screen"> 
-      <div className="bg-gradient-to-r from-greenDark to-oliveSoft text-white rounded-lg p-6 shadow-md">
-        <h1 className="text-2xl font-bold mb-2">Riwayat Aktivitas</h1>
-        <p className="text-lg">Lihat kembali perjalanan hijau Anda</p>
-      </div>
-      <div id="report-content" className="space-y-6">
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-greenDark">
-          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-greenDark">
-            {filteredActivities.length}
-          </div>
-          <div className="text-xs text-oliveSoft">Total Aktivitas</div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-pinkSoft">
-          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-pinkSoft">
-            {totalPoints}
-          </div>
-          <div className="text-xs text-oliveSoft">Total Poin</div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-oliveSoft box col-span-2 sm:col-span-1">
-          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-oliveSoft">
-            {streakDays} Hari
-          </div>
-          <div className="text-xs text-oliveSoft">Streak Terlama</div>
-        </div>
+    <div className="p-2 sm:p-6 space-y-4 bg-mintPastel min-h-screen ">
+      <div className="bg-tealLight text-white rounded-lg p-4 sm:p-6 shadow-md ">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Riwayat Aktivitas</h1>
+        <p className="text-sm sm:text-base">Lihat kembali perjalanan hijau Anda</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 text-oliveSoft w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Cari aktivitas atau lokasi..."
-              className="w-full pl-10 pr-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <div className=" space-y-3 sm:space-y-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-greenDark">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-greenDark">
+              {filteredActivities.length}
+            </div>
+            <div className="text-xs text-oliveSoft">Total Aktivitas</div>
           </div>
 
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
-          >
-            {categories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+          <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-pinkSoft">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-pinkSoft">
+              {totalPoints}
+            </div>
+            <div className="text-xs text-oliveSoft">Total Poin</div>
+          </div>
 
-          <select
-            value={selectedFilter}
-            onChange={(e) => setSelectedFilter(e.target.value as any)}
-            className="px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
-          >
-            <option value="all">Semua Waktu</option>
-            <option value="week">7 Hari Terakhir</option>
-            <option value="month">30 Hari Terakhir</option>
-            <option value="year">Tahun Ini</option>
-          </select>
-
+          <div className="bg-white rounded-lg shadow-lg p-6 text-center border-b-4 border-oliveSoft box col-span-2 sm:col-span-1">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-oliveSoft">
+              {streakDays} Hari
+            </div>
+            <div className="text-xs text-oliveSoft">Streak Terlama</div>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        {filteredActivities.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <Calendar className="w-12 h-12 mx-auto text-pinkSoft mb-4" />
-            <p className="text-oliveSoft">Tidak ada aktivitas ditemukan</p>
+        <div className="bg-white rounded-lg shadow-lg p-2 sm:p-6">
+          <div className="flex flex-col md:flex-row gap-2 sm:gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 text-oliveSoft w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Cari aktivitas atau lokasi..."
+                className="text-sm sm:text-base w-full pl-10 pr-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className=" text-sm sm:text-base px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
+            >
+              {categories.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedFilter}
+              onChange={(e) => setSelectedFilter(e.target.value as any)}
+              className="text-sm sm:text-base px-4 py-3 border border-whiteGreen rounded-lg focus:ring-greenDark focus:border-greenDark text-black"
+            >
+              <option value="all">Semua Waktu</option>
+              <option value="week">7 Hari Terakhir</option>
+              <option value="month">30 Hari Terakhir</option>
+              <option value="year">Tahun Ini</option>
+            </select>
           </div>
-        ) : (
-          filteredActivities.map((a) => (
-            <div key={a.id} className="bg-white rounded-lg shadow p-4 md:p-6 flex gap-4 items-center">
-              <div className='flex flex-col gap-y-2 item'>
-                <div className="w-20 h-20 rounded-lg overflow-hidden bg-whiteGreen flex items-center justify-center text-greenDark font-bold flex-shrink-0">
-                  {a.image_url ? (
-                    <img src={a.image_url} alt={a.title} className="w-full h-full object-cover" />
-                  ) : (
-                    'IMG'
-                  )}
-                </div>
-                <div className=" flex ">
-                  <button
-                    onClick={() => handleShareActivity(a)}
-                    className="bg-amber-500/80 text-white p-2 rounded hover:bg-amber-600"
-                    title="Bagikan"
-                  >
-                    <Share2 className="w-3 h-3 sm:w-5 sm:h-5" />
-                  </button>
+        </div>
 
-                  <button
-                    onClick={() => {
-                      setActivityToDelete(a)
-                      setShowDeleteConfirm(true)
-                    }}
-                    className="bg-red-500/80 text-white p-2 rounded hover:bg-red-600"
-                    title="Hapus"
-                  >
+        <div className="space-y-4">
+          {filteredActivities.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-12 text-center">
+              <Calendar className="w-12 h-12 mx-auto text-pinkSoft mb-4" />
+              <p className="text-oliveSoft">Tidak ada aktivitas ditemukan</p>
+            </div>
+          ) : (
+            filteredActivities.map((a) => (
+              <div key={a.id} className="bg-white rounded-lg shadow p-4 md:p-6 flex gap-4 items-center">
+                <div className='flex flex-col gap-y-2 item'>
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-whiteGreen flex items-center justify-center text-greenDark font-bold flex-shrink-0">
+                    {a.image_url ? (
+                      <img src={a.image_url} alt={a.title} className="w-full h-full object-cover" />
+                    ) : (
+                      'IMG'
+                    )}
+                  </div>
+                  <div className="flex">
+                    <button
+                      onClick={() => handleShareActivity(a)}
+                      className="bg-amber-500/80 text-white p-2 rounded hover:bg-amber-600"
+                      title="Bagikan"
+                    >
+                      <Share2 className="w-3 h-3 sm:w-5 sm:h-5" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActivityToDelete(a)
+                        setShowDeleteConfirm(true)
+                      }}
+                      className="bg-red-500/80 text-white p-2 rounded hover:bg-red-600"
+                      title="Hapus"
+                    >
                       <Trash2 className="w-3 h-3 sm:w-5 sm:h-5" />
-                  </button>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <div className="pr-4">
-                    <h3 className="text-base md:text-md font-semibold text-greenDark ">{a.title}</h3>
-                    <p className="text-xs md:text-bse text-oliveSoft">{a.activity_categories.group_category}</p>
-                    <div className="text-sm text-oliveSoft flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                      <span className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1 text-pinkSoft" />
-                        <span className='text-[10px] md:text-sm '> {new Date(a.created_at).toLocaleDateString('id-ID')} </span>
-                      </span>
-                      {a.province && (
-                        <span className="flex items-center truncate">
-                          <MapPin className="w-4 h-4 mr-1 text-pinkSoft" />
-                          <span className='text-[10px] md:text-sm '> {a.province}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <div className="pr-4">
+                      <h3 className="text-base md:text-md font-semibold text-greenDark">{a.title}</h3>
+                      <p className="text-xs md:text-bse text-oliveSoft">{a.activity_categories.group_category}</p>
+                      <div className="text-sm text-oliveSoft flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                        <span className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-1 text-pinkSoft" />
+                          <span className='text-[10px] md:text-sm'>
+                            {new Date(a.created_at).toLocaleDateString('id-ID')}
+                          </span>
                         </span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-2">
-                      <span className="flex items-center text-greenDark font-medium">
-                        <TrendingUp className="w-4 h-4 mr-1" />+{a.points} poin
-                      </span>
+                        {a.province && (
+                          <span className="flex items-center truncate">
+                            <MapPin className="w-4 h-4 mr-1 text-pinkSoft" />
+                            <span className='text-[10px] md:text-sm'>{a.province}</span>
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-2">
+                        <span className="flex items-center text-greenDark font-medium">
+                          <TrendingUp className="w-4 h-4 mr-1" />+{a.points} poin
+                        </span>
+                      </div>
                     </div>
                   </div>
-
                 </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
+
         {showDeleteConfirm && (
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
             <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-sm shadow-xl border border-zinc-700 text-white">
@@ -305,12 +307,7 @@ export default function RiwayatPage() {
             </div>
           </div>
         )}
-
-
-      </div>
       </div>
     </div>
   )
 }
-
-
