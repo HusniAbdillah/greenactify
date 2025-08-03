@@ -6,6 +6,8 @@ import Image from "next/image";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { Share2, Download, CheckCircle2, LoaderCircle } from "lucide-react";
+import { getProfileByClerkId } from '@/lib/get-profile-front';
+import { useUser } from '@clerk/nextjs';
 
 interface ActivityCategory {
   id: string;
@@ -23,10 +25,10 @@ interface ResultStepProps {
   };
   totalActivities: number;
   totalPoints: number;
-  onFinish: () => Promise<void>; // or whatever the return type should be
+  onFinish: () => Promise<void>;
   onGeneratedImageReady: Dispatch<SetStateAction<string>>;
   challengeId?: string;
-  challengeMultiplier: number; // 🆕 Add this line
+  challengeMultiplier: number;
 }
 
 const wrapText = (
@@ -91,8 +93,11 @@ export default function ResultStep({
   const [hasUploaded, setHasUploaded] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileId] = useState(() => uuidv4());
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [rankLoaded, setRankLoaded] = useState(false);
   const uploadRef = useRef(false);
   const router = useRouter();
+  const { user } = useUser();
   const newTotalActivities = totalActivities;
   const newTotalPoints = totalPoints;
 
@@ -108,7 +113,36 @@ export default function ResultStep({
   });
 
   useEffect(() => {
-    if (uploadRef.current) return;
+    const fetchUserRank = async () => {
+      if (!user?.id) {
+        setRankLoaded(true);
+        return;
+      }
+      
+      try {
+        const profile = await getProfileByClerkId(user.id);
+        
+        if (profile) {
+          if (profile.rank !== null && profile.rank !== undefined) {
+            setUserRank(profile.rank);
+          } else {
+            setUserRank(null);
+          }
+        } else {
+          setUserRank(null);
+        }
+      } catch (error) {
+        setUserRank(null);
+      } finally {
+        setRankLoaded(true);
+      }
+    };
+
+    fetchUserRank();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!rankLoaded || uploadRef.current) return;
 
     const logoImage = new window.Image();
     logoImage.src = "/logo-greenactify.png";
@@ -131,7 +165,7 @@ export default function ResultStep({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      ctx.fillStyle = "#D2E8BB"; // bg-mintPastel
+      ctx.fillStyle = "#D2E8BB";
       ctx.fillRect(0, 0, cardWidth, cardHeight);
 
       const logoHeight = 180;
@@ -144,18 +178,38 @@ export default function ResultStep({
         logoHeight
       );
 
-      let currentY = padding + logoHeight + 80;
-      ctx.fillStyle = "#008373"; // bg-greenDark
+      let currentY = padding + logoHeight + 90;
+      ctx.fillStyle = "#008373";
       ctx.font = "italic bold 52px 'Poppins', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(`@${imageData.username || "User"}`, cardWidth / 2, currentY);
+      
+      ctx.textAlign = "left";
+      ctx.fillText(`@${imageData.username || "User"}`, padding, currentY);
+      
+      if (userRank !== null && userRank !== undefined) {
+        ctx.fillStyle = "#1D4ED8";
+        ctx.font = "bold 48px 'Poppins', sans-serif";
+        ctx.textAlign = "right";
+        
+        const formatRank = (rank: number) => {
+          if (rank % 100 >= 11 && rank % 100 <= 13) return `${rank}th`;
+          switch (rank % 10) {
+            case 1: return `${rank}st`;
+            case 2: return `${rank}nd`;
+            case 3: return `${rank}rd`;
+            default: return `${rank}th`;
+          }
+        };
+        
+        const rankText = `#${formatRank(userRank)}`;
+        ctx.fillText(rankText, cardWidth - padding, currentY);
+      }
 
       currentY += 120;
-      ctx.fillStyle = "#0C3B2E"; // bg-yellowAmber
+      ctx.fillStyle = "#0C3B2E";
       ctx.font = "bold 62px 'Poppins', sans-serif";
       ctx.textAlign = "left";
       ctx.fillText(`${totalActivities + 1} Aktivitas`, padding, currentY);
-      ctx.fillStyle = "#A56D00"; // bg-yellowAmber
+      ctx.fillStyle = "#A56D00";
       ctx.textAlign = "right";
       ctx.fillText(
         `${totalPoints + imageData.points} Poin`,
@@ -250,14 +304,55 @@ export default function ResultStep({
         footerY
       );
 
-      // Jika ini adalah challenge, tambahkan badge di kartu
-      // const { challengeId } = imageData.challengeId;
       if (challengeId) {
-        ctx.fillStyle = "#FFD700"; // Gold color
-        ctx.font = "bold 40px 'Poppins', sans-serif";
+        const badgeSize = 280;
+        const badgeColor = "#DCAA06";
+        const textColor = "#FFFFFF";
+        
+        ctx.shadowColor = badgeColor;
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        ctx.fillStyle = badgeColor;
+        ctx.beginPath();
+        ctx.moveTo(cardWidth - badgeSize, 0);
+        ctx.lineTo(cardWidth, 0);
+        ctx.lineTo(cardWidth, badgeSize);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.fillStyle = "#E40005";
+        ctx.beginPath();
+        ctx.moveTo(cardWidth - badgeSize + 15, 0);
+        ctx.lineTo(cardWidth, 0);
+        ctx.lineTo(cardWidth, badgeSize - 15);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        
+        ctx.save();
+        ctx.fillStyle = textColor;
+        ctx.font = "bold 22px 'Poppins', sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("🎯 DAILY CHALLENGE", cardWidth / 2, currentY - 50);
-        currentY += 50;
+        
+        const textX = cardWidth - badgeSize / 2.8;
+        const textY = badgeSize / 2.8;
+        
+        ctx.translate(textX, textY);
+        ctx.rotate(Math.PI / 4);
+        
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
+        
+        ctx.fillText("DAILY", 0, -12);
+        ctx.fillText("CHALLENGE", 0, 12);
+        
+        ctx.restore();
       }
 
       const generatedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
@@ -284,6 +379,8 @@ export default function ResultStep({
       }
     });
   }, [
+    rankLoaded,
+    userRank,
     fileId,
     formattedDate,
     formattedTime,
