@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -34,10 +34,13 @@ const DesktopSidebar = () => {
     return pathname === href || (pathname && pathname.startsWith(href + '/'))
   }
 
+  useEffect(() => {
+    fetch('/api/profile/check-user', { method: 'POST' })
+  }, [])
+
   return (
     <>
       <div className="hidden lg:flex fixed top-1/2 left-6 -translate-y-1/2 flex-col w-28 h-[680px] bg-mintPastel rounded-[40px] shadow-lg border-2 border-oliveSoft items-center justify-between z-40">
-        {/* Navigation */}
         <nav className="flex flex-col items-center space-y-3 mt-8">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -64,24 +67,23 @@ const DesktopSidebar = () => {
           })}
         </nav>
 
-          {/* User Profile */}
-          <div className="flex-shrink-0 p-4 pb-6 -mt-8">
-            <div className="flex flex-col items-center">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-12 h-12 rounded-2xl shadow-lg border-2 border-white"
-                  }
-                }}
-              />
-              <div className="mt-2 text-center">
-                <p className="text-xs font-medium text-green-800 truncate">
-                  {user?.firstName}
-                </p>
-              </div>
+        <div className="flex-shrink-0 p-4 pb-6 -mt-8">
+          <div className="flex flex-col items-center">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-12 h-12 rounded-2xl shadow-lg border-2 border-white"
+                }
+              }}
+            />
+            <div className="mt-2 text-center">
+              <p className="text-xs font-medium text-green-800 truncate">
+                {user?.firstName}
+              </p>
             </div>
           </div>
         </div>
+      </div>
     </>
   )
 }
