@@ -596,7 +596,7 @@ const UnifiedActivitiesPage = () => {
             <h2 className="text-xl font-bold">Ringkasan Nasional</h2>
             {statisticsData.loading && (
               <div className="flex items-center text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-greenDark mr-2"></div>
                 Memuat data...
               </div>
             )}
@@ -604,28 +604,28 @@ const UnifiedActivitiesPage = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-green-600">
+              <div className="text-2xl md:text-3xl font-bold text-greenDark/80">
                 {statisticsData.loading ? '...' : formatNumber(statisticsData.totalActivities)}
               </div>
               <div className="text-xs md:text-sm text-gray-600">Total Aktivitas</div>
             </div>
 
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-blue-600">
+              <div className="text-2xl md:text-3xl font-bold text-oliveDark">
                 {statisticsData.loading ? '...' : formatNumber(statisticsData.totalParticipants)}
               </div>
               <div className="text-xs md:text-sm text-gray-600">Total Peserta</div>
             </div>
 
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-purple-600">
+              <div className="text-2xl md:text-3xl font-bold text-yellowGold">
                 {statisticsData.loading ? '...' : formatNumber(statisticsData.totalPoints)}
               </div>
               <div className="text-xs md:text-sm text-gray-600">Total Poin</div>
             </div>
 
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-yellowGold">
+              <div className="text-2xl md:text-3xl font-bold text-yellowAmber">
                 {statisticsData.loading ? '...' : statisticsData.activeRegions}
               </div>
               <div className="text-xs md:text-sm text-gray-600">Provinsi Aktif</div>
@@ -729,25 +729,25 @@ const UnifiedActivitiesPage = () => {
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-yellowGold/40 rounded">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-greenDark">
                       {formatNumber(selectedProvinceData.totalPoints)}
                     </div>
                     <div className="text-sm text-gray-600">Total Poin</div>
                   </div>
                   <div className="text-center p-3 bg-tealLight/40 rounded">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-greenDark">
                       {formatNumber(selectedProvinceData.participants)}
                     </div>
                     <div className="text-sm text-gray-600">Peserta</div>
                   </div>
-                  <div className="text-center p-3 bg-pinkSoft/80 rounded">
-                    <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-center p-3 bg-yellowGold/20 rounded">
+                    <div className="text-2xl font-bold text-greenDark">
                       {formatNumber(selectedProvinceData.totalActivities)}
                     </div>
                     <div className="text-sm text-gray-600">Aktivitas</div>
                   </div>
-                  <div className="text-center p-3 bg-yellow-50 rounded">
-                    <div className="text-2xl font-bold text-yellow-600">
+                  <div className="text-center p-3 bg-tealLight/20 rounded">
+                    <div className="text-2xl font-bold text-greenDark">
                       {selectedProvinceData.averagePerUser}
                     </div>
                     <div className="text-sm text-gray-600">Avg/User</div>
@@ -935,6 +935,43 @@ const UnifiedActivitiesPage = () => {
             )}
           </div>
         )}
+        
+        <div className="bg-whiteMint rounded-lg shadow-lg p-6">
+          <div className="flex flex-col space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Aktivitas Hijau Indonesia</h2>
+                <p className="text-sm text-gray-600 mt-1">Unduh laporan atau lihat detail analisis per provinsi</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 justify-end">
+              <button
+                onClick={exportToPDF}
+                className="flex items-center justify-center px-6 py-2 bg-red/60 text-white rounded-md hover:bg-red transition-colors font-semibold"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Unduh PDF
+              </button>
+
+              <button
+                onClick={exportToCSV}
+                className="flex items-center justify-center px-6 py-2 bg-oliveSoft/80 text-white rounded-md hover:bg-oliveSoft transition-colors font-semibold"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Unduh CSV
+              </button>
+
+              <button
+                onClick={() => router.push('/unduh-dampak')}
+                className="flex items-center justify-center px-6 py-2 bg-greenDark/80 text-white rounded-md hover:bg-greenDark transition-colors font-semibold"
+              >
+                <ExternalLink className="w-5 h-5 mr-2" />
+                Lihat Detail per Provinsi
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="bg-whiteMint rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold text-oliveDark border-b border-whiteGreen pb-4 mb-4">
@@ -1059,42 +1096,6 @@ const UnifiedActivitiesPage = () => {
           )}
         </div>
 
-        <div className="bg-whiteMint rounded-lg shadow-lg p-6">
-          <div className="flex flex-col space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Aktivitas Hijau Indonesia</h2>
-                <p className="text-sm text-gray-600 mt-1">Unduh laporan atau lihat detail analisis per provinsi</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 justify-end">
-              <button
-                onClick={exportToPDF}
-                className="flex items-center justify-center px-6 py-2 bg-red/60 text-white rounded-md hover:bg-red transition-colors font-semibold"
-              >
-                <Download className="w-5 h-5 mr-2" />
-                Unduh PDF
-              </button>
-
-              <button
-                onClick={exportToCSV}
-                className="flex items-center justify-center px-6 py-2 bg-oliveSoft/80 text-white rounded-md hover:bg-oliveSoft transition-colors font-semibold"
-              >
-                <Download className="w-5 h-5 mr-2" />
-                Unduh CSV
-              </button>
-
-              <button
-                onClick={() => router.push('/unduh-dampak')}
-                className="flex items-center justify-center px-6 py-2 bg-greenDark/80 text-white rounded-md hover:bg-greenDark transition-colors font-semibold"
-              >
-                <ExternalLink className="w-5 h-5 mr-2" />
-                Lihat Detail per Provinsi
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )
