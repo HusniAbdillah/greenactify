@@ -499,7 +499,7 @@ const UnifiedActivitiesPage = () => {
   ).length
 
   return (
-    <div className="min-h-screen bg-mintPastel font-poppins pt-6">
+    <div className="min-h-screen bg-mintPastel font-poppins pt-6 w-full">
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -714,188 +714,134 @@ const UnifiedActivitiesPage = () => {
             )}
           </div>
         )}
-
         {viewMode === 'activities' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
-            <div className="lg:col-span-2 space-y-8 min-w-265">
-              <div className="bg-whiteMint rounded-xl shadow-lg overflow-hidden">
-                <div className="p-6 border-b border-whiteGreen">
-
-                  <div className="flex justify-between items-center flex-wrap">
-                    <div>
-                      <h2 className="text-xl font-bold text-oliveDark">Peta Sebaran Per Aktivitas</h2>
-                      <p className="text-sm text-oliveSoft mt-1">
+          <div className="space-y-6">
+            {/* Map Section with Top 5 Activities on the right - like province view */}
+            <div className={`grid gap-6 ${isMapFullscreen ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-5'}`}>
+              <div className={`${isMapFullscreen ? 'col-span-1' : 'col-span-1 lg:col-span-4'}`}>
+                <div className="bg-whiteMint rounded-xl shadow-lg overflow-hidden">
+                  <div className="p-6 border-b border-whiteGreen">
+                    <div className="flex flex-col items-start justify-between mb-4">
+                      <h2 className="text-xl font-bold text-oliveDark mb-2">Peta Sebaran Per Aktivitas</h2>
+                      <p className="text-left text-xs text-oliveSoft italic">
                         {mapType === 'marker' ? 'Klik pada titik untuk melihat detail aktivitas' : 'Kerapatan warna menunjukkan konsentrasi aktivitas'}
                       </p>
                     </div>
                     <div className="flex space-x-2">
-
                       <button
                         onClick={() => setMapType('marker')}
-                        className={` mt-3 sm:mt-0 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
                           ${mapType === 'marker' ? 'bg-greenDark text-white shadow-md' : 'bg-whiteGreen text-oliveDark hover:bg-whiteGreen/80'}`}
                       >
                         Marker
                       </button>
                       <button
                         onClick={() => setMapType('heatmap')}
-                        className={` mt-3 sm:mt-0  px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
                           ${mapType === 'heatmap' ? 'bg-greenDark text-white shadow-md' : 'bg-whiteGreen text-oliveDark hover:bg-whiteGreen/80'}`}
                       >
                         Heatmap
                       </button>
-
                     </div>
                   </div>
-                </div>
 
-                <div className="p-4 sm:p-6 overflow-hidden  ">
-                  {loadingActivities ? (
-                    <div className="h-96 flex items-center justify-center bg-whiteGreen rounded-xl">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tealLight mx-auto mb-4"></div>
-                        <p className="text-oliveSoft">Loading aktivitas...</p>
+                  <div className="p-4 sm:p-6">
+                    {loadingActivities ? (
+                      <div className="h-96 flex items-center justify-center bg-whiteGreen rounded-xl">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tealLight mx-auto mb-4"></div>
+                          <p className="text-oliveSoft">Loading aktivitas...</p>
+                        </div>
                       </div>
-                    </div>
-                  ) : errorActivities ? (
-                    <div className="h-96 flex items-center justify-center bg-red-100 border border-red-400 rounded-xl">
-                      <div className="text-center text-red-600">
-                        <p className="font-medium">Error: {errorActivities}</p>
+                    ) : errorActivities ? (
+                      <div className="h-96 flex items-center justify-center bg-red-100 border border-red-400 rounded-xl">
+                        <div className="text-center text-red-600">
+                          <p className="font-medium">Error: {errorActivities}</p>
+                        </div>
                       </div>
-                    </div>
-                  ) : activities.length === 0 ? (
-                    <div className="h-96 flex items-center justify-center bg-whiteGreen rounded-xl">
-                      <p className="text-oliveSoft">Tidak ada aktivitas ditemukan</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-hidden relative pb-[100px] w-full">
-                      <div
-                        id="activity-map"
-                        className="h-96 w-full rounded-xl border border-whiteGreen z-0 "
+                    ) : activities.length === 0 ? (
+                      <div className="h-96 flex items-center justify-center bg-whiteGreen rounded-xl">
+                        <p className="text-oliveSoft">Tidak ada aktivitas ditemukan</p>
+                      </div>
+                    ) : (
+                      <div className="w-full">
+                        <div
+                          id="activity-map"
+                          className="h-96 w-full rounded-xl border border-whiteGreen z-0"
                           style={{
-                            minHeight: '400px',
-                            paddingBottom: '80px'
+                            minHeight: '400px'
                           }}
-                        key={`activity-map-${mapType}-${viewMode}`}
-                      ></div>
-                      {!mapReady && (
-                        <div className=" inset-0 flex items-center justify-center bg-whiteMint bg-opacity-75 rounded-xl">
-                          <div className="text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tealLight mx-auto mb-2"></div>
-                            <p className="text-sm text-oliveSoft">Memuat peta...</p>
+                          key={`activity-map-${mapType}-${viewMode}`}
+                        ></div>
+                        {!mapReady && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-whiteMint bg-opacity-75 rounded-xl">
+                            <div className="text-center">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tealLight mx-auto mb-2"></div>
+                              <p className="text-sm text-oliveSoft">Memuat peta...</p>
+                            </div>
                           </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {!isMapFullscreen && (
+                <div className="col-span-1 lg:col-span-1">
+                  <div className="bg-whiteMint rounded-lg shadow-lg h-full">
+                    <div className="p-4 border-b border-whiteGreen">
+                      <h3 className="text-lg font-bold text-oliveDark">Top 5 Aktivitas Terpopuler</h3>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {popularActivitiesData.loading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-tealLight mx-auto mb-2"></div>
+                          <p className="text-xs text-oliveSoft">Loading...</p>
+                        </div>
+                      ) : popularActivitiesData.activities.length > 0 ? (
+                        <div className="space-y-2">
+                          {popularActivitiesData.activities.slice(0, 5).map((activity, index) => (
+                            <div
+                              key={activity.name}
+                              className="flex items-center justify-between p-3 rounded-lg bg-whiteGreen hover:shadow-md"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md
+                                  ${index === 0 ? 'bg-yellowGold text-white' :
+                                    index === 1 ? 'bg-oliveSoft text-white' :
+                                    index === 2 ? 'bg-tealLight text-white' :
+                                    'bg-mintPastel text-oliveDark'}
+                                `}>
+                                  {index + 1}
+                                </div>
+                                <div
+                                  className="w-3 h-3 rounded"
+                                  style={{ backgroundColor: activity.color }}
+                                ></div>
+                                <div>
+                                  <p className="font-semibold text-sm text-greenDark">{activity.name}</p>
+                                  <p className="text-xs text-oliveSoft mt-0.5">{activity.percentage}%</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-sm text-yellowGold">{formatNumber(activity.count)}</p>
+                                <p className="text-xs text-oliveSoft">aktivitas</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center text-oliveSoft py-4">
+                          Belum ada data aktivitas
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid  grid-cols-2 sm :grid-cols-4 gap-6">
-                <div className="bg-whiteMint rounded-xl shadow-lg p-5">
-                  <h3 className="text-sm font-medium text-oliveSoft">Total Aktivitas</h3>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-oliveDark">{activities.length}</p>
-                </div>
-                <div className="bg-whiteMint rounded-xl shadow-lg p-5">
-                  <h3 className="text-sm font-medium text-oliveSoft">Aktivitas Berkoordinat</h3>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-greenDark">{validActivitiesCount}</p>
-                </div>
-                <div className="bg-whiteMint rounded-xl shadow-lg p-5">
-                  <h3 className="text-sm font-medium text-oliveSoft">Total Provinsi</h3>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-tealLight">{provinces.length}</p>
-                </div>
-                <div className="bg-whiteMint rounded-xl shadow-lg p-5">
-                  <h3 className="text-sm font-medium text-oliveSoft">Total Poin</h3>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-yellowGold">
-                    {activities.reduce((sum, act) => sum + act.points, 0)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              {selectedActivity && (
-                <div className="bg-whiteMint rounded-xl shadow-lg">
-                  <div className="p-6 border-b border-whiteGreen">
-                    <h3 className="text-xl font-bold text-oliveDark">Detail Aktivitas</h3>
-                  </div>
-                  <div className="p-6">
-                    <h4 className="font-bold text-lg mb-2 text-greenDark">{selectedActivity.title}</h4>
-                    <div className="space-y-3 text-oliveDark">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-oliveSoft">Kategori:</span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(selectedActivity.activity_categories.name)}`}>
-                          {selectedActivity.activity_categories.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-oliveSoft">Provinsi:</span>
-                        <span className="text-sm font-medium">{selectedActivity.province || 'Tidak ada'}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-oliveSoft">Poin:</span>
-                        <span className="text-sm font-bold text-yellowGold">+{selectedActivity.points}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-oliveSoft">Koordinat:</span>
-                        <span className="text-xs text-oliveSoft">
-                          {selectedActivity.latitude?.toFixed(4)}, {selectedActivity.longitude?.toFixed(4)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-oliveSoft">Dibuat:</span>
-                        <span className="text-xs text-oliveSoft">
-                          {new Date(selectedActivity.created_at).toLocaleDateString('id-ID')}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
-
-              {viewMode === 'activities' && (
-                <div className='flex justify-end'>
-                <div className="bg-whiteMint rounded-lg shadow-lg p-6 max-w-60">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className=" text-lg font-bold">Top 5 Aktivitas Terpopuler</h3>
-                    {popularActivitiesData.loading && (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                    )}
-                  </div>
-                  <div className="space-y-3">
-                    {popularActivitiesData.loading ? (
-                      <div className="text-center text-gray-500 py-4">
-                        Memuat data aktivitas...
-                      </div>
-                    ) : popularActivitiesData.activities.length > 0 ? (
-                      popularActivitiesData.activities.slice(0, 5).map((activity, index) => (
-                        <div key={activity.name} className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
-                              {index + 1}
-                            </div>
-                            <div
-                              className="w-4 h-4 rounded"
-                              style={{ backgroundColor: activity.color }}
-                            ></div>
-                            <span className="font-medium text-sm">{activity.name}</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-gray-800">{formatNumber(activity.count)}</div>
-                            <div className="text-xs text-gray-500">{activity.percentage}%</div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center text-gray-500 py-4">
-                        Belum ada data aktivitas
-                      </div>
-                    )}
-                  </div>
-                </div>
-                </div>
-              )}
             </div>
+
           </div>
         )}
 
