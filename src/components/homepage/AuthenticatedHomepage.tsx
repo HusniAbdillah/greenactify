@@ -80,7 +80,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
       <MobileBottomNav />
 
       {/* Main Content - This will work with the existing layout */}
-      <main className="container mx-auto px-6 pb-24 pt-0 lg:ml-40 lg:pb-8 lg:pt-20">
+      <main className="container mx-auto px-6 pb-24 pt-0 lg:ml-36 lg:pl-15 lg:pb-8 lg:pt-20">
         {/* Welcome Section */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-10 md:mb-8">
