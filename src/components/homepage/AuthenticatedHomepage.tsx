@@ -56,14 +56,12 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
     }
   };
 
-  // Reset index if it's out of bounds
   React.useEffect(() => {
     if (dailyChallenges && currentChallengeIndex >= dailyChallenges.length) {
       setCurrentChallengeIndex(0);
     }
   }, [dailyChallenges, currentChallengeIndex]);
 
-  // Ensure we have valid challenges and index
   const validChallenges = dailyChallenges || [];
   const safeIndex = Math.max(
     0,
@@ -72,15 +70,12 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
   const currentChallenge = validChallenges[safeIndex];
   return (
     <div className="min-h-screen bg-mintPastel">
-      {/* Navigation Components */}
       <DesktopSidebar />
       <MobileBottomNav />
 
-      {/* Main Content - Use same approach as authenticated layout */}
       <div className="lg:ml-35">
        <main className="w-full pt-0 pr-4 pb-24 pl-4 md:p-8 lg:pb-8 lg:pt-8 overflow-x-hidden">
           <div className="max-w-7xl mx-auto">
-            {/* Welcome Section */}
             <div className="text-center mb-6 mt-0 md:mb-8">
               <div className="flex justify-center mt-0 mb-4 md:mt-6 md:mb-10">
                 <img
@@ -92,9 +87,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
               <h1 className="text-2xl md:text-2xl lg:text-3xl font-bold text-greenDark mb-0 md:mb-2 px-4">
                 {userName ? (
                   <>
-                    {/* Mobile: Hai, username */}
                     <span className="block md:hidden">Hai, {userName}! </span>
-                    {/* Desktop: Selamat Datang Kembali, username */}
                     <span className="hidden md:block">
                       Selamat Datang Kembali, {userName}!
                     </span>
@@ -119,14 +112,11 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
             </div>
 
             <div className="flex flex-col lg:flex-row lg:gap-8 lg:items-start">
-              {/* Today's Challenge Carousel */}
               <div className="lg:flex-1 mb-12 lg:mb-0">
                 <div className="relative bg-gradient-to-br from-tealLight via-greenDark to-oliveDark rounded-3xl py-6 px-2 md:px-6 text-white overflow-visible md:overflow-hidden shadow-xl">
                   {dailyChallenges.length > 0 && currentChallenge ? (
                     <>
-                      {/* Challenge Content */}
                       <div className="relative z-10">
-                        {/* Header with indicators */}
                         <div className="flex items-center justify-between mb-4 px-6">
                           <div>
                             <h2 className="text-xl font-bold mb-1">
@@ -176,9 +166,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                           )}
                         </div>
 
-                        {/* Challenge Card and Arrows Container */}
                         <div className="flex items-center justify-center gap-1 md:gap-2 px-1 md:px-2">
-                          {/* Left Arrow */}
                           {dailyChallenges.length > 1 && (
                             <button
                               onClick={prevChallenge}
@@ -188,7 +176,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                             </button>
                           )}
 
-                          {/* Challenge Card */}
                           <div
                             className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-h-[200px] md:min-h-[140px] flex items-start justify-center mx-auto max-w-2xl flex-1 h-auto cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-[1.02] hover:border-white/30"
                             onClick={() =>
@@ -197,7 +184,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                           >
                             <div className="flex items-start justify-between flex-wrap gap-4 w-full">
                               <div className="flex-1 min-w-0">
-                                {/* Challenge Icon & Title */}
                                 <div className="flex items-center gap-3 mb-3">
                                   <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-xl">
                                     {currentChallenge.icon}
@@ -209,12 +195,10 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                                   </div>
                                 </div>
 
-                                {/* Description */}
                                 <p className="text-white/90 mb-3 leading-relaxed text-sm">
                                   {currentChallenge.description}
                                 </p>
 
-                                {/* Instructions */}
                                 {currentChallenge.instructions && (
                                   <div className="mb-3 p-3 bg-white/10 rounded-lg border border-white/20">
                                     <h4 className="text-sm font-semibold text-white mb-2">
@@ -244,7 +228,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                                   </div>
                                 )}
 
-                                {/* Challenge Stats */}
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <div className="bg-[#FFEC86]/40 border border-[#FFEC86]/60 px-2 py-1 rounded-full flex items-center gap-1">
                                     <span className="text-xs font-medium text-red">
@@ -282,7 +265,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                             </div>
                           </div>
 
-                          {/* Right Arrow */}
                           {dailyChallenges.length > 1 && (
                             <button
                               onClick={nextChallenge}
@@ -294,12 +276,10 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                         </div>
                       </div>
 
-                      {/* Enhanced Background decoration */}
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
                       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
                       <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-yellowGold/10 rounded-full -translate-y-8"></div>
 
-                      {/* Floating particles effect */}
                       <div className="absolute top-3 left-1/4 w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse"></div>
                       <div className="absolute bottom-4 right-1/3 w-1 h-1 bg-yellowGold/50 rounded-full animate-pulse delay-300"></div>
                       <div className="absolute top-1/3 left-1/6 w-0.5 h-0.5 bg-white/40 rounded-full animate-pulse delay-700"></div>
@@ -322,7 +302,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                 </div>
               </div>
 
-              {/* Recent Activities */}
               <div className="lg:flex-1">
                 <div className="bg-oliveSoft rounded-2xl shadow-lg p-6">
                   <h2 className="text-xl text-center italic md:text-2xl lg:text-xl font-bold text-greenDark mb-6">
@@ -330,7 +309,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                   </h2>
                   <div className="space-y-4">
                     {activityLoading ? (
-                      // Loading state
                       <div className="space-y-4">
                         {[...Array(3)].map((_, i) => (
                           <div
@@ -434,10 +412,8 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
               </div>
             </div>
 
-            {/* Heatmap and PDF Report Section */}
             <div className="mt-12 lg:mt-16">
               <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-                {/* Heatmap Section - 70% width on desktop */}
                 <div className="lg:col-span-7">
                   <div className="bg-whiteMint rounded-2xl shadow-lg p-6 h-full">
                     <div className="flex items-center justify-between mb-6">
@@ -455,7 +431,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                       <HomepageHeatmap />
                     </div>
 
-                    {/* Bottom button for map detail */}
                     <div className="mt-6 text-center">
                       <button
                         onClick={() => (window.location.href = "/persebaran")}
@@ -469,7 +444,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                   </div>
                 </div>
 
-                {/* PDF Report Download Section - 30% width on desktop */}
                 <div className="lg:col-span-3">
                   <div className="bg-whiteMint rounded-2xl shadow-lg p-6 h-full flex flex-col justify-center">
                     <div className="text-center mb-6">
@@ -526,7 +500,6 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
   );
 };
 
-// Heatmap component for homepage
 const HomepageHeatmap: React.FC = () => {
   const { provinceData, loading, error } = useProvinceData();
 
