@@ -35,7 +35,14 @@ export type ProvinceStats = {
 
 const UnifiedActivitiesPage = () => {
   const router = useRouter()
+  const { user } = useUser();
   const { isLoaded, isSignedIn } = useUser()
+
+  useEffect(() => {
+    if (user === null) {
+      router.push('/');
+    }
+  }, [user, router]);
 
   const [viewMode, setViewMode] = useState<'province' | 'activities'>('province')
   const [mapType, setMapType] = useState<'marker' | 'heatmap'>('heatmap')
@@ -432,9 +439,9 @@ const UnifiedActivitiesPage = () => {
       const logoX = (pageWidth - logoWidth) / 2
       doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
 
-
       doc.setFontSize(16)
       doc.setTextColor(34, 78, 64)
+
       doc.setFont('helvetica', 'bold')
       doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
         align: 'center'
@@ -470,12 +477,71 @@ const UnifiedActivitiesPage = () => {
           cellPadding: 3
         },
         headStyles: {
+<<<<<<<<< Temporary merge branch 1
           fillColor: [12, 59, 46],
+=========
+          fillColor: [34, 197, 94],
+>>>>>>>>> Temporary merge branch 2
           textColor: [255, 255, 255],
           fontStyle: 'bold'
         },
         bodyStyles: {
           textColor: [0,0,0]
+        },
+        alternateRowStyles: {
+          fillColor: [240, 253, 244]
+        },
+        tableLineColor: [200, 250, 200],
+        tableLineWidth: 0.2
+      })
+
+      doc.save('Laporan Dampak GreenActivy.pdf')
+    }
+
+    img.onerror = () => {
+
+      const pageWidth = doc.internal.pageSize.getWidth()
+
+      doc.setFontSize(16)
+      doc.setTextColor(34, 197, 94)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Dampak GreenActivy Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
+        align: 'center'
+      })
+
+      const tableData = provinces.map(prov => {
+        const extra = getProvinceExtraStats(prov.province)
+        return [
+          prov.province,
+          prov.total_users,
+          prov.total_activities,
+          prov.total_points,
+          prov.avg_points_per_user,
+          extra.highPointPercentage,
+          extra.mostFrequentActivity,
+          extra.avgPointsPerActivity,
+          extra.latestActivity
+        ]
+      })
+
+      autoTable(doc, {
+        startY: 30,
+        head: [[
+          "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+          "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+          "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+        ]],
+        body: tableData,
+        styles: {
+          fontSize: 9,
+          halign: 'center',
+          valign: 'middle',
+          cellPadding: 3
+        },
+        headStyles: {
+          fillColor: [34, 197, 94],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
         },
         alternateRowStyles: {
           fillColor: [240, 253, 244]
