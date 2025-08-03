@@ -176,7 +176,7 @@ const exportToPDF = () => {
     doc.setTextColor(34, 78, 64)
 
     doc.setFont('helvetica', 'bold')
-    doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
+    doc.text('Dampak GreenActify Terhadap Aksi Hijau Indonesia', pageWidth / 2, 40, {
       align: 'center'
     })
 
@@ -260,7 +260,7 @@ const exportToPDF = () => {
       </div>
 
       <div className="overflow-x-auto bg-white rounded-xl shadow border border-whiteGreen">
-        <h3 className="text-xl font-bold mb-4 text-greenDark px-4 pt-4">Dampak GreenActify Terhadap Aksi Pro-Lingkungan</h3>
+        <h3 className="text-xl font-bold mb-4 text-greenDark px-4 pt-4">Dampak GreenActify Terhadap Aksi Hijau Indonesia</h3>
         <table className="table-auto w-full text-sm border-collapse">
           <thead className="bg-whiteGreen text-oliveDark">
             <tr>

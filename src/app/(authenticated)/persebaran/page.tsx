@@ -435,7 +435,7 @@ const UnifiedActivitiesPage = () => {
       doc.setTextColor(34, 78, 64)
 
       doc.setFont('helvetica', 'bold')
-      doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 40, {
+      doc.text('Dampak GreenActify Terhadap Aksi Hijau Indonesia', pageWidth / 2, 40, {
         align: 'center'
       })
 
@@ -492,7 +492,7 @@ const UnifiedActivitiesPage = () => {
       doc.setFontSize(16)
       doc.setTextColor(34, 78, 64)
       doc.setFont('helvetica', 'bold')
-      doc.text('Dampak GreenActify Terhadap Aksi Pro-Lingkungan', pageWidth / 2, 20, {
+      doc.text('Dampak GreenActify Terhadap Aksi ngan', pageWidth / 2, 20, {
         align: 'center'
       })
 
