@@ -819,7 +819,7 @@ const UnifiedActivitiesPage = () => {
                       <div className="w-full">
                         <div
                           id="activity-map"
-                          className="h-96 w-full rounded-xl border border-whiteGreen"
+                          className="h-96 w-full rounded-xl border border-whiteGreen z-0"
                           style={{
                             minHeight: '400px'
                           }}
