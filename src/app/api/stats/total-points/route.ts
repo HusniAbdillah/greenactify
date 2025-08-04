@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase-admin'
 
 export async function GET() {
   try {
-    // Get total points from province_stats table
     const { data: provinceStats, error: provinceError } = await supabase()
       .from('province_stats')
       .select('total_points')
@@ -13,10 +12,8 @@ export async function GET() {
       return NextResponse.json({ error: provinceError.message }, { status: 500 })
     }
 
-    // Sum all total points from provinces
     const totalPoints = provinceStats?.reduce((sum, province) => sum + (province.total_points || 0), 0) || 0
 
-    // Count active regions (provinces with points > 0)
     const activeRegions = provinceStats?.filter(province => (province.total_points || 0) > 0).length || 0
 
     return NextResponse.json({

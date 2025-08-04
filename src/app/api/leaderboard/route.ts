@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     let data
 
     if (type === 'provinces') {
-      // Fetch provinces leaderboard
       const { data: provinces, error } = await supabase()
         .from('leaderboard_provinces')
         .select('*')
@@ -22,7 +21,6 @@ export async function GET(request: NextRequest) {
 
       data = provinces
     } else {
-      // Fetch users leaderboard (default)
       const { data: users, error } = await supabase()
         .from('leaderboard_users')
         .select('*')

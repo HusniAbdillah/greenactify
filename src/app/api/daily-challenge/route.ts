@@ -2,18 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTodayChallenge, getRandomChallenges, updateChallengeDate, supabase } from '@/lib/supabase-client';
 import { DailyChallenge } from '@/lib/types/supabase';
 
-// Function to transform database challenge to expected format
 function transformChallenge(dbChallenge: DailyChallenge | null) {
   if (!dbChallenge) return null;
 
-  // Calculate hours remaining until end of day using Indonesian timezone
   const now = new Date();
-  const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+  const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
   const endOfDay = new Date(indonesianTime);
   endOfDay.setHours(23, 59, 59, 999);
   const hoursRemaining = Math.max(0, Math.floor((endOfDay.getTime() - indonesianTime.getTime()) / (1000 * 60 * 60)));
 
-  // Parse instructions from string to array if it's a string
   let instructions = [];
   if (dbChallenge.instructions) {
     try {
@@ -26,7 +23,7 @@ function transformChallenge(dbChallenge: DailyChallenge | null) {
   }
 
   return {
-    id: dbChallenge.id, // Keep as UUID string, don't convert to integer
+    id: dbChallenge.id,
     title: dbChallenge.title || 'Tantangan Harian',
     description: dbChallenge.description || 'Selesaikan tantangan ini untuk mendapatkan poin',
     icon: dbChallenge.icon || '🌱',
@@ -47,12 +44,10 @@ function transformChallenge(dbChallenge: DailyChallenge | null) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get today's challenge from database using Indonesian timezone (WIB/UTC+7)
     let dbChallenges = [];
 
-    // Get current date in Indonesian timezone
     const now = new Date();
-    const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
+    const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
     const today = indonesianTime.toISOString().split('T')[0];
 
     // Check if there are already challenges for today

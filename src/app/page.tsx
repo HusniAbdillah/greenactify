@@ -33,7 +33,6 @@ interface ProvinceLeaderboard {
   rank: number;
 }
 
-// Utility functions tetap sama...
 const formatNumber = (num: number) => {
   if (num >= 1500000) {
     return (num / 1000000).toFixed(1) + "M+";
@@ -171,7 +170,7 @@ export default function HomePage() {
         dailyChallenges={dailyChallenges}
         activityHistory={activityHistory}
         activityLoading={activitiesLoading}
-        userName={user?.firstName || user?.fullName || undefined}
+        userName={user?.fullName || user?.username || user?.firstName || undefined}
       />
     );
   }

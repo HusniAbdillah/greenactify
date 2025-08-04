@@ -276,7 +276,6 @@ const UnifiedActivitiesPage = () => {
       mapRef.current = map
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        // attribution: '© OpenStreetMap contributors'
       }).addTo(map)
 
       const validActivities = activities.filter(activity =>
@@ -315,7 +314,7 @@ const UnifiedActivitiesPage = () => {
           const weight = Math.max(0.3, Math.min(1.0, activity.points / 100))
           return [activity.latitude!, activity.longitude!, weight]
         })
-        
+
         heatLayerRef.current = L.heatLayer(heatPoints, {
           radius: 35,
           blur: 25,
@@ -324,7 +323,7 @@ const UnifiedActivitiesPage = () => {
           minOpacity: 0.4,
           gradient: {
             0.0: '#E8F5E8',
-            0.1: '#C8E6C9', 
+            0.1: '#C8E6C9',
             0.2: '#A5D6A7',
             0.3: '#81C784',
             0.4: '#66BB6A',
@@ -356,9 +355,9 @@ const UnifiedActivitiesPage = () => {
             { range: '81-100 poin', color: '#2E7D32', label: 'Sangat Tinggi', textColor: 'white' },
             { range: '>100 poin', color: '#0D4E14', label: 'Ekstrim', textColor: 'white' }
           ]
-          
+
           div.innerHTML = '<strong style="color: #2E7D32; margin-bottom: 8px; display: block; text-align: center;"Intensitas Aktivitas Hijau</strong>'
-          
+
           gradients.forEach(item => {
             div.innerHTML += `
               <div style="display: flex; align-items: center; margin: 4px 0;">
@@ -1002,7 +1001,7 @@ const exportToCSV = () => {
               )}
             </div>
 
-          
+
             {selectedActivity && (
               <div className="bg-whiteMint rounded-xl shadow-lg">
                 <div className="p-6 border-b border-whiteGreen">
@@ -1043,7 +1042,7 @@ const exportToCSV = () => {
             )}
           </div>
         )}
-        
+
         <div className="bg-whiteMint rounded-lg shadow-lg p-6">
           <div className="flex flex-col space-y-6">
             <div className="flex items-center justify-between mb-4">
