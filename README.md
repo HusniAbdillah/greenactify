@@ -1,4 +1,7 @@
-# GreenActify
+
+<p align="center">
+  <img src="public/logo-greenactify.png" alt="GreenActify Logo" width="180"/>
+</p>
 
 GreenActify adalah Progressive Web App (_PWA_) berbasis _mobile-first_ yang membangun ekosistem digital untuk mendorong, mencatat, dan menggamifikasi partisipasi masyarakat dalam aksi hijau. Platform ini dapat diakses universal lewat browser, baik di perangkat mobile maupun desktop, dengan antarmuka responsif dan performa setara aplikasi native.
 
