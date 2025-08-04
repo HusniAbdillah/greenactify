@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase-admin'
 
 export async function GET() {
   try {
-    // Get province stats from the database
     const { data: provinceStats, error } = await supabase()
       .from('province_stats')
       .select('*')
@@ -14,7 +13,6 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Transform the data to match the expected format
     const transformedData = provinceStats?.map(province => ({
       id: province.province.toUpperCase().replace(/\s+/g, '_'),
       name: province.province,
@@ -23,10 +21,10 @@ export async function GET() {
       totalActivities: province.total_activities || 0,
       participants: province.total_users || 0,
       averagePerUser: province.avg_points_per_user || 0,
-      topActivity: 'Aktivitas Hijau', // Default for now
-      coordinates: [0, 0], // Will be set by frontend mapping
-      growth: '+0%', // Default for now
-      position: { x: 0, y: 0 }, // Will be set by frontend mapping
+      topActivity: 'Aktivitas Hijau',
+      coordinates: [0, 0],
+      growth: '+0%',
+      position: { x: 0, y: 0 },
       rank: province.rank || 0
     })) || []
 

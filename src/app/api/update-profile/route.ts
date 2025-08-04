@@ -1,4 +1,3 @@
-// app/api/update-profile/route.ts
 import { NextResponse } from 'next/server';
 import { updateProfile } from '@/lib/supabase-client';
 

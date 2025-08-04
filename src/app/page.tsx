@@ -33,7 +33,6 @@ interface ProvinceLeaderboard {
   rank: number;
 }
 
-// Utility functions tetap sama...
 const formatNumber = (num: number) => {
   if (num >= 1500000) {
     return (num / 1000000).toFixed(1) + "M+";
@@ -133,7 +132,6 @@ export default function HomePage() {
       }))
     : [];
 
-  // Pastikan variabel statsData sudah dideklarasikan dari hook useStats
   const stats = statsData || {
     totalUsers: 0,
     totalActivities: 0,

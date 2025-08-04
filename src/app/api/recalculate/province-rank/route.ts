@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { recalculateProvinceRanks } from '@/lib/supabase-client'; // path sesuai file kamu
+import { recalculateProvinceRanks } from '@/lib/supabase-client';
 
 export async function POST() {
   const result = await recalculateProvinceRanks();
