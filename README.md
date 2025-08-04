@@ -1,4 +1,3 @@
-# GreenActify
 
 <p align="center">
   <img src="public/logo-greenactify.png" alt="GreenActify Logo" width="180"/>
