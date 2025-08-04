@@ -118,10 +118,10 @@ export default function ResultStep({
         setRankLoaded(true);
         return;
       }
-      
+
       try {
         const profile = await getProfileByClerkId(user.id);
-        
+
         if (profile) {
           if (profile.rank !== null && profile.rank !== undefined) {
             setUserRank(profile.rank);
@@ -178,18 +178,23 @@ export default function ResultStep({
         logoHeight
       );
 
-      let currentY = padding + logoHeight + 90;
+      ctx.fillStyle = "#0C3B2E";
+      ctx.font = "bold 32px 'Poppins', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("greenactify.vercel.app", cardWidth / 2, padding + logoHeight + 50);
+
+      let currentY = padding + logoHeight + 160;
       ctx.fillStyle = "#008373";
       ctx.font = "italic bold 52px 'Poppins', sans-serif";
-      
+
       ctx.textAlign = "left";
       ctx.fillText(`@${imageData.username || "User"}`, padding, currentY);
-      
+
       if (userRank !== null && userRank !== undefined) {
         ctx.fillStyle = "#1D4ED8";
         ctx.font = "bold 48px 'Poppins', sans-serif";
         ctx.textAlign = "right";
-        
+
         const formatRank = (rank: number) => {
           if (rank % 100 >= 11 && rank % 100 <= 13) return `${rank}th`;
           switch (rank % 10) {
@@ -199,7 +204,7 @@ export default function ResultStep({
             default: return `${rank}th`;
           }
         };
-        
+
         const rankText = `#${formatRank(userRank)}`;
         ctx.fillText(rankText, cardWidth - padding, currentY);
       }
@@ -271,7 +276,7 @@ export default function ResultStep({
 
       const totalTextHeight = lines * lineHeight;
       const areaTop = currentY;
-      
+
       let startY;
       if (wordsCount > 3 || lines > 1) {
         startY = areaTop + 20;
@@ -313,12 +318,12 @@ export default function ResultStep({
         const badgeSize = 280;
         const badgeColor = "#DCAA06";
         const textColor = "#FFFFFF";
-        
+
         ctx.shadowColor = badgeColor;
         ctx.shadowBlur = 20;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
-        
+
         ctx.fillStyle = badgeColor;
         ctx.beginPath();
         ctx.moveTo(cardWidth - badgeSize, 0);
@@ -326,7 +331,7 @@ export default function ResultStep({
         ctx.lineTo(cardWidth, badgeSize);
         ctx.closePath();
         ctx.fill();
-        
+
         ctx.fillStyle = "#E40005";
         ctx.beginPath();
         ctx.moveTo(cardWidth - badgeSize + 15, 0);
@@ -334,29 +339,29 @@ export default function ResultStep({
         ctx.lineTo(cardWidth, badgeSize - 15);
         ctx.closePath();
         ctx.fill();
-        
+
         ctx.shadowColor = "transparent";
         ctx.shadowBlur = 0;
-        
+
         ctx.save();
         ctx.fillStyle = textColor;
         ctx.font = "bold 26px 'Poppins', sans-serif";
         ctx.textAlign = "center";
-        
+
         const textX = cardWidth - badgeSize / 2.8;
         const textY = badgeSize / 2.8;
-        
+
         ctx.translate(textX, textY);
         ctx.rotate(Math.PI / 4);
-        
+
         ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
         ctx.shadowBlur = 5;
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
-        
+
         ctx.fillText("DAILY", 0, -15);
         ctx.fillText("CHALLENGE", 0, 15);
-        
+
         ctx.restore();
       }
 
