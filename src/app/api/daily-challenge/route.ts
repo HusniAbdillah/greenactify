@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
     const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
     const today = indonesianTime.toISOString().split('T')[0];
 
-    // Check if there are already challenges for today
     const { data: existingChallenges, error } = await supabase
       .from('daily_challenges')
       .select('*')
@@ -59,11 +58,9 @@ export async function GET(request: NextRequest) {
     if (!error && existingChallenges && existingChallenges.length > 0) {
       dbChallenges = existingChallenges;
     } else {
-      // Get 3 random challenges that don't have today's date
       const randomChallenges = await getRandomChallenges(3);
 
       if (randomChallenges.length > 0) {
-        // Update all challenges to today's date
         const updatePromises = randomChallenges.map(async (challenge: any) => {
           const updateSuccess = await updateChallengeDate(challenge.id, today);
 
@@ -83,7 +80,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (dbChallenges.length === 0) {
-      // Return a default challenge if no challenge found and no random challenges available
       const defaultChallenge = {
         id: 0,
         title: '🌱 Kurangi Sampah Plastik',
@@ -117,7 +113,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Transform all challenges
     const transformedChallenges = dbChallenges
       .map((challenge: any) => transformChallenge(challenge))
       .filter((challenge): challenge is NonNullable<typeof challenge> => challenge !== null);

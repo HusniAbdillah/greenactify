@@ -68,7 +68,6 @@ export default function SelectActivityStep({
       setCategories(categoriesData);
     });
     
-    // Set selectedGroup setelah data dimuat
     if (challengeFilter) {
       setSelectedGroup(challengeFilter);
     } else {
@@ -83,13 +82,11 @@ export default function SelectActivityStep({
     console.log('categories count:', categories.length);
     console.log('groups count:', groups.length);
     
-    // If challenge filter is active, prioritize challenge filtering
     if (challengeFilter && groups.length > 0) {
       const targetGroup = groups.find(g => g.id === challengeFilter);
       console.log('Target group:', targetGroup);
       
       const challengeFiltered = categories.filter((cat) => {
-        // Try both UUID and name matching
         const matchById = cat.group_category === challengeFilter;
         const matchByName = targetGroup && cat.group_category === targetGroup.name;
         
@@ -107,7 +104,6 @@ export default function SelectActivityStep({
       
       console.log('Challenge filtered result:', challengeFiltered.length, 'items');
       
-      // Apply search filter to challenge results
       const searchFiltered = challengeFiltered.filter((cat) => {
         if (!search) return true;
         const searchLower = search.toLowerCase();
@@ -119,14 +115,11 @@ export default function SelectActivityStep({
       return searchFiltered;
     }
 
-    // Normal filtering (non-challenge mode)
     const filtered = categories.filter((cat) => {
-      // Search dalam nama dan deskripsi
       const searchLower = search.toLowerCase();
       const matchSearch = cat.name.toLowerCase().includes(searchLower) ||
                          (cat.description && cat.description.toLowerCase().includes(searchLower));
       
-      // Filter berdasarkan grup
       let matchGroup = true;
       if (selectedGroup !== 'all') {
         const group = groups.find(g => g.id === selectedGroup);
@@ -137,7 +130,6 @@ export default function SelectActivityStep({
       return matchSearch && matchGroup;
     });
 
-    // Shuffle for 'all' group in normal mode
     if (selectedGroup === 'all') {
       const shuffled = [...filtered];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -160,7 +152,6 @@ export default function SelectActivityStep({
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col">
 
-      {/* Show challenge info if in challenge mode */}
       {challengeFilter && (
         <div className="bg-yellowGold/10 border border-yellowGold/30 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-2">
@@ -196,7 +187,6 @@ export default function SelectActivityStep({
         )}
       </div>
 
-      {/* Group filters - disable in challenge mode */}
       {!challengeFilter && (
         <div className="flex gap-3 mb-4 overflow-x-auto pb-2 md:flex-wrap md:overflow-x-visible">
           <button
@@ -206,7 +196,7 @@ export default function SelectActivityStep({
                 : 'bg-whiteMint text-greenDark border-gray-200 hover:border-tealLight hover:bg-mintPastel'
               }`}
             onClick={() => setSelectedGroup('all')}
-            disabled={!!challengeFilter} // Convert to boolean using !!
+            disabled={!!challengeFilter} 
           >
             <IconRenderer iconName="layers" className="w-5 h-5" />
             Semua
@@ -302,7 +292,6 @@ export default function SelectActivityStep({
           </button>
         ))}
         
-        {/* Info jumlah aktivitas */}
         {filteredCategories.length > 0 && (
           <div className="text-center text-gray-500 text-sm mt-4">
             Menampilkan {filteredCategories.length} aktivitas

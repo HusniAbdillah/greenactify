@@ -1,4 +1,3 @@
-// public/sw.js
 const CACHE_NAME = 'greenactify-v2';
 const STATIC_CACHE = 'static-v2';
 const API_CACHE = 'api-v2';
@@ -17,7 +16,6 @@ const API_ENDPOINTS = [
   '/api/stats',
 ];
 
-// Install event
 self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
@@ -28,7 +26,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -44,18 +41,15 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Handle API requests
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       caches.open(API_CACHE).then(cache => {
         return cache.match(request).then(cachedResponse => {
           if (cachedResponse) {
-            // Return cached response and update in background
             fetch(request).then(response => {
               if (response.ok) {
                 cache.put(request, response.clone());
@@ -63,7 +57,6 @@ self.addEventListener('fetch', (event) => {
             });
             return cachedResponse;
           }
-          // Fetch and cache new response
           return fetch(request).then(response => {
             if (response.ok) {
               cache.put(request, response.clone());
@@ -76,7 +69,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle static assets
   event.respondWith(
     caches.match(request).then(response => {
       return response || fetch(request);

@@ -6,7 +6,7 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } } 
 ) {
-  const profileId = params.id; // UUID user
+  const profileId = params.id; 
 
   if (!profileId) {
     return NextResponse.json(
