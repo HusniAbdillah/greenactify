@@ -3,8 +3,14 @@
 import { useState, useEffect } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { Trophy, Medal, Award } from "lucide-react";
-import { fetchStats, type StatsData } from "@/lib/calculate-stats";
 import { DailyChallenge, ActivityHistory } from "@/lib/types/homepage";
+import {
+  useDailyChallenge,
+  useUserActivities,
+  useStats,
+  useUserLeaderboard,
+  useProvinceLeaderboard,
+} from "@/hooks/useSWRData";
 import "./globals.css";
 import UnauthenticatedHomepage from "@/components/homepage/UnauthenticatedHomepage";
 import AuthenticatedHomepage from "@/components/homepage/AuthenticatedHomepage";
@@ -27,6 +33,7 @@ interface ProvinceLeaderboard {
   rank: number;
 }
 
+// Utility functions tetap sama...
 const formatNumber = (num: number) => {
   if (num >= 1500000) {
     return (num / 1000000).toFixed(1) + "M+";
@@ -61,10 +68,10 @@ const getRelativeTime = (date: Date): string => {
     return `${diffInHours} jam lalu`;
   } else if (diffInHours < 48) {
     return '1 hari lalu';
-  } else if (diffInHours < 168) { // 7 days
+  } else if (diffInHours < 168) {
     const days = Math.floor(diffInHours / 24);
     return `${days} hari lalu`;
-  } else if (diffInHours < 720) { // 30 days
+  } else if (diffInHours < 720) {
     const weeks = Math.floor(diffInHours / 168);
     return `${weeks} minggu lalu`;
   } else {
@@ -94,143 +101,77 @@ export default function HomePage() {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<"users" | "provinces">("users");
-  const [userLeaderboard, setUserLeaderboard] = useState<UserLeaderboard[]>([]);
-  const [provinceLeaderboard, setProvinceLeaderboard] = useState<
-    ProvinceLeaderboard[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<StatsData>({
-    totalUsers: 0,
-    totalActivities: 0,
-    activeProvinces: 0,
-  });
-
-  const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([]);
-  const [activityHistory, setActivityHistory] = useState<ActivityHistory[]>([]);
-  const [activityLoading, setActivityLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
+
+  const { data: challengeData, isLoading: challengeLoading } = useDailyChallenge();
+  const { data: userActivitiesData, isLoading: activitiesLoading } = useUserActivities(
+    isSignedIn ? user?.id : undefined
+  );
+  const { data: statsData, isLoading: statsLoading } = useStats();
+  const { data: userLeaderboardData, isLoading: userLeaderboardLoading } = useUserLeaderboard();
+  const { data: provinceLeaderboardData, isLoading: provinceLeaderboardLoading } = useProvinceLeaderboard();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    const fetchLeaderboardData = async () => {
-      try {
-        setLoading(true);
-        if (isSignedIn) {
-          setActivityLoading(true);
-        }
+  console.log('🔍 HomePage - User Activities Data:', {
+    userActivitiesData,
+    activitiesLoading,
+    userId: user?.id,
+    isArray: Array.isArray(userActivitiesData),
+    length: userActivitiesData?.length || 0
+  });
 
-        const statsData = await fetchStats();
-        setStats(statsData);
+  const dailyChallenges: DailyChallenge[] = challengeData?.success ? challengeData.data : [];
 
-        const userResponse = await fetch("/api/users");
-        if (userResponse.ok) {
-          const userResult = await userResponse.json();
-          const userData = userResult.data || userResult;
-
-          const sortedUsers = userData
-            .sort((a: any, b: any) => (b.points || 0) - (a.points || 0))
-            .slice(0, 5)
-            .map((user: any, index: number) => ({
-              id: user.id,
-              username: user.name || user.username || user.full_name,
-              full_name: user.full_name,
-              province: user.province,
-              points: user.points || 0,
-              rank: index + 1,
-            }));
-          setUserLeaderboard(sortedUsers);
-        }
-
-        const provinceResponse = await fetch("/api/provinces");
-        if (provinceResponse.ok) {
-          const provinceResult = await provinceResponse.json();
-          const provinceData = provinceResult.data || provinceResult;
-
-          const sortedProvinces = provinceData
-            .sort(
-              (a: any, b: any) => (b.total_points || 0) - (a.total_points || 0)
-            )
-            .slice(0, 5)
-            .map((province: any, index: number) => ({
-              ...province,
-              rank: index + 1,
-            }));
-          setProvinceLeaderboard(sortedProvinces);
-        }
-
-        if (isSignedIn) {
-          const challengeResponse = await fetch("/api/daily-challenge");
-          if (challengeResponse.ok) {
-            const challengeResult = await challengeResponse.json();
-            console.log('Challenge API response:', challengeResult);
-            if (challengeResult.success && challengeResult.data) {
-              setDailyChallenges(challengeResult.data);
-            }
-          }
-
-          const activityResponse = await fetch("/api/activities");
-          if (activityResponse.ok) {
-            const activityResult = await activityResponse.json();
-            if (Array.isArray(activityResult) && activityResult.length > 0) {
-              const transformedActivities = activityResult.slice(0, 3).map((activity: any) => ({
-                id: activity.id,
-                userId: activity.user_id,
-                type: activity.activity_categories?.name || activity.title,
-                description: activity.description || 'Tidak ada deskripsi',
-                points: activity.points || 0,
-                date: new Date(activity.created_at),
-                status: activity.status || 'completed',
-                category: activity.activity_categories?.group_category || 'other',
-                location: activity.province || 'Lokasi tidak diketahui',
-                image_url: activity.image_url || '',
-                verified: !!activity.verified_at,
-                challenge_id: null,
-                relativeTime: isClient ? getRelativeTime(new Date(activity.created_at)) : 'Memuat...'
-              }));
-              setActivityHistory(transformedActivities);
-            } else {
-              setActivityHistory([]);
-            }
-          } else {
-            console.error('Failed to fetch activities:', activityResponse.statusText);
-            setActivityHistory([]);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        if (isSignedIn) {
-          setActivityHistory([]);
-          setDailyChallenges([]);
-        }
-      } finally {
-        setLoading(false);
-        if (isSignedIn) {
-          setActivityLoading(false);
-        }
-      }
-    };
-
-    fetchLeaderboardData();
-  }, [isSignedIn]);
-
-  useEffect(() => {
-    if (isClient && activityHistory.length > 0) {
-      setActivityHistory(prev => prev.map(activity => ({
+  const activityHistory: ActivityHistory[] = Array.isArray(userActivitiesData)
+    ? userActivitiesData.map((activity: any) => ({
         ...activity,
-        relativeTime: getRelativeTime(activity.date)
-      })));
-    }
-  }, [isClient, activityHistory.length]);
+        relativeTime: isClient ? getRelativeTime(new Date(activity.date || activity.created_at)) : 'Loading...',
+        categoryColor: activity.categoryColor || '#10B981'
+      }))
+    : [];
+
+  // Pastikan variabel statsData sudah dideklarasikan dari hook useStats
+  const stats = statsData || {
+    totalUsers: 0,
+    totalActivities: 0,
+    activeProvinces: 0,
+  };
+
+  const userLeaderboard: UserLeaderboard[] = Array.isArray(userLeaderboardData?.data || userLeaderboardData)
+    ? (userLeaderboardData?.data || userLeaderboardData)
+        .sort((a: any, b: any) => (b.points || 0) - (a.points || 0))
+        .slice(0, 5)
+        .map((user: any, index: number) => ({
+          id: user.id,
+          username: user.name || user.username || user.full_name,
+          full_name: user.full_name,
+          province: user.province,
+          points: user.points || 0,
+          rank: index + 1,
+        }))
+    : [];
+
+  const provinceLeaderboard: ProvinceLeaderboard[] = Array.isArray(provinceLeaderboardData?.data || provinceLeaderboardData)
+    ? (provinceLeaderboardData?.data || provinceLeaderboardData)
+        .sort((a: any, b: any) => (b.total_points || 0) - (a.total_points || 0))
+        .slice(0, 5)
+        .map((province: any, index: number) => ({
+          ...province,
+          rank: index + 1,
+        }))
+    : [];
+
+  const loading = statsLoading || userLeaderboardLoading || provinceLeaderboardLoading;
 
   if (isSignedIn) {
     return (
       <AuthenticatedHomepage
         dailyChallenges={dailyChallenges}
         activityHistory={activityHistory}
-        activityLoading={activityLoading}
+        activityLoading={activitiesLoading}
         userName={user?.firstName || user?.fullName || undefined}
       />
     );

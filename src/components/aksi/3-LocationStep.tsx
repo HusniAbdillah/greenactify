@@ -1,8 +1,17 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { getProvinces } from '@/lib/get-provinces';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useProvinces } from '@/hooks/useSWRData'; // Import SWR hook
 import { MapPin, Search, Loader2, CheckCircle, Edit3, ArrowLeft } from 'lucide-react';
+
+interface Province {
+  id: string;
+  name: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
 
 export type LocationStepProps = {
   onConfirm: (location: string, latitude?: number, longitude?: number) => void;
@@ -11,24 +20,40 @@ export type LocationStepProps = {
 
 export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
   const [view, setView] = useState<'confirm' | 'search'>('confirm');
-  
   const [detectedLocation, setDetectedLocation] = useState<string>('Mendeteksi lokasi...');
   const [detectedLatitude, setDetectedLatitude] = useState<number | null>(null);
   const [detectedLongitude, setDetectedLongitude] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [provinces, setProvinces] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [provinces, setProvinces] = useState<Province[]>([]);
 
-  useEffect(() => {
-    getProvinces().then((data) => {
-      if (data) {
-        setProvinces(data.map((p: any) => p.province));
-      }
-    });
+  const { data: provincesData, isLoading: provincesLoading, error: provincesError } = useProvinces();
+  const filteredProvinces = useMemo(
+    () => {
+      return provinces.filter(province => 
+        province.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    },
+    [provinces, searchTerm]
+  );
+
+  const handleReverseGeocode = useCallback(async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/reverse-geocode?lat=${lat}&lon=${lon}`);
+      const json = await res.json();
+      return json.address?.state || 'Lokasi tidak diketahui';
+    } catch (error) {
+      console.error("Gagal melakukan reverse geocoding:", error);
+      return 'Gagal mendeteksi';
+    }
   }, []);
 
+
   useEffect(() => {
-    if (provinces.length === 0) return;
+
+    if (provincesLoading || provincesError || provinces.length === 0) {
+      return;
+    }
 
     let isMounted = true;
     setIsLoading(true);
@@ -40,23 +65,17 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
           const { latitude, longitude } = pos.coords;
           setDetectedLatitude(latitude);
           setDetectedLongitude(longitude);
-          try {
-            const res = await fetch(`/api/reverse-geocode?lat=${latitude}&lon=${longitude}`);
-            const json = await res.json();
-            const detectedState = json.address?.state || 'Lokasi tidak diketahui';
-            setDetectedLocation(detectedState);
-          } catch (error) {
-            console.error("Gagal melakukan reverse geocoding:", error);
-            setDetectedLocation('Gagal mendeteksi');
-          } finally {
-            setIsLoading(false);
-          }
+          
+          const location = await handleReverseGeocode(latitude, longitude);
+          setDetectedLocation(location);
+          setIsLoading(false);
         },
         () => {
           if (!isMounted) return;
           setDetectedLocation('Izin lokasi ditolak');
           setIsLoading(false);
-        }
+        },
+        { timeout: 10000, enableHighAccuracy: true }
       );
     } else {
       setDetectedLocation('Geolocation tidak didukung');
@@ -64,7 +83,7 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
     }
 
     return () => { isMounted = false; };
-  }, [provinces]);
+  }, [provinces.length, provincesLoading, provincesError, handleReverseGeocode]);
 
   useEffect(() => {
     if (
@@ -76,15 +95,37 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
     }
   }, [detectedLocation]);
 
-  const filteredProvinces = useMemo(
-    () => provinces.filter(p => p.toLowerCase().includes(searchTerm.toLowerCase())),
-    [searchTerm, provinces]
-  );
-
-  const handleSelectProvince = (province: string) => {
+  const handleSelectProvince = useCallback((province: string) => {
     setDetectedLocation(province);
     setView('confirm');
-  };
+  }, []);
+
+  if (provincesLoading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center animate-fadeIn">
+        <div className="text-center py-8">
+          <Loader2 className="animate-spin mx-auto mb-4" size={32} />
+          <p className="text-gray-500">Memuat data provinsi...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (provincesError) {
+    return (
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center animate-fadeIn">
+        <div className="text-center py-8">
+          <p className="text-red-500">Gagal memuat data provinsi</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (view === "search") {
     return (
@@ -110,14 +151,17 @@ export default function LocationStep({ onConfirm, onBack }: LocationStepProps) {
           />
         </div>
         <div className="w-full space-y-3">
-          {filteredProvinces.map(p => (
+          {filteredProvinces.map((province: Province) => (
             <button
-              key={p}
-              onClick={() => handleSelectProvince(p)}
-              className="w-full text-left p-3 bg-whiteMint border border-gray-200 rounded-xl hover:bg-mintPastel hover:border-tealLight transition flex items-center gap-3"
+              key={province.id}
+              onClick={() => handleSelectProvince(province.name)}
+              className={`w-full p-3 rounded-lg border transition-all duration-200
+                ${detectedLocation === province.name 
+                  ? 'border-tealLight bg-tealLight/10 text-tealLight' 
+                  : 'border-gray-200 hover:border-tealLight/50'
+                }`}
             >
-              <MapPin className="text-gray-400" size={20}/>
-              <span>{p}</span>
+              {province.name}
             </button>
           ))}
         </div>

@@ -11,6 +11,14 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
+    if (!messages || !Array.isArray(messages)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid messages format' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+
     const result = await streamText({
       model: google('models/gemini-1.5-flash'),
       system: `
@@ -31,14 +39,22 @@ export async function POST(req: Request) {
       `,
       messages,
       temperature: 0.7,
+      maxTokens: 500,
     });
 
     return result.toDataStreamResponse();
+    
   } catch (error) {
     console.error('[CHAT_API_ERROR]', error);
+
     return new Response(
-      'Oops! Ada masalah di server. Coba lagi sebentar ya.',
-      { status: 500 }
+      JSON.stringify({ 
+        error: 'Oops! Ada masalah di server. Coba lagi sebentar ya.' 
+      }),
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 }
