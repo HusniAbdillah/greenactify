@@ -172,7 +172,7 @@ export default function HomePage() {
         dailyChallenges={dailyChallenges}
         activityHistory={activityHistory}
         activityLoading={activitiesLoading}
-        userName={user?.firstName || user?.fullName || undefined}
+        userName={user?.fullName || user?.username || user?.firstName || undefined}
       />
     );
   }
