@@ -1,13 +1,13 @@
 "use client";
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction } from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { uploadGeneratedImage } from "@/lib/upload-generated-image";
 import Image from "next/image";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { Share2, Download, CheckCircle2, LoaderCircle } from "lucide-react";
-import { getProfileByClerkId } from '@/lib/get-profile-front';
-import { useUser } from '@clerk/nextjs';
+import { getProfileByClerkId } from "@/lib/get-profile-front";
+import { useUser } from "@clerk/nextjs";
 
 interface ActivityCategory {
   id: string;
@@ -179,29 +179,37 @@ export default function ResultStep({
       );
 
       ctx.fillStyle = "#0C3B2E";
-      ctx.font = "bold 32px 'Poppins', sans-serif";
+      ctx.font = "italic bold 32px 'Poppins', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("greenactify.vercel.app", cardWidth / 2, padding + logoHeight + 50);
+      ctx.fillText(
+        "greenactify.vercel.app",
+        cardWidth / 2,
+        padding + logoHeight + 30
+      );
 
-      let currentY = padding + logoHeight + 160;
+      let currentY = padding + logoHeight + 140;
       ctx.fillStyle = "#008373";
-      ctx.font = "italic bold 52px 'Poppins', sans-serif";
+      ctx.font = "bold 52px 'Poppins', sans-serif";
 
       ctx.textAlign = "left";
       ctx.fillText(`@${imageData.username || "User"}`, padding, currentY);
 
       if (userRank !== null && userRank !== undefined) {
         ctx.fillStyle = "#1D4ED8";
-        ctx.font = "bold 48px 'Poppins', sans-serif";
+        ctx.font = "bold 65px 'Poppins', sans-serif";
         ctx.textAlign = "right";
 
         const formatRank = (rank: number) => {
           if (rank % 100 >= 11 && rank % 100 <= 13) return `${rank}th`;
           switch (rank % 10) {
-            case 1: return `${rank}st`;
-            case 2: return `${rank}nd`;
-            case 3: return `${rank}rd`;
-            default: return `${rank}th`;
+            case 1:
+              return `${rank}st`;
+            case 2:
+              return `${rank}nd`;
+            case 3:
+              return `${rank}rd`;
+            default:
+              return `${rank}th`;
           }
         };
 
@@ -209,7 +217,7 @@ export default function ResultStep({
         ctx.fillText(rankText, cardWidth - padding, currentY);
       }
 
-      currentY += 120;
+      currentY += 100;
       ctx.fillStyle = "#0C3B2E";
       ctx.font = "bold 62px 'Poppins', sans-serif";
       ctx.textAlign = "left";
@@ -222,7 +230,7 @@ export default function ResultStep({
         currentY
       );
 
-      currentY += 50;
+      currentY += 40;
       const imageContainerX = padding;
       const imageContainerY = currentY;
       const imageContainerWidth = cardWidth - padding * 2;
@@ -249,7 +257,6 @@ export default function ResultStep({
       ctx.clip();
       ctx.drawImage(userImage, imgX, imgY, drawWidth, drawHeight);
       ctx.restore();
-
       currentY += imageContainerHeight + 90;
 
       const activityText = imageData.activity.name;
@@ -263,25 +270,25 @@ export default function ResultStep({
       let activityFont = "bold 72px 'Poppins', sans-serif";
       let poinFont = "bold 72px 'Poppins', sans-serif";
       let lineHeight = lineHeightDefault;
-      let areaHeight = 230;
+      let areaHeight = 180;
       let poinYOffset = 90;
 
-      if (wordsCount <= 2 && lines === 1) {
+      if (wordsCount < 3 && lines === 1) {
         activityFont = "bold 90px 'Poppins', sans-serif";
         poinFont = "bold 90px 'Poppins', sans-serif";
         lineHeight = 100;
-        areaHeight = 200;
-        poinYOffset = 120;
+        areaHeight = 150;
+        poinYOffset = 110;
       }
 
       const totalTextHeight = lines * lineHeight;
       const areaTop = currentY;
 
       let startY;
-      if (wordsCount > 3 || lines > 1) {
-        startY = areaTop + 20;
+      if (wordsCount >= 3 || lines > 1) {
+        startY = areaTop;
       } else {
-        startY = areaTop + (areaHeight - totalTextHeight) / 2;
+        startY = areaTop + (areaHeight - totalTextHeight) / 2 + 40;
       }
 
       ctx.font = activityFont;
