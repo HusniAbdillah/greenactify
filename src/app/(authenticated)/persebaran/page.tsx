@@ -276,7 +276,7 @@ const UnifiedActivitiesPage = () => {
       mapRef.current = map
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        // attribution: '© OpenStreetMap contributors'
       }).addTo(map)
 
       const validActivities = activities.filter(activity =>
@@ -311,11 +311,66 @@ const UnifiedActivitiesPage = () => {
         })
         markerLayerRef.current = L.layerGroup(markers).addTo(map)
       } else if (mapType === 'heatmap' && L.heatLayer) {
-        const heatPoints = validActivities.map(activity => [activity.latitude!, activity.longitude!])
+        const heatPoints = validActivities.map(activity => {
+          const weight = Math.max(0.3, Math.min(1.0, activity.points / 100))
+          return [activity.latitude!, activity.longitude!, weight]
+        })
+        
         heatLayerRef.current = L.heatLayer(heatPoints, {
-          radius: 25,
-          gradient: { 0.2: '#a5ff13', 0.5: '#44b52b', 1.0: '#1d6f0f' }
+          radius: 35,
+          blur: 25,
+          maxZoom: 10,
+          max: 1.0,
+          minOpacity: 0.4,
+          gradient: {
+            0.0: '#E8F5E8',
+            0.1: '#C8E6C9', 
+            0.2: '#A5D6A7',
+            0.3: '#81C784',
+            0.4: '#66BB6A',
+            0.5: '#4CAF50',
+            0.6: '#43A047',
+            0.7: '#388E3C',
+            0.8: '#2E7D32',
+            0.9: '#1B5E20',
+            1.0: '#0D4E14'
+          }
         }).addTo(map)
+
+        const legend = L.control({ position: 'bottomright' })
+        legend.onAdd = () => {
+          const div = L.DomUtil.create('div', 'info legend')
+          div.style.backgroundColor = 'white'
+          div.style.padding = '12px'
+          div.style.borderRadius = '8px'
+          div.style.border = '2px solid #4CAF50'
+          div.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.2)'
+          div.style.fontSize = '12px'
+          div.style.fontWeight = 'bold'
+
+          const gradients = [
+            { range: '0-20 poin', color: '#E8F5E8', label: 'Sangat Rendah', textColor: '#2E7D32' },
+            { range: '21-40 poin', color: '#A5D6A7', label: 'Rendah', textColor: '#1B5E20' },
+            { range: '41-60 poin', color: '#66BB6A', label: 'Sedang', textColor: 'white' },
+            { range: '61-80 poin', color: '#43A047', label: 'Tinggi', textColor: 'white' },
+            { range: '81-100 poin', color: '#2E7D32', label: 'Sangat Tinggi', textColor: 'white' },
+            { range: '>100 poin', color: '#0D4E14', label: 'Ekstrim', textColor: 'white' }
+          ]
+          
+          div.innerHTML = '<strong style="color: #2E7D32; margin-bottom: 8px; display: block; text-align: center;"Intensitas Aktivitas Hijau</strong>'
+          
+          gradients.forEach(item => {
+            div.innerHTML += `
+              <div style="display: flex; align-items: center; margin: 4px 0;">
+                <div style="background: ${item.color}; width: 24px; height: 14px; margin-right: 8px; border-radius: 3px; border: 1px solid #4CAF50; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+                <small style="color: #2E7D32; font-weight: normal;">${item.label}</small>
+              </div>
+            `
+          })
+
+          return div
+        }
+        legend.addTo(map)
       }
 
       setMapReady(true)
