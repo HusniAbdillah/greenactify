@@ -12,10 +12,6 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false) 
   const [customModal, setCustomModal] = useState<{ title: string, message: string } | null>(null)
-  const [newTitle, setNewTitle] = useState(activity.title)
-  const [newProvince, setNewLocation] = useState(activity.province || '')
-  const [newImageUrl, setNewImageUrl] = useState(activity.image_url || '')
-  const router = useRouter()
   
   const showModal = (title: string, message: string) => {
     setCustomModal({ title, message })
@@ -52,7 +48,9 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: "Aksi Hijauku!",
-          text: `Saya baru saja melakukan ${activity.title} bersama GrenActify! 🌱`,
+          text:`${activity.title} bareng GreenActify ✔️
+          Aksi kecil, dampak besar.
+          Yuk ikutan juga 😎🌱`,
           files: [file],
         })
       } else {

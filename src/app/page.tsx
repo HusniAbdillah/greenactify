@@ -133,7 +133,6 @@ export default function HomePage() {
       }))
     : [];
 
-  // Pastikan variabel statsData sudah dideklarasikan dari hook useStats
   const stats = statsData || {
     totalUsers: 0,
     totalActivities: 0,

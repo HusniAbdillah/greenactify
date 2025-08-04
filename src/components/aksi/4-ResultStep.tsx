@@ -422,8 +422,8 @@ export default function ResultStep({
         await navigator.share({
           title: "Aksi Hijauku!",
           text: `${imageData.activity.name} bareng GreenActify ✔️
-Aksi kecil, dampak besar.
-Yuk ikutan juga 😎🌱`,
+          Aksi kecil, dampak besar.
+          Yuk ikutan juga 😎🌱`,
           files: [file],
         });
       } else {

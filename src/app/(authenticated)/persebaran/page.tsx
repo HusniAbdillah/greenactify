@@ -437,15 +437,109 @@ const UnifiedActivitiesPage = () => {
       latestActivity
     }
   }
+const exportToCSV = () => {
+  if (provinces.length === 0 || loadingProvinces) {
+    alert('Data masih loading, tunggu sebentar ya!')
+    return
+  }
+  const now = new Date()
+  const timestamp = now.toLocaleString('id-ID', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).replace(/[/,:]/g, '-').replace(/\s/g, '_')
 
-  const exportToCSV = () => {
-    const headers = [
-      "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
-      "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
-      "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+  const headers = [
+    "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+    "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+    "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+  ]
+
+  const rows = provinces.map(prov => {
+    const extra = getProvinceExtraStats(prov.province)
+    return [
+      prov.province,
+      prov.total_users,
+      prov.total_activities,
+      prov.total_points,
+      prov.avg_points_per_user,
+      extra.highPointPercentage,
+      extra.mostFrequentActivity,
+      extra.avgPointsPerActivity,
+      extra.latestActivity
     ]
+  })
 
-    const rows = provinces.map(prov => {
+  const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n")
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+
+  link.setAttribute("download", `Laporan_Dampak_GreenActify_${timestamp}.csv`)
+  
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+  const exportToPDF = () => {
+  if (provinces.length === 0 || loadingProvinces) {
+    alert('Data masih loading, tunggu sebentar ya!')
+    return
+  }
+  const doc = new jsPDF()
+
+
+  const now = new Date()
+  const timestamp = now.toLocaleString('id-ID', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).replace(/[/,:]/g, '-').replace(/\s/g, '_')
+  
+  const readableTimestamp = now.toLocaleString('id-ID', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+
+  const logoUrl = '/logo-greenactify.png'
+  const img = new window.Image()
+  img.src = logoUrl
+  img.crossOrigin = 'anonymous'
+
+  img.onload = () => {
+    const pageWidth = doc.internal.pageSize.getWidth()
+
+
+    const logoWidth = 60
+    const logoX = (pageWidth - logoWidth) / 2
+    doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
+
+    doc.setFontSize(16)
+    doc.setTextColor(34, 78, 64)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Dampak GreenActify Terhadap Aksi Hijau Indonesia', pageWidth / 2, 40, {
+      align: 'center'
+    })
+
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Laporan diunduh pada: ${readableTimestamp} WIB`, pageWidth / 2, 50, {
+      align: 'center'
+    })
+
+    const tableData = provinces.map(prov => {
       const extra = getProvinceExtraStats(prov.province)
       return [
         prov.province,
@@ -460,141 +554,100 @@ const UnifiedActivitiesPage = () => {
       ]
     })
 
-    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n")
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.setAttribute("download", "Laporan Dampak GreenActify.csv")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    autoTable(doc, {
+      startY: 55, 
+      head: [[
+        "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+        "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+        "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+      ]],
+      body: tableData,
+      styles: {
+        fontSize: 7,
+        halign: 'center',
+        valign: 'middle',
+        cellPadding: 3
+      },
+      headStyles: {
+        fillColor: [12, 59, 46],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      bodyStyles: {
+        textColor: [0,0,0]
+      },
+      alternateRowStyles: {
+        fillColor: [240, 253, 244]
+      },
+      tableLineColor: [200, 250, 200],
+      tableLineWidth: 0.2
+    })
+
+    doc.save(`Laporan Dampak_GreenActify_${timestamp}.pdf`)
   }
 
-  const exportToPDF = () => {
-    const doc = new jsPDF()
+  img.onerror = () => {
+    const pageWidth = doc.internal.pageSize.getWidth()
 
-    const logoUrl = '/logo-greenactify.png'
-    const img = new window.Image()
-    img.src = logoUrl
-    img.crossOrigin = 'anonymous'
 
-    img.onload = () => {
-      const pageWidth = doc.internal.pageSize.getWidth()
+    doc.setFontSize(16)
+    doc.setTextColor(34, 78, 64)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Dampak GreenActify Terhadap Aksi Hijau Indonesia', pageWidth / 2, 20, {
+      align: 'center'
+    })
 
-      const logoWidth = 60
-      const logoX = (pageWidth - logoWidth) / 2
-      doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20)
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Laporan diunduh pada: ${readableTimestamp}`, pageWidth / 2, 30, {
+      align: 'center'
+    })
 
-      doc.setFontSize(16)
-      doc.setTextColor(34, 78, 64)
+    const tableData = provinces.map(prov => {
+      const extra = getProvinceExtraStats(prov.province)
+      return [
+        prov.province,
+        prov.total_users,
+        prov.total_activities,
+        prov.total_points,
+        prov.avg_points_per_user,
+        extra.highPointPercentage,
+        extra.mostFrequentActivity,
+        extra.avgPointsPerActivity,
+        extra.latestActivity
+      ]
+    })
 
-      doc.setFont('helvetica', 'bold')
-      doc.text('Dampak GreenActify Terhadap Aksi Hijau Indonesia', pageWidth / 2, 40, {
-        align: 'center'
-      })
+    autoTable(doc, {
+      startY: 35, 
+      head: [[
+        "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
+        "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
+        "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
+      ]],
+      body: tableData,
+      styles: {
+        fontSize: 9,
+        halign: 'center',
+        valign: 'middle',
+        cellPadding: 3
+      },
+      headStyles: {
+        fillColor: [12, 59, 46],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [240, 253, 244]
+      },
+      tableLineColor: [200, 250, 200],
+      tableLineWidth: 0.2
+    })
 
-      const tableData = provinces.map(prov => {
-        const extra = getProvinceExtraStats(prov.province)
-        return [
-          prov.province,
-          prov.total_users,
-          prov.total_activities,
-          prov.total_points,
-          prov.avg_points_per_user,
-          extra.highPointPercentage,
-          extra.mostFrequentActivity,
-          extra.avgPointsPerActivity,
-          extra.latestActivity
-        ]
-      })
-
-      autoTable(doc, {
-        startY: 45,
-        head: [[
-          "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
-          "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
-          "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
-        ]],
-        body: tableData,
-        styles: {
-          fontSize: 7,
-          halign: 'center',
-          valign: 'middle',
-          cellPadding: 3
-        },
-        headStyles: {
-          fillColor: [12, 59, 46],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        bodyStyles: {
-          textColor: [0,0,0]
-        },
-        alternateRowStyles: {
-          fillColor: [240, 253, 244]
-        },
-        tableLineColor: [200, 250, 200],
-        tableLineWidth: 0.2
-      })
-
-      doc.save('Dampak GreenActify.pdf')
-    }
-
-    img.onerror = () => {
-      const pageWidth = doc.internal.pageSize.getWidth()
-
-      doc.setFontSize(16)
-      doc.setTextColor(34, 78, 64)
-      doc.setFont('helvetica', 'bold')
-      doc.text('Dampak GreenActify Terhadap Aksi ngan', pageWidth / 2, 20, {
-        align: 'center'
-      })
-
-      const tableData = provinces.map(prov => {
-        const extra = getProvinceExtraStats(prov.province)
-        return [
-          prov.province,
-          prov.total_users,
-          prov.total_activities,
-          prov.total_points,
-          prov.avg_points_per_user,
-          extra.highPointPercentage,
-          extra.mostFrequentActivity,
-          extra.avgPointsPerActivity,
-          extra.latestActivity
-        ]
-      })
-
-      autoTable(doc, {
-        startY: 30,
-        head: [[
-          "Provinsi", "Total Pengguna", "Total Aktivitas", "Total Poin",
-          "Rata2 Poin/User", "Aktivitas Berpoin Tinggi (%)", "Aktivitas Terbanyak",
-          "Rata2 Poin/Aktivitas", "Aktivitas Terbaru"
-        ]],
-        body: tableData,
-        styles: {
-          fontSize: 9,
-          halign: 'center',
-          valign: 'middle',
-          cellPadding: 3
-        },
-        headStyles: {
-          fillColor: [12, 59, 46],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-          fillColor: [240, 253, 244]
-        },
-        tableLineColor: [200, 250, 200],
-        tableLineWidth: 0.2
-      })
-
-      doc.save('Dampak GreenActify.pdf')
-    }
+    doc.save(`Dampak_GreenActify_${timestamp}.pdf`)
   }
+}
 
   const formatNumber = (num: number) => {
     if (!isClient) return num.toString()
