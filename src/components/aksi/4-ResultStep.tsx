@@ -273,7 +273,7 @@ export default function ResultStep({
       const areaTop = currentY;
       
       let startY;
-      if (wordsCount > 2 || lines > 1) {
+      if (wordsCount > 3 || lines > 1) {
         startY = areaTop + 20;
       } else {
         startY = areaTop + (areaHeight - totalTextHeight) / 2;

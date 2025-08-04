@@ -1,9 +1,9 @@
 "use client";
 
-import { useChat } from 'ai/react';
+import { useChat, type Message } from 'ai/react';
+
 import { useRef, useEffect, useState } from 'react';
 import { SendHorizonal, Bot, User, BrainCircuit } from 'lucide-react';
-import { Message } from 'ai';
 
 const ALL_PROMPT_RECOMMENDATIONS = [
   "Apa itu zero waste?",

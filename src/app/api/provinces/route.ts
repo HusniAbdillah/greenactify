@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase-admin'
+import { getCachedData, setCachedData } from '@/lib/api-cache'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +9,12 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit')
     const orderBy = searchParams.get('orderBy') || 'total_points'
     const orderDirection = searchParams.get('orderDirection') || 'desc'
+    const cacheKey = `provinces-${limit || 'all'}`
+    
+    const cached = getCachedData(cacheKey, 3600000);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     let query = supabase()
       .from('province_stats')
@@ -31,11 +38,19 @@ export async function GET(request: NextRequest) {
       rank: index + 1
     }))
 
-    return NextResponse.json({
+    const result = {
       data: provincesWithRank || [],
       count: provincesWithRank?.length || 0,
       success: true
-    })
+    };
+
+    setCachedData(cacheKey, result);
+
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+      },
+    });
 
   } catch (error) {
     return NextResponse.json({

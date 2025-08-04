@@ -1,57 +1,53 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import { useUsers, useProvinceStats } from '@/hooks/useSWRData' // Import SWR hooks
+
+// Update interface User dengan properti yang lengkap
+interface User {
+  id?: string;
+  clerk_id?: string;
+  rank?: number;
+  username?: string;
+  full_name?: string;
+  name?: string;
+  province?: string;
+  points?: number;
+  avatar_url?: string;
+}
+
+interface Province {
+  id?: string;
+  rank?: number;
+  name?: string;
+  province?: string;
+  total_users?: number;
+  total_activities?: number;
+  total_points?: number;
+}
 
 const PeringkatPage = () => {
-  const [usersData, setUsersData] = useState<any[]>([])
-  const [provincesData, setProvincesData] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'users' | 'provinces'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
   const { isLoaded, isSignedIn } = useUser()
 
+  // SWR hooks - instant loading dari cache!
+  const { data: usersResponse, isLoading: usersLoading, error: usersError } = useUsers()
+  const { data: provincesResponse, isLoading: provincesLoading, error: provincesError } = useProvinceStats()
+
+  const usersData = usersResponse?.data || []
+  const provincesData = provincesResponse?.data || []
+
   // Check authentication
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/')
     }
   }, [isLoaded, isSignedIn, router])
-
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const [usersResponse, provincesResponse] = await Promise.all([
-          fetch('/api/users'),
-          fetch('/api/provinces')
-        ])
-
-        if (!usersResponse.ok || !provincesResponse.ok) {
-          throw new Error('Failed to fetch data')
-        }
-
-        const [usersData, provincesData] = await Promise.all([
-          usersResponse.json(),
-          provincesResponse.json()
-        ])
-
-        setUsersData(usersData.data || [])
-        setProvincesData(provincesData.data || [])
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to fetch data')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [])
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -76,25 +72,31 @@ const PeringkatPage = () => {
     }
   }
 
-  const getFilteredUsers = () => {
-    const sortedUsers = usersData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+
+  const getFilteredUsers = (): User[] => {
+    const sortedUsers = usersData.sort((a: User, b: User) => 
+      (a.rank || 999) - (b.rank || 999)
+    );
 
     if (searchQuery.trim()) {
-      return sortedUsers.filter(user =>
+      return sortedUsers.filter((user: User) =>
         (user.username || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase())
-      )
+        (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      );
     } else {
-      return sortedUsers.slice(0, 10)
+      return sortedUsers.slice(0, 10);
     }
   }
 
-  const getFilteredProvinces = () => {
-    const sortedProvinces = provincesData.sort((a, b) => (a.rank || 999) - (b.rank || 999))
+  const getFilteredProvinces = (): Province[] => {
+    const sortedProvinces = provincesData.sort((a: Province, b: Province) => 
+      (a.rank || 999) - (b.rank || 999)
+    );
 
     if (searchQuery.trim()) {
-      return sortedProvinces.filter(province =>
-        (province.province || '').toLowerCase().includes(searchQuery.toLowerCase())
+      return sortedProvinces.filter((province: Province) =>
+        (province.province || province.name || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     } else {
       return sortedProvinces.slice(0, 10)
@@ -109,9 +111,9 @@ const PeringkatPage = () => {
         <p>Lihat pencapaian komunitas GreenActify</p>
       </div>
 
-      {error && (
+      {(usersError || provincesError) && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          Error: {error}
+          Error: {usersError?.message || provincesError?.message}
         </div>
       )}
 
@@ -146,7 +148,7 @@ const PeringkatPage = () => {
         </div>
         <input
           type="text"
-          placeholder={activeTab === 'users' ? 'Cari penggguna...' : 'Cari provinsi...'}
+          placeholder={activeTab === 'users' ? 'Cari pengguna...' : 'Cari provinsi...'}
           className="block w-full pl-10 pr-3 py-4 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-tealLight sm:text-sm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,12 +158,12 @@ const PeringkatPage = () => {
 
       {activeTab === 'users' && (
         <div className="space-y-4">
-          {loading ? (
+          {usersLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-              <p className="text-gray-500">Loading users...</p>
+              <p className="text-gray-500">Loading dari cache...</p>
             </div>
-          ) : error ? (
+          ) : usersError ? (
             <div className="text-center py-8 text-red-500">
               Failed to load users. Please try again.
             </div>
@@ -174,7 +176,7 @@ const PeringkatPage = () => {
               No users found matching "{searchQuery}".
             </div>
           ) : (
-            getFilteredUsers().map((user, index) => (
+            getFilteredUsers().map((user: User, index: number) => ( // 🔧 Fix: Tambahkan tipe eksplisit
               <div
                 key={user.id || user.full_name || user.clerk_id || index}
                 className={`${user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
@@ -182,14 +184,14 @@ const PeringkatPage = () => {
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">
-                    {getRankIcon(user.rank)}
+                    {getRankIcon(user.rank || 0)}
                   </div>
 
                   <div className="hidden sm:block w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
                     {user.avatar_url ? (
                       <img
                         src={user.avatar_url}
-                        alt={user.name || 'User'}
+                        alt={user.name || user.username || 'User'}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -198,9 +200,15 @@ const PeringkatPage = () => {
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg text-whiteMint">{user.username || 'Unknown User'}</h3>
-                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>{user.full_name || 'Unknown Name'}</p>
-                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm`}>{user.province || 'Unknown Province'}</p>
+                    <h3 className="font-bold text-lg text-whiteMint">
+                      {user.username || user.name || 'Unknown User'}
+                    </h3>
+                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm italic`}>
+                      {user.full_name || 'Unknown Name'}
+                    </p>
+                    <p className={`${user.rank === 1 ? 'text-greenDark' : 'text-mintPastel'} text-sm`}>
+                      {user.province || 'Unknown Province'}
+                    </p>
                   </div>
 
                   <div className="text-right">
@@ -218,12 +226,12 @@ const PeringkatPage = () => {
 
       {activeTab === 'provinces' && (
         <div className="space-y-4">
-          {loading ? (
+          {provincesLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-              <p className="text-gray-500">Loading provinces...</p>
+              <p className="text-gray-500">Loading provinsi dari cache...</p>
             </div>
-          ) : error ? (
+          ) : provincesError ? (
             <div className="text-center py-8 text-red-500">
               Failed to load provinces. Please try again.
             </div>
@@ -240,7 +248,7 @@ const PeringkatPage = () => {
               <div
                 key={province.id || province.province || index}
                 className={`${province.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-greenDark'} rounded-2xl p-3 hover:shadow-xl transition-shadow cursor-pointer`}
-                onClick={() => {/* Navigate ke province details (ga sempet duh -g) */}}
+                onClick={() => {/* Navigate ke province details */}}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center justify-center w-12 h-12">

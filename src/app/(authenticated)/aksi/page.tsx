@@ -16,6 +16,7 @@ import { createProfileForClerkUser } from "@/lib/create-profile";
 import { supabase } from "@/lib/supabase-client";
 import { ArrowLeft } from "lucide-react";
 import { getProfileIdByClerkId } from "@/lib/get-profile-front";
+import { useRevalidation } from '@/hooks/useSWRData';
 
 type FlowStep =
   | "UPLOADING"
@@ -74,6 +75,8 @@ export default function AksiPage() {
   const [challengeData, setChallengeData] = useState<any>(null);
   const [challengeMultiplier, setChallengeMultiplier] = useState<number>(1);
 
+  const { revalidateAfterActivity } = useRevalidation();
+
   useEffect(() => {
     async function fetchProfileId() {
       if (!user) return;
@@ -123,7 +126,6 @@ export default function AksiPage() {
     }
   }, [cooldownRemaining]);
 
-  // Fetch challenge data if in challenge mode
   useEffect(() => {
     if (isChallenge && challengeId) {
       fetch(`/api/daily-challenge/${challengeId}`)
@@ -153,24 +155,16 @@ export default function AksiPage() {
     }
   };
 
-  // 🆕 Perbaikan handleActivitySelect - JANGAN kalikan disini
   const handleActivitySelect = (activity: ActivityCategory) => {
-    setSelectedActivity(activity); // Keep original base_points
+    setSelectedActivity(activity); 
     setCurrentStep("CONFIRMING_LOCATION");
   };
 
-  // 🆕 Helper function untuk calculate final points sekali saja
+
   const getFinalPoints = () => {
     if (!selectedActivity) return 0;
     const finalPoints = Math.round(selectedActivity.base_points * challengeMultiplier);
-    
-    // 🆕 Debug logging
-    console.log("=== FINAL POINTS CALCULATION ===");
-    console.log("selectedActivity.base_points:", selectedActivity.base_points);
-    console.log("challengeMultiplier:", challengeMultiplier);
-    console.log("isChallenge:", isChallenge);
-    console.log("finalPoints:", finalPoints);
-    console.log("===================================");
+
     
     return finalPoints;
   };
@@ -185,10 +179,7 @@ export default function AksiPage() {
     setConfirmedLongitude(longitude ?? null);
     setCurrentStep("SHOWING_RESULT");
   };
-
-  // 🆕 Perbaikan handleFinish - hanya untuk routing, tidak ada database operations
   const handleFinish = async () => {
-    // Reset state untuk persiapan aksi berikutnya
     const now = Date.now();
     setLastUploadTime(now);
     localStorage.setItem("lastActivityUpload", now.toString());
@@ -202,8 +193,8 @@ export default function AksiPage() {
     setGeneratedImageUrl("");
     setIsActivityInserted(false);
     
-    // Navigate to home or desired route
-    // router.push("/"); // Uncomment jika ingin redirect
+    revalidateAfterActivity();
+
   };
 
   const handleBackToUpload = () => {
@@ -216,7 +207,6 @@ export default function AksiPage() {
     setCurrentStep("SELECTING_ACTIVITY");
   };
 
-  // 🆕 Update useEffect untuk background insert dengan getFinalPoints()
   useEffect(() => {
     if (
       profileId &&
@@ -224,10 +214,10 @@ export default function AksiPage() {
       confirmedLocation &&
       generatedImageUrl &&
       !isActivityInserted &&
-      !isUpdatingPoints // 👈 Tambah kondisi ini
+      !isUpdatingPoints 
     ) {
       
-      setIsUpdatingPoints(true); // 👈 Set flag
+      setIsUpdatingPoints(true);
     
       const finalPoints = getFinalPoints();
       
@@ -245,7 +235,6 @@ export default function AksiPage() {
         challenge_id: isChallenge ? challengeId : undefined,
       })
         .then(() => {
-          console.log("✅ Activity created successfully");
           setIsActivityInserted(true);
           return updateUserPoints(profileId, finalPoints);
         })
@@ -253,11 +242,11 @@ export default function AksiPage() {
           return updateProvinceStats(confirmedLocation, finalPoints);
         })
         .finally(() => {
-          setIsUpdatingPoints(false); // 👈 Reset flag
+          setIsUpdatingPoints(false);
         })
         .catch((err) => {
           console.error("❌ Error creating activity:", err);
-          setIsUpdatingPoints(false); // 👈 Reset flag on error
+          setIsUpdatingPoints(false); 
         });
     }
   }, [
@@ -266,13 +255,13 @@ export default function AksiPage() {
     confirmedLocation,
     generatedImageUrl,
     isActivityInserted,
-    isUpdatingPoints, // 👈 Tambah ke dependency
+    isUpdatingPoints, 
     confirmedLatitude,
     confirmedLongitude,
     uploadedImageUrl,
     isChallenge,
     challengeId,
-    getFinalPoints, // Add getFinalPoints to dependencies
+    getFinalPoints, 
   ]);
 
   useEffect(() => {
@@ -291,7 +280,6 @@ export default function AksiPage() {
     fetchProfileStats();
   }, [profileId]);
 
-  // Update step titles for challenge mode
   const getStepTitles = () => {
     if (isChallenge && challengeData) {
       return {
@@ -373,14 +361,14 @@ export default function AksiPage() {
         />
       )}
 
-      {/* 🆕 Update ResultStep call dengan getFinalPoints() */}
+
       {currentStep === "SHOWING_RESULT" && uploadedFile && selectedActivity && (
         <ResultStep
           imageData={{
             file: uploadedFile,
             activity: selectedActivity,
             location: confirmedLocation,
-            points: getFinalPoints(), // 🆕 Use calculated final points
+            points: getFinalPoints(), 
             username: user?.username || user?.fullName || user?.firstName || "",
           }}
           totalActivities={totalActivities}
@@ -388,7 +376,7 @@ export default function AksiPage() {
           onFinish={handleFinish}
           onGeneratedImageReady={setGeneratedImageUrl}
           challengeId={isChallenge ? challengeId : undefined}
-          challengeMultiplier={challengeMultiplier} // 🆕 Pass multiplier to ResultStep
+          challengeMultiplier={challengeMultiplier} 
         />
       )}
     </div>
