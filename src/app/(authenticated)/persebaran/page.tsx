@@ -276,7 +276,7 @@ const UnifiedActivitiesPage = () => {
       mapRef.current = map
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        // attribution: '© OpenStreetMap contributors'
       }).addTo(map)
 
       const validActivities = activities.filter(activity =>
