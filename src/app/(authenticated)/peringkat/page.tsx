@@ -4,9 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { Search, Users, MapPin, Trophy, Medal, Award } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { useUsers, useProvinceStats } from '@/hooks/useSWRData' // Import SWR hooks
+import { useUsers, useProvinceStats } from '@/hooks/useSWRData' 
 
-// Update interface User dengan properti yang lengkap
 interface User {
   id?: string;
   clerk_id?: string;
@@ -35,14 +34,12 @@ const PeringkatPage = () => {
   const router = useRouter()
   const { isLoaded, isSignedIn } = useUser()
 
-  // SWR hooks - instant loading dari cache!
   const { data: usersResponse, isLoading: usersLoading, error: usersError } = useUsers()
   const { data: provincesResponse, isLoading: provincesLoading, error: provincesError } = useProvinceStats()
 
   const usersData = usersResponse?.data || []
   const provincesData = provincesResponse?.data || []
 
-  // Check authentication
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/')

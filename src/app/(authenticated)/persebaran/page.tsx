@@ -74,7 +74,6 @@ const UnifiedActivitiesPage = () => {
     loading: true
   })
 
-  // Check authentication
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/')

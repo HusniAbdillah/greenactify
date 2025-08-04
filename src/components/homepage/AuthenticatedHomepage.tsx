@@ -253,7 +253,7 @@ const AuthenticatedHomepage: React.FC<AuthenticatedHomepageProps> = ({
                                     <div className="bg-white/20 border border-white/30 px-2 py-1 rounded-full flex items-center gap-1">
                                       <Clock className="w-3 h-3 text-white" />
                                       <span className="text-xs font-medium">
-                                        {currentChallenge.hoursRemaining}j
+                                        {currentChallenge.hoursRemaining} jam
                                         tersisa
                                       </span>
                                     </div>
