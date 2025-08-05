@@ -8,7 +8,6 @@ export interface StatsData {
 
 export async function calculateStats(): Promise<StatsData> {
   try {
-    // Get total activities from province_stats table
     const { data: provinceStats, error: provinceError } = await supabase
       .from('province_stats')
       .select('total_activities, total_users')
@@ -18,17 +17,14 @@ export async function calculateStats(): Promise<StatsData> {
       return { totalUsers: 0, totalActivities: 0, activeProvinces: 0 }
     }
 
-    // Calculate total activities (sum of all total_activities)
     const totalActivities = provinceStats?.reduce((sum, province) => {
       return sum + (province.total_activities || 0)
     }, 0) || 0
 
-    // Calculate total users (sum of all total_users)
     const totalUsers = provinceStats?.reduce((sum, province) => {
       return sum + (province.total_users || 0)
     }, 0) || 0
 
-    // Calculate active provinces (provinces with total_activities > 0)
     const activeProvinces = provinceStats?.filter(province =>
       (province.total_activities || 0) > 0
     ).length || 0

@@ -1,8 +1,4 @@
-/**
- * Utility functions for homepage data processing
- */
 
-// Format relative time for activities
 export function formatRelativeTime(date: Date | string): string {
   const activityDate = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
@@ -26,7 +22,6 @@ export function formatRelativeTime(date: Date | string): string {
   }
 }
 
-// Get color for activity category
 export function getCategoryColor(category: string): string {
   const colors: { [key: string]: string } = {
     planting: 'bg-green-100',
@@ -40,7 +35,6 @@ export function getCategoryColor(category: string): string {
   return colors[category] || 'bg-gray-100';
 }
 
-// Get difficulty badge color for challenges
 export function getDifficultyColor(difficulty: 'easy' | 'medium' | 'hard'): string {
   switch (difficulty) {
     case 'easy':
@@ -54,7 +48,6 @@ export function getDifficultyColor(difficulty: 'easy' | 'medium' | 'hard'): stri
   }
 }
 
-// Get status badge color for activities
 export function getStatusColor(status: 'completed' | 'pending' | 'rejected'): string {
   switch (status) {
     case 'completed':
@@ -68,7 +61,6 @@ export function getStatusColor(status: 'completed' | 'pending' | 'rejected'): st
   }
 }
 
-// Format challenge time remaining
 export function formatTimeRemaining(hoursRemaining: number): string {
   if (hoursRemaining <= 0) {
     return 'Tantangan berakhir';
@@ -81,7 +73,6 @@ export function formatTimeRemaining(hoursRemaining: number): string {
   }
 }
 
-// Calculate user stats from activity history
 export function calculateUserStats(activities: any[]) {
   const completedActivities = activities.filter(a => a.status === 'completed');
   const totalPoints = completedActivities.reduce((sum, activity) => sum + activity.points, 0);

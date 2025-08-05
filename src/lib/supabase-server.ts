@@ -42,10 +42,6 @@ export const createServerSupabaseClient = async () => {
   )
 }
 
-// ========================================
-// DATABASE TYPES (Enhanced)
-// ========================================
-
 export type Database = {
   public: {
     Tables: {
@@ -89,14 +85,6 @@ export type Database = {
   }
 }
 
-// ========================================
-// TYPE DEFINITIONS
-// ========================================
-
-
-// ========================================
-// HELPER FUNCTIONS
-// ========================================
 
 export const getProfileByUserId = async (userId: string): Promise<Profile | null> => {
   const { data, error } = await supabase
@@ -180,7 +168,6 @@ export const getActivityCategories = async (): Promise<ActivityCategory[]> => {
 }
 
 export const getTodayChallenge = async (): Promise<DailyChallenge | null> => {
-  // Use Indonesian timezone (WIB/UTC+7)
   const now = new Date();
   const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
   const today = indonesianTime.toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -263,7 +250,6 @@ export const setUploadCooldown = async (userId: string): Promise<void> => {
 }
 
 export const createActivity = async (activity: Omit<Activity, 'id' | 'created_at' | 'updated_at'>): Promise<Activity | null> => {
-  // Check cooldown first
   const canUpload = await checkUploadCooldown(activity.user_id)
   if (!canUpload) {
     throw new Error('Masih dalam cooldown. Tunggu 3 menit setelah upload terakhir.')
@@ -280,7 +266,6 @@ export const createActivity = async (activity: Omit<Activity, 'id' | 'created_at
     return null
   }
 
-  // Set cooldown
   await setUploadCooldown(activity.user_id)
 
   return data
@@ -300,7 +285,6 @@ export const getActivitiesFeed = async (limit: number = 20, offset: number = 0):
   return data || []
 }
 
-// Real-time subscriptions
 export const subscribeToActivities = (callback: (payload: RealtimePayload) => void) => {
   return supabase
     .channel('activities')

@@ -40,11 +40,9 @@ export const useProfile = () => {
     }
 
     try {
-      console.log('🔍 Fetching profile for user:', user.id)
       const data = await getProfileByUserId(user.id)
       setProfile(data)
       setError(null)
-      console.log(' Profile fetched:', data)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error'
       console.error(' Profile fetch error:', errorMsg)
@@ -108,9 +106,7 @@ export const useActivityCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log('📂 Fetching categories...')
         const data = await getActivityCategories()
-        console.log('📂 Categories data:', data)
         setCategories(data)
         setError(null)
       } catch (err) {
@@ -237,7 +233,6 @@ export function useActivities() {
 
       const data = await res.json();
       
-      console.log('✅ Fresh activities loaded for user:', user.id, data.length);
       setActivities(data || []);
     } catch (err) {
       console.error("Error in useActivities hook:", err);
@@ -248,12 +243,10 @@ export function useActivities() {
     }
   }, [user?.id, isLoaded]);
 
-  // Fetch saat component mount
   useEffect(() => {
     fetchActivities();
   }, [fetchActivities]);
 
-  // Reset activities when user changes
   useEffect(() => {
     if (!user?.id) {
       setActivities([]);
@@ -261,7 +254,6 @@ export function useActivities() {
     }
   }, [user?.id]);
 
-  // Cleanup saat unmount
   useEffect(() => {
     return () => {
       setActivities([]);
@@ -296,8 +288,7 @@ export function useProfiles() {
 
   const fetchUserProfile = useCallback(async () => {
     if (!isLoaded) return;
-    
-    // Clear profile immediately if no user
+
     if (!user?.id) {
       setProfile(null);
       setLoading(false);
@@ -309,7 +300,6 @@ export function useProfiles() {
       setLoading(true);
       setError(null);
 
-      // Add multiple cache busting mechanisms
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(7);
       const res = await fetch(`/api/profile?userId=${user.id}&t=${timestamp}&r=${randomId}`, {
@@ -317,7 +307,7 @@ export function useProfiles() {
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
-          'X-User-Id': user.id, // Additional header for verification
+          'X-User-Id': user.id,
         },
       });
 
@@ -328,7 +318,6 @@ export function useProfiles() {
 
       const data: UserProfile = await res.json();
       
-      // Multiple verification checks
       if (!data.clerk_id || data.clerk_id !== user.id) {
         console.error('Profile ownership mismatch:', { 
           expected: user.id, 
@@ -339,7 +328,6 @@ export function useProfiles() {
         throw new Error('Profile data does not belong to current user');
       }
       
-      console.log('✅ Profile loaded for user:', user.id, data.username);
       setProfile(data);
     } catch (err) {
       console.error("Error in useProfile hook:", err);
@@ -354,7 +342,6 @@ export function useProfiles() {
     fetchUserProfile();
   }, [fetchUserProfile]);
 
-  // Reset profile when user changes - critical for multi-user scenarios
   useEffect(() => {
     if (!user?.id) {
       setProfile(null);
@@ -362,10 +349,8 @@ export function useProfiles() {
     }
   }, [user?.id]);
 
-  // Additional effect to clear profile on user change
   useEffect(() => {
     return () => {
-      // Cleanup when component unmounts or user changes
       setProfile(null);
       setError(null);
     };
@@ -470,7 +455,6 @@ export function useRefreshProvinceStats() {
         if (!res.ok) throw new Error(json.error || 'Unknown error');
         setResult(json);
         setError(null);
-        console.log('🌍 Province stats refreshed:', json);
       } catch (err: any) {
         setError(err.message);
       } finally {

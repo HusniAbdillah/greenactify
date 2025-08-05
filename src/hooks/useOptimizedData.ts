@@ -6,7 +6,6 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-// Cache provinces data
 export function useProvinces() {
   return useSWR('/api/provinces', fetcher, {
     revalidateOnFocus: false,
@@ -16,7 +15,6 @@ export function useProvinces() {
   });
 }
 
-// Cache stats data
 export function useStats() {
   return useSWR('/api/stats', fetcher, {
     revalidateOnFocus: false,
@@ -24,7 +22,6 @@ export function useStats() {
   });
 }
 
-// Cache province stats
 export function useProvinceStats() {
   return useSWR('/api/province-bare', fetcher, {
     revalidateOnFocus: false,

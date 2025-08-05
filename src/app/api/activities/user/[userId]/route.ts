@@ -85,10 +85,6 @@ export async function GET(
       challenge_id: activity.challenge_id || null,
     }));
 
-    console.log('✅ API: Transformed activities:', {
-      count: transformedActivities.length,
-      firstActivity: transformedActivities[0]
-    });
 
     return NextResponse.json({
       success: true,

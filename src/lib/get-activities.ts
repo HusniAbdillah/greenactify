@@ -1,7 +1,6 @@
 // src/lib/get-activities.ts
 import { supabase } from '@/lib/supabase-client'
 
-// Get all activity categories with group info from group_category column
 export async function getActivityCategories() {
   const { data, error } = await supabase
     .from('activity_categories')
@@ -12,7 +11,6 @@ export async function getActivityCategories() {
   return data
 }
 
-// Get all activity groups for filtering
 export async function getActivityGroups() {
   const { data, error } = await supabase
     .from('activity_group')
@@ -21,7 +19,6 @@ export async function getActivityGroups() {
   return data
 }
 
-// Get categories with group_category for SelectActivityStep component
 export async function getActivityCategoriesWithGroups() {
   const { data, error } = await supabase
     .from('activity_categories')

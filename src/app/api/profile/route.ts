@@ -12,7 +12,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Verify the requested userId matches the authenticated user
     if (requestedUserId && requestedUserId !== clerkId) {
       console.error('Profile access denied:', { 
         authenticated: clerkId, 
@@ -23,7 +22,6 @@ export async function GET(request: Request) {
       }, { status: 403 });
     }
 
-    // Always use the authenticated user's clerkId, not the query parameter
     const userProfile = await getProfileByClerkId2(clerkId);
     
     if (!userProfile) {
@@ -32,7 +30,6 @@ export async function GET(request: Request) {
       }, { status: 404 });
     }
 
-    // Add additional verification to ensure we're returning the right profile
     if (userProfile.clerk_id !== clerkId) {
       console.error('Profile mismatch:', { 
         expected: clerkId, 
@@ -43,7 +40,6 @@ export async function GET(request: Request) {
       }, { status: 500 });
     }
 
-    // Add cache headers to prevent caching
     const response = NextResponse.json(userProfile);
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     response.headers.set('Pragma', 'no-cache');

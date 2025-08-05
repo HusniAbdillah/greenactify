@@ -11,7 +11,7 @@ export type ActivityCategory = {
   name: string;
   base_points: number;
   description: string;
-  group_category?: string; // Langsung string dari kolom group_category
+  group_category?: string;
 };
 
 interface ActivityGroup {
@@ -23,8 +23,8 @@ interface ActivityGroup {
 interface SelectActivityStepProps {
   onActivitySelect: (activity: ActivityCategory) => void;
   onBack: () => void;
-  challengeFilter?: string; // Add challenge filter prop
-  challengeMultiplier?: number; // Add challenge multiplier
+  challengeFilter?: string; 
+  challengeMultiplier?: number; 
 }
 
 const IconRenderer = ({ iconName, className }: { iconName?: string; className?: string }) => {
@@ -74,34 +74,17 @@ export default function SelectActivityStep({
   }, [challengeFilter]);
 
   const filteredCategories = useMemo(() => {
-    console.log('=== DEBUGGING FILTER ===');
-    console.log('challengeFilter:', challengeFilter);
-    console.log('selectedGroup:', selectedGroup);
-    console.log('categories count:', categories.length);
-    console.log('groups count:', groups.length);
     
     if (challengeFilter && groups.length > 0) {
       const targetGroup = groups.find(g => g.id === challengeFilter);
-      console.log('Target group:', targetGroup);
-      
+       
       const challengeFiltered = categories.filter((cat) => {
         const matchById = cat.group_category === challengeFilter;
         const matchByName = targetGroup && cat.group_category === targetGroup.name;
         
-        console.log(`Category "${cat.name}":`, {
-          group_category: cat.group_category,
-          challengeFilter,
-          targetGroupName: targetGroup?.name,
-          matchById,
-          matchByName,
-          finalMatch: matchById || matchByName
-        });
-        
         return matchById || matchByName;
       });
-      
-      console.log('Challenge filtered result:', challengeFiltered.length, 'items');
-      
+            
       const searchFiltered = challengeFiltered.filter((cat) => {
         if (!search) return true;
         const searchLower = search.toLowerCase();
@@ -109,7 +92,6 @@ export default function SelectActivityStep({
                (cat.description && cat.description.toLowerCase().includes(searchLower));
       });
       
-      console.log('Final filtered result:', searchFiltered.length, 'items');
       return searchFiltered;
     }
 
