@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-admin"
-// lib/supabase/getProfileIdByClerkId.ts
+
 
 
 export const getProfileIdByClerkId = async (clerkId: string): Promise<string | null> => {
@@ -11,12 +11,14 @@ export const getProfileIdByClerkId = async (clerkId: string): Promise<string | n
     .single()
 
   if (error) {
-    console.error('❌ Error fetching profile ID:', error)
+    console.error(' Error fetching profile ID:', error)
     return null
   }
 
   return data.id
 }
+
+
 
 
 
@@ -27,7 +29,7 @@ export const getActivityGroupCounts = async (profileId: string) => {
   })
 
   if (error) {
-    console.error('❌ Error fetching activity group counts:', error)
+    console.error('Error fetching activity group counts:', error)
     return []
   }
 
