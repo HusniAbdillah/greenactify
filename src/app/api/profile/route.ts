@@ -1,32 +1,29 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { getProfileByProfileId } from '@/lib/supabase-client';
-import { getProfileIdByClerkId } from '@/lib/get-profile'; 
+import { getProfileByClerkId2 } from '@/lib/supabase-client';
 
 export async function GET() {
-  const { userId: clerkId } = await auth();
-
-  if (!clerkId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
-    const profileUuid = await getProfileIdByClerkId(clerkId);
+    const { userId: clerkId } = await auth();
     
-    if (!profileUuid) {
-      return NextResponse.json({ error: 'Profile ID not found for this Clerk user' }, { status: 404 });
+    if (!clerkId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userProfileData = await getProfileByProfileId(profileUuid);
-
-    if (!userProfileData) {
-      return NextResponse.json({ error: 'User profile data not found in database' }, { status: 404 });
+    const userProfile = await getProfileByClerkId2(clerkId);
+    
+    if (!userProfile) {
+      return NextResponse.json({ 
+        error: 'Profile not found for this user' 
+      }, { status: 404 });
     }
 
-    return NextResponse.json(userProfileData);
-
+    return NextResponse.json(userProfile);
+    
   } catch (error) {
-    console.error('API Error fetching profile:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('API Error:', error);
+    return NextResponse.json({ 
+      error: 'Internal server error' 
+    }, { status: 500 });
   }
 }

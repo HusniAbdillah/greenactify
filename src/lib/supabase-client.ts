@@ -305,6 +305,26 @@ export const getDetailedActivitiesByUserId = async (userId: string): Promise<any
   return data
 }
 
+export const getProfileByClerkId2 = async (clerkId: string): Promise<any | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('clerk_id', clerkId)
+      .single(); 
+    
+    if (error) {
+      console.error('Error fetching profile by clerk_id:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Exception in getProfileByClerkId:', error);
+    return null;
+  }
+}
+
 export const getProfileByProfileId = async (profileId: string): Promise<any | null> => {
   const { data, error } = await supabase
     .from('profiles')
@@ -318,6 +338,7 @@ export const getProfileByProfileId = async (profileId: string): Promise<any | nu
 
   return data.length > 0 ? data[0] : null;
 };
+
 
 export const recalculateAllUserPoints = async () => {
   const { data: activities, error } = await supabase
