@@ -203,29 +203,73 @@ export type ActivityItem = {
   };
 };
 export function useActivities() {
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const { user, isLoaded } = useUser();
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const fetchActivities = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch('/api/activities')
-      if (!res.ok) throw new Error('Gagal mengambil data')
-      const data = await res.json()
-      setActivities(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Terjadi kesalahan'))
-    } finally {
-      setLoading(false)
+  const fetchActivities = useCallback(async () => {
+    if (!isLoaded) return;
+    
+    if (!user?.id) {
+      setActivities([]);
+      setLoading(false);
+      setError(new Error('User not authenticated'));
+      return;
     }
-  }
 
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch('/api/activities', {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Gagal mengambil data aktivitas');
+      }
+
+      const data = await res.json();
+      
+      console.log('✅ Fresh activities loaded for user:', user.id, data.length);
+      setActivities(data || []);
+    } catch (err) {
+      console.error("Error in useActivities hook:", err);
+      setError(err instanceof Error ? err : new Error('Terjadi kesalahan'));
+      setActivities([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id, isLoaded]);
+
+  // Fetch saat component mount
   useEffect(() => {
-    fetchActivities()
-  }, [])
+    fetchActivities();
+  }, [fetchActivities]);
 
-  return { activities, loading, error, refetch: fetchActivities } 
+  // Reset activities when user changes
+  useEffect(() => {
+    if (!user?.id) {
+      setActivities([]);
+      setError(null);
+    }
+  }, [user?.id]);
+
+  // Cleanup saat unmount
+  useEffect(() => {
+    return () => {
+      setActivities([]);
+      setError(null);
+    };
+  }, [user?.id]);
+
+  return { activities, loading, error, refetch: fetchActivities };
 }
 
 interface UserProfile {
