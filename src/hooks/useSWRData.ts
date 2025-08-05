@@ -23,8 +23,7 @@ export function useProvinces() {
 
 export function useProvinceStats() {
   const {user} = useUser();
-  const key =
-      null;  // user?.id ? `/api/province-bare?userId=${user.id}` : null;
+  const key = user?.id ? `/api/province-bare?userId=${user.id}` : null;
 
   return useSWR(key, fetcher, {
     revalidateOnFocus: false,
