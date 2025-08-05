@@ -4,8 +4,8 @@
   "description": "Aksi Hijau Hari Ini, Nafas Segar Esok Hari.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#10b981",
+  "background_color": "#D2E8BB",
+  "theme_color": "#D2E8BB",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
