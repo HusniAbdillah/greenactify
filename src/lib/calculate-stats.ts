@@ -52,3 +52,4 @@ export async function fetchStats(): Promise<StatsData> {
     return { totalUsers: 0, totalActivities: 0, activeProvinces: 0 }
   }
 }
+
