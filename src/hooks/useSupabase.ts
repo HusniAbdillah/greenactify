@@ -245,16 +245,37 @@ interface UserProfile {
 }
 
 export function useProfiles() {
+  const { user, isLoaded } = useUser();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
+    if (!isLoaded) return;
+    
+    // Clear profile immediately if no user
+    if (!user?.id) {
+      setProfile(null);
+      setLoading(false);
+      setError(new Error('User not authenticated'));
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      const res = await fetch('/api/profile');
+      // Add multiple cache busting mechanisms
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(7);
+      const res = await fetch(`/api/profile?userId=${user.id}&t=${timestamp}&r=${randomId}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'X-User-Id': user.id, // Additional header for verification
+        },
+      });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ message: 'Gagal mengambil data profil' }));
@@ -262,23 +283,52 @@ export function useProfiles() {
       }
 
       const data: UserProfile = await res.json();
+      
+      // Multiple verification checks
+      if (!data.clerk_id || data.clerk_id !== user.id) {
+        console.error('Profile ownership mismatch:', { 
+          expected: user.id, 
+          got: data.clerk_id,
+          userEmail: user.emailAddresses?.[0]?.emailAddress,
+          profileEmail: data.email
+        });
+        throw new Error('Profile data does not belong to current user');
+      }
+      
+      console.log('✅ Profile loaded for user:', user.id, data.username);
       setProfile(data);
     } catch (err) {
       console.error("Error in useProfile hook:", err);
       setError(err instanceof Error ? err : new Error('Terjadi kesalahan tidak dikenal saat mengambil profil.'));
+      setProfile(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, isLoaded]);
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+  }, [fetchUserProfile]);
+
+  // Reset profile when user changes - critical for multi-user scenarios
+  useEffect(() => {
+    if (!user?.id) {
+      setProfile(null);
+      setError(null);
+    }
+  }, [user?.id]);
+
+  // Additional effect to clear profile on user change
+  useEffect(() => {
+    return () => {
+      // Cleanup when component unmounts or user changes
+      setProfile(null);
+      setError(null);
+    };
+  }, [user?.id]);
 
   return { profile, loading, error, refetchProfile: fetchUserProfile };
 }
-
-
 
 
 export const handleDeleteActivity = async (activityId: string): Promise<boolean> => {
