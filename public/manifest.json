@@ -4,7 +4,7 @@
   "description": "Aksi Hijau Hari Ini, Nafas Segar Esok Hari.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#D2E8BB",
   "theme_color": "#10b981",
   "orientation": "portrait-primary",
   "scope": "/",
@@ -20,6 +20,12 @@
       "sizes": "512x512", 
       "type": "image/png",
       "purpose": "maskable any"
+    },
+    {
+      "src": "/logo-greenactify.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
