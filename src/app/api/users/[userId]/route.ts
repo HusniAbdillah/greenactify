@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from '@/lib/supabase-client';
 
 export async function GET(
   request: NextRequest,
@@ -21,37 +16,45 @@ export async function GET(
       );
     }
 
-    const { userId } = params;
+    const { userId } = await params;
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
 
-    // Query user profile from Supabase
     const { data: profile, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('clerk_id', userId)
+      .from('profiles')
+      .select(`
+        id,
+        full_name,
+        username,
+        avatar_url,
+        points,
+        province,
+        total_activities,
+        created_at,
+        rank,
+        clerk_id
+      `)
+      .or(`id.eq.${userId},clerk_id.eq.${userId}`)
       .single();
 
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+    if (error || !profile) {
+      return NextResponse.json({ 
+        error: 'Profile not found',
+        details: error?.message 
+      }, { status: 404 });
     }
 
-    if (!profile) {
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(profile);
+    return NextResponse.json({
+      success: true,
+      data: profile
+    });
 
   } catch (error) {
-    console.error('API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

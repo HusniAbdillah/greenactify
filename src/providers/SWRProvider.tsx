@@ -1,4 +1,3 @@
-// src/providers/SWRProvider.tsx
 'use client';
 
 import { SWRConfig } from 'swr';

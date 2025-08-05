@@ -8,7 +8,6 @@ export const LazyHeatmap = dynamic(
   }
 );
 
-// Lazy load profile activity
 export const LazyProfileActivity = dynamic(
   () => import('./profil/profileActivity'),
   {
@@ -21,12 +20,3 @@ export const LazyProfileActivity = dynamic(
     ),
   }
 );
-
-// // Lazy load chart components
-// export const LazyChart = dynamic(
-//   () => import('./Chart'),
-//   {
-//     loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
-//     ssr: false,
-//   }
-// );

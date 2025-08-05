@@ -29,17 +29,14 @@ console.log('🔧 Initializing Supabase client:', {
   keyPreview: supabaseAnonKey?.substring(0, 20) + '...'
 })
 
-// Client-side Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false // Disable auth for debugging
+    persistSession: false 
   }
 })
 
-// Test function
 export const testSupabaseConnection = async () => {
   try {
-    console.log('🧪 Testing Supabase connection...')
     const { data, error, count } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
@@ -53,9 +50,7 @@ export const testSupabaseConnection = async () => {
 }
 
 
-// Client-side functions (tanpa server auth)
 export const getProfileByUserId = async (userId: string): Promise<Profile | null> => {
-  console.log('🔍 Fetching profile for userId:', userId)
 
   if (!userId) {
     console.warn(' No userId provided')
@@ -69,16 +64,7 @@ export const getProfileByUserId = async (userId: string): Promise<Profile | null
       .eq('id', userId)
       .single()
 
-    console.log('📊 Profile query result:', {
-      data,
-      error,
-      status,
-      statusText,
-      hasData: !!data,
-      errorType: typeof error,
-      errorKeys: error ? Object.keys(error) : []
-    })
-
+    
     if (error) {
       console.error(' Profile query detailed error:', {
         message: error.message || 'No message',
@@ -89,8 +75,6 @@ export const getProfileByUserId = async (userId: string): Promise<Profile | null
       })
       return null
     }
-
-    console.log(' Profile fetch successful:', data)
     return data
   } catch (err) {
     console.error(' Profile query exception:', err)
@@ -113,7 +97,6 @@ export const getActivitiesByUserId = async (userId: string): Promise<Activity[]>
 }
 
 export const getLeaderboardUsers = async (limit: number = 10): Promise<LeaderboardUser[]> => {
-  console.log('Fetching leaderboard users with limit:', limit)
 
   const { data, error } = await supabase
     .from('leaderboard_users')
@@ -135,7 +118,6 @@ export const getLeaderboardUsers = async (limit: number = 10): Promise<Leaderboa
 }
 
 export const getLeaderboardProvinces = async (limit: number = 10): Promise<LeaderboardProvince[]> => {
-  console.log('Fetching leaderboard provinces with limit:', limit)
 
   const { data, error } = await supabase
     .from('leaderboard_provinces')
@@ -171,7 +153,6 @@ export const getActivityCategories = async (): Promise<ActivityCategory[]> => {
 }
 
 export const getTodayChallenge = async (): Promise<DailyChallenge | null> => {
-  // Use Indonesian timezone (WIB/UTC+7)
   const now = new Date();
   const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
   const today = indonesianTime.toISOString().split('T')[0];
@@ -207,7 +188,6 @@ export const getUserChallengeProgress = async (userId: string, challengeId: stri
 }
 
 export const getRandomChallenges = async (limit: number = 3): Promise<DailyChallenge[]> => {
-  // Get challenges that haven't been used in the last 7 days using Indonesian timezone
   const now = new Date();
   const indonesianTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for WIB
 
@@ -218,7 +198,6 @@ export const getRandomChallenges = async (limit: number = 3): Promise<DailyChall
 
   console.log('Using Indonesian timezone - Today:', today, 'Seven days ago:', sevenDaysAgoStr);
 
-  // First, get the total count of available challenges
   const { count, error: countError } = await supabase
     .from('daily_challenges')
     .select('*', { count: 'exact', head: true })
@@ -227,7 +206,6 @@ export const getRandomChallenges = async (limit: number = 3): Promise<DailyChall
 
   if (countError || !count || count === 0) {
     console.log('No challenges available or error counting:', countError)
-    // Fallback: get any challenges that aren't for today
     const { data: fallbackData, error: fallbackError } = await supabase
       .from('daily_challenges')
       .select('*')
@@ -241,7 +219,6 @@ export const getRandomChallenges = async (limit: number = 3): Promise<DailyChall
     return fallbackData || []
   }
 
-  // Generate random offset
   const randomOffset = Math.floor(Math.random() * Math.max(1, count - limit + 1))
 
   const { data, error } = await supabase
@@ -365,12 +342,10 @@ export const recalculateAllUserPoints = async () => {
     .update({ points: totalPoints })
     .eq('id', userId);
 
-  console.log('📝 Updated profile:', userId, profileUpdate);
 
   const leaderboardUpdate = await supabase
     .from('leaderboard_users')
     .upsert({ user_id: userId, points: totalPoints }, { onConflict: 'user_id' });
-  console.log('🏆 Upserted leaderboard:', userId, leaderboardUpdate);
   return [profileUpdate, leaderboardUpdate];
 
 

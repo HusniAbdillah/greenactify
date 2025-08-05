@@ -133,16 +133,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST endpoint to complete a challenge (for future implementation)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { challengeId, userId, proof } = body;
 
-    // TODO: Implement challenge completion logic
-    // For now, just return success
-
-    return NextResponse.json({
+      return NextResponse.json({
       success: true,
       message: 'Challenge completed successfully!',
       pointsEarned: 50

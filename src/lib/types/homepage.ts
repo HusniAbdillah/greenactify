@@ -1,4 +1,3 @@
-// Daily Challenge Types
 export interface DailyChallenge {
   id: number;
   title: string;
@@ -15,7 +14,6 @@ export interface DailyChallenge {
   isActive?: boolean;
 }
 
-// Activity History Types
 export interface ActivityHistory {
   id: number;
   userId: string;
@@ -51,7 +49,6 @@ export interface ActivityHistoryResponse {
   summary: ActivitySummary;
 }
 
-// User Stats Types (extending existing)
 export interface UserStats {
   totalPoints: number;
   completedActivities: number;

@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase-admin'
 
 export async function GET() {
   try {
-    // Alternative approach: Get activities and categories separately for better reliability
     const [activitiesResult, categoriesResult] = await Promise.all([
       supabase()
         .from('activities')
@@ -30,13 +29,11 @@ export async function GET() {
     console.log('Fetched activities count:', activities?.length)
     console.log('Fetched categories count:', categories?.length)
 
-    // Create category lookup map
     const categoryMap = new Map()
     categories?.forEach(category => {
       categoryMap.set(category.id, category.name)
     })
 
-    // Count activities by category
     const categoryCount: { [key: string]: number } = {}
 
     activities?.forEach((activity, index) => {
@@ -56,7 +53,6 @@ export async function GET() {
 
     console.log('Category counts:', categoryCount)
 
-    // Convert to array and sort by count
     const popularActivities = Object.entries(categoryCount)
       .map(([name, count]) => ({
         name,
@@ -64,7 +60,7 @@ export async function GET() {
         percentage: Math.round((count / (activities?.length || 1)) * 100)
       }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5) // Top 5 activities
+      .slice(0, 5)
 
     return NextResponse.json({
       popularActivities,

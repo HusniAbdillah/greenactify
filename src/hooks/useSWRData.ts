@@ -1,16 +1,13 @@
-// src/hooks/useSWRData.ts
 import useSWR from 'swr';
 import { useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
 
-// Basic fetcher with user context
 export const fetcher = (url: string) =>
   fetch(url, { headers: { 'Content-Type': 'application/json' } }).then(res => {
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     return res.json();
   });
 
-// Hook untuk data provinces dengan cache long-term
 export function useProvinces() {
   const { user } = useUser();
   const key = user?.id ? `/api/provinces?userId=${user.id}` : null;
@@ -24,7 +21,6 @@ export function useProvinces() {
   });
 }
 
-// Hook untuk province stats dengan cache medium-term
 export function useProvinceStats() {
   const { user } = useUser();
   const key = user?.id ? `/api/province-bare?userId=${user.id}` : null;
@@ -39,19 +35,17 @@ export function useProvinceStats() {
 
 export function useUserProfile(userId?: string) {
   const { user } = useUser();
-  // Only fetch if userId matches current user or no userId provided (use current user)
   const targetUserId = userId || user?.id;
   const key = targetUserId && user?.id ? `/api/users/${targetUserId}?currentUser=${user.id}` : null;
   
   return useSWR(key, fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 300000, // 5 minutes
-    refreshInterval: 0, // Profile rarely changes
+    refreshInterval: 0, 
     shouldRetryOnError: false,
   });
 }
 
-// Hook untuk users leaderboard
 export function useUsers() {
   const { user } = useUser();
   const key = user?.id ? `/api/users?currentUser=${user.id}` : null;
@@ -64,7 +58,6 @@ export function useUsers() {
   });
 }
 
-// Hook untuk challenge data
 export function useChallenge(challengeId?: string) {
   const { user } = useUser();
   const key = challengeId && user?.id ? `/api/daily-challenge/${challengeId}?userId=${user.id}` : null;
@@ -77,7 +70,6 @@ export function useChallenge(challengeId?: string) {
   });
 }
 
-// Hook untuk popular activities
 export function usePopularActivities() {
   const { user } = useUser();
   const key = user?.id ? `/api/activities/popular?userId=${user.id}` : null;
@@ -90,7 +82,6 @@ export function usePopularActivities() {
   });
 }
 
-// 🔧 Fixed: Hook dengan conditional fetching dan computed data
 export function useProvinceData() {
   const { user } = useUser();
   const key = user?.id ? `/api/provinces?limit=50&userId=${user.id}` : null;
@@ -102,7 +93,6 @@ export function useProvinceData() {
     shouldRetryOnError: false,
   });
 
-  // Memoize computed data
   const provinceData = useMemo(() => {
     if (!data?.data || !Array.isArray(data.data)) return [];
     
@@ -127,7 +117,6 @@ export function useProvinceData() {
   };
 }
 
-// 🔧 Fixed: Hook untuk statistics dengan multiple endpoints
 export function useDashboardStats() {
   const { user } = useUser();
   const key = user?.id ? `/api/stats?userId=${user.id}` : null;
@@ -148,7 +137,6 @@ export function useDashboardStats() {
   }), [activities, activitiesError]);
 }
 
-// Manual revalidation functions with user context
 import { mutate } from 'swr';
 
 export const revalidateProvinces = (userId: string) => mutate(`/api/provinces?userId=${userId}`);
@@ -192,7 +180,6 @@ export function useRevalidation() {
   };
 }
 
-// 🔄 DAILY CHALLENGE - Cache lama (berubah jarang)
 export function useDailyChallenge() {
   const { user } = useUser();
   const key = user?.id ? `/api/daily-challenge?userId=${user.id}` : null;
@@ -200,15 +187,14 @@ export function useDailyChallenge() {
   return useSWR(key, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
-    dedupingInterval: 1800000, // 30 menit
-    refreshInterval: 3600000,  // 1 jam auto refresh
+    dedupingInterval: 1800000, 
+    refreshInterval: 3600000,  
     shouldRetryOnError: false,
     errorRetryCount: 1,
-    staleTime: 1800000, // Data dianggap fresh selama 30 menit
+    staleTime: 1800000, 
   });
 }
 
-// ⚡ USER ACTIVITIES - Cache pendek (lebih real-time)
 export function useUserActivities(targetUserId?: string) {
   const { user } = useUser();
   const userId = targetUserId || user?.id;
@@ -224,18 +210,6 @@ export function useUserActivities(targetUserId?: string) {
     refreshInterval: 120000,
     shouldRetryOnError: false,
     errorRetryCount: 2,
-    onSuccess: (data) => {
-      console.log('✅ SWR Success - User Activities:', {
-        targetUserId,
-        currentUserId: user?.id,
-        hasData: !!data,
-        success: data?.success,
-        count: data?.data?.length || data?.length || 0,
-      });
-    },
-    onError: (error) => {
-      console.error('❌ SWR Error - User Activities:', error);
-    }
   });
 
   const activities = useMemo(() => {
@@ -290,7 +264,6 @@ export function useHeatmapData() {
   });
 }
 
-// STATS - Cache medium
 export function useStats() {
   const { user } = useUser();
   const key = user?.id ? `/api/stats?userId=${user.id}` : null;
@@ -305,7 +278,6 @@ export function useStats() {
   });
 }
 
-// 🏆 LEADERBOARD - Cache medium
 export function useUserLeaderboard() {
   const { user } = useUser();
   const key = user?.id ? `/api/users?currentUser=${user.id}` : null;

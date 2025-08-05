@@ -11,8 +11,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('🔄 Fetching fresh activities for clerk_id:', clerkId)
-
     const profileId = await getProfileIdByClerkId(clerkId)
 
     if (!profileId) {
@@ -21,9 +19,6 @@ export async function GET(req: Request) {
 
     const data = await getDetailedActivitiesByUserId(profileId)
 
-    console.log('✅ Fresh activities returned:', data?.length || 0)
-
-    // Headers untuk tidak cache sama sekali
     const response = NextResponse.json(data || [])
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, private')
     response.headers.set('Pragma', 'no-cache')
