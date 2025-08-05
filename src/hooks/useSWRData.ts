@@ -334,24 +334,6 @@ export function useProvinceLeaderboard() {
   });
 }
 
-export function useActivities(targetUserId?: string) {
-  const { user } = useUser();
-  const key = targetUserId && user?.id 
-    ? `/api/activities/user/${targetUserId}?currentUser=${user.id}` 
-    : user?.id 
-    ? `/api/activities/getAll?currentUser=${user.id}` 
-    : null;
-  
-  return useSWR(key, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-    dedupingInterval: 300000, // 5 minutes
-    refreshInterval: 600000,  // 10 minutes
-    shouldRetryOnError: false,
-    errorRetryCount: 1
-  });
-}
-
 export function clearUserCache(userId: string) {
   const patterns = [
     `/api/provinces?userId=${userId}`,
@@ -359,10 +341,9 @@ export function clearUserCache(userId: string) {
     `/api/users?currentUser=${userId}`,
     `/api/stats?userId=${userId}`,
     `/api/daily-challenge?userId=${userId}`,
-    `/api/activities/user/${userId}?currentUser=${userId}`,
-    `/api/activities/getAll?currentUser=${userId}`,
     `/api/activities/popular?userId=${userId}`,
     `/api/activities/heatmap?userId=${userId}`,
+    `/api/profile?userId=${userId}`,
   ];
   
   patterns.forEach(pattern => {
