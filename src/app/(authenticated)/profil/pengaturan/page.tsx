@@ -39,7 +39,6 @@ export default function EditProfilePage() {
   
 
   const clerk_id = user?.id
-  console.log('🧾 Clerk ID dari frontend:', clerk_id);
 const handleUpdate = async () => {
   if (!fullName || !username || !province) {
     toast.error('Semua kolom harus diisi!');
