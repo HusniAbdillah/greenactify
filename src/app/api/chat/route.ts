@@ -45,8 +45,7 @@ export async function POST(req: Request) {
     return result.toDataStreamResponse();
     
   } catch (error) {
-    console.error('[CHAT_API_ERROR]', error);
-
+    
     return new Response(
       JSON.stringify({ 
         error: 'Oops! Ada masalah di server. Coba lagi sebentar ya.' 

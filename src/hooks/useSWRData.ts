@@ -305,9 +305,10 @@ export function useProvinceLeaderboard() {
   });
 }
 
-// Add this new hook for persebaran page
-export function useActivities() {
-  return useSWR('/api/activities/getAll', {
+export function useActivities(userId?: string) {
+  const key = userId ? `/api/activities/user/${userId}` : '/api/activities/getAll';
+  
+  return useSWR(key, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     dedupingInterval: 300000, // 5 minutes

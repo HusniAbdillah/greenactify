@@ -12,9 +12,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await params;
-    
-    console.log('🔍 API: Fetching activities for userId:', userId);
-    
+        
     if (!userId || userId === 'undefined' || userId === 'null') {
       return NextResponse.json(
         { success: false, error: 'Invalid user ID', data: [] },

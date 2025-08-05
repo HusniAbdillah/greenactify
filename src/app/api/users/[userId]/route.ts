@@ -1,46 +1,57 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase-admin'
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { userId: string } }
 ) {
   try {
-    const { userId } = params
+    const { userId: authUserId } = await auth();
+    
+    if (!authUserId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
-    const { data: user, error } = await supabase()
-      .from('profiles')
+    const { userId } = params;
+
+    // Query user profile from Supabase
+    const { data: profile, error } = await supabase
+      .from('users')
       .select('*')
-      .eq('id', userId)
-      .single()
+      .eq('clerk_id', userId)
+      .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('Supabase error:', error);
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 404 }
+      );
     }
 
-    const { data: higherPointsUsers } = await supabase()
-      .from('profiles')
-      .select('id')
-      .gt('points', user.points)
-
-    const rank = (higherPointsUsers?.length || 0) + 1
-
-    return NextResponse.json({
-      data: {
-        ...user,
-        rank: rank
-      },
-      success: true
-    })
+    return NextResponse.json(profile);
 
   } catch (error) {
-    return NextResponse.json({
-      error: 'Internal server error',
-      success: false
-    }, { status: 500 })
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

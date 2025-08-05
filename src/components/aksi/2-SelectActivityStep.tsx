@@ -60,11 +60,9 @@ export default function SelectActivityStep({
 
   useEffect(() => {
     getActivityGroups().then((groupsData) => {
-      console.log('Groups data:', groupsData);
       setGroups(groupsData);
     });
     getActivityCategoriesWithGroups().then((categoriesData) => {
-      console.log('Categories data:', categoriesData);
       setCategories(categoriesData);
     });
     
