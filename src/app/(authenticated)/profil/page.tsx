@@ -6,24 +6,23 @@ import { useProfiles, useActivities } from '@/hooks/useSupabase';
 import { useUser, useClerk } from '@clerk/nextjs';
 import ProfileActivity from '../../../components/profil/profileActivity';
 import Image from 'next/image';
+import { clearUserCache } from '@/hooks/useSWRData';
 
 export default function ProfileContent() {
-  const { profile } = useProfiles();
-  const { user } = useUser();
+  const { profile, loading: profileLoading } = useProfiles();
+  const { user, isLoaded } = useUser();
   const clerk = useClerk();
   const router = useRouter();
-  const { activities, loading, error, refetch } = useActivities();
+  const { activities, loading: activitiesLoading, error, refetch } = useActivities();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = async () => {
-    await clerk.signOut();
-  };
-
-  useEffect(() => {
-    if (user === null) {
-      router.push('/');
+    if (user?.id) {
+      clearUserCache(user.id);
     }
-  }, [user, router]);
+    await clerk.signOut();
+    router.push('/');
+  };
 
   function getRankInfo(rank: number | null) {
     if (rank === 1) {
@@ -68,7 +67,7 @@ export default function ProfileContent() {
   }
 
   const { message, image } = getRankInfo(profile?.rank ?? null);
-  if (!profile || loading) {
+  if (!profile || profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-mintPastel">
         <div className="flex flex-col items-center gap-4 animate-fade-in">
@@ -161,7 +160,7 @@ export default function ProfileContent() {
 
       <ProfileActivity
         activities={activities}
-        loading={loading}
+        loading={activitiesLoading}
         error={error}
         refetch={refetch}
       />
