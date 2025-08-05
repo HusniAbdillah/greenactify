@@ -33,6 +33,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
     "next": "^15.4.5",
+    "next-pwa": "^5.6.0",
     "papaparse": "^5.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -44,6 +45,7 @@
     "swr": "^2.3.4",
     "tailwind-merge": "^3.3.1",
     "uuid": "^11.1.0",
+    "workbox-webpack-plugin": "^7.3.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -59,12 +61,14 @@
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19",
     "@types/react-table": "^7.7.20",
+    "@types/serviceworker": "^0.0.149",
     "eslint": "^9",
     "eslint-config-next": "15.4.3",
     "jest": "^30.0.5",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.0",
     "tw-animate-css": "^1.3.6",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "webpack": "^5.101.0"
   }
 }
