@@ -273,7 +273,7 @@ export default function ResultStep({
       let areaHeight = 180;
       let poinYOffset = 90;
 
-      if (wordsCount < 3 && lines === 1) {
+      if (wordsCount <= 3 && lines === 1) {
         activityFont = "bold 90px 'Poppins', sans-serif";
         poinFont = "bold 90px 'Poppins', sans-serif";
         lineHeight = 100;
@@ -285,7 +285,7 @@ export default function ResultStep({
       const areaTop = currentY;
 
       let startY;
-      if (wordsCount >= 3 || lines > 1) {
+      if (wordsCount > 3 || lines > 1) {
         startY = areaTop;
       } else {
         startY = areaTop + (areaHeight - totalTextHeight) / 2 + 40;
