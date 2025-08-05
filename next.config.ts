@@ -71,12 +71,14 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['@clerk/nextjs', 'lucide-react', '@supabase/supabase-js'],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+
+  // Move turbo to turbopack (Next.js 15 stable)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -94,8 +96,6 @@ const nextConfig: NextConfig = {
   },
 
   compress: true,
-  
-  optimizeFonts: true,
 
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
