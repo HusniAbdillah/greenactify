@@ -327,7 +327,7 @@ export default function AksiPage() {
             )}
           </div>
           <div className="w-3/5 text-center">
-            <h1 className="text-base md:text-2xl font-bold text-white">
+            <h1 className="text-lg md:text-2xl font-bold text-white">
               {currentStepTitles[currentStep].title}
             </h1>
             <p className="text-center text-white text-xs md:text-lg mt-1">

@@ -48,9 +48,9 @@ export default function ActivityCard({ activity, onUpdated }: { activity: Activi
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: "Aksi Hijauku!",
-          text:`${activity.title} bareng GreenActify ✔️
-          Aksi kecil, dampak besar.
-          Yuk ikutan juga 😎🌱`,
+          text:`${activity.title} bareng GreenActify.
+Aksi kecil, dampak besar.
+Yuk ikutan juga 😎🌱`,
           files: [file],
         })
       } else {
